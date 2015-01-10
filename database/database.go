@@ -5,8 +5,10 @@ var (
 )
 
 type DatabaseConnection interface {
+	Connect() error
+	RawQuery(query string, v ...interface{}) ([]interface{}, error)
 }
 
-func SetupDatabase(dbType DatabaseType) {
+func SetupDatabase() {
 
 }
