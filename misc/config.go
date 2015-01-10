@@ -5,7 +5,13 @@ var (
 )
 
 type Configuration struct {
-	DebugLevel int
-	HTTPHost   string
-	HTTPPort   int
+	DatabaseType     int
+	DatabaseHost     string
+	DatabasePort     int
+	DatabaseSchema   string
+	DatabaseUser     string
+	DatabasePassword string
+	DebugLevel       int
+	HTTPHost         string
+	HTTPPort         int
 }
