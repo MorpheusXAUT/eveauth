@@ -3,13 +3,19 @@
 package main
 
 import (
+	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/web"
 )
 
 func main() {
 	misc.ParseConfigFlags()
 
-	misc.SetupLogger(uint(misc.Config.DebugLevel))
+	misc.SetupLogger()
 
-	misc.Logger.Infoln("Logger set up! Continuing initialisation...")
+	database.SetupDatabase()
+
+	web.SetupRouter()
+
+	web.Router.HandleRequests()
 }
