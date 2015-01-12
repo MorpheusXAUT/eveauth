@@ -4,6 +4,6 @@ import (
 	"net/http"
 )
 
-func (router *HTTPRouter) IndexGetHandler(w http.ResponseWriter, r *http.Request) {
+func (controller *Controller) IndexGetHandler(w http.ResponseWriter, r *http.Request) {
 
 }
