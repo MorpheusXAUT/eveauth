@@ -11,11 +11,15 @@ type Route struct {
 	HandlerFunc http.HandlerFunc
 }
 
-var routes = []Route{
-	Route{
-		Name:        "IndexGet",
-		Methods:     []string{"GET"},
-		Pattern:     "/",
-		HandlerFunc: Router.IndexGetHandler,
-	},
+func SetupRoutes(controller *Controller) []Route {
+	r := []Route{
+		Route{
+			Name:        "IndexGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/",
+			HandlerFunc: controller.IndexGetHandler,
+		},
+	}
+
+	return r
 }
