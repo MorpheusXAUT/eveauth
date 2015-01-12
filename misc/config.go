@@ -1,7 +1,10 @@
 package misc
 
-var (
-	Config *Configuration
+import (
+	"encoding/json"
+	"flag"
+	"fmt"
+	"os"
 )
 
 type Configuration struct {
@@ -14,4 +17,39 @@ type Configuration struct {
 	DebugLevel       int
 	HTTPHost         string
 	HTTPPort         int
+}
+
+func LoadConfig() (*Configuration, error) {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: eveauth [options]\n")
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+
+	flag.Parse()
+
+	var config *Configuration
+	var err error
+
+	if len(*configFileFlag) > 0 {
+		config, err = ParseJSONConfig(*configFileFlag)
+	} else {
+		config = ParseCommandlineFlags()
+		err = nil
+	}
+
+	return config, err
+}
+
+func ParseJSONConfig(path string) (*Configuration, error) {
+	configFile, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var config *Configuration
+
+	err = json.NewDecoder(configFile).Decode(&config)
+
+	return config, err
 }
