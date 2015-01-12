@@ -12,9 +12,9 @@ var (
 	Logger *factorlog.FactorLog
 )
 
-func SetupLogger() {
+func SetupLogger(debugLevel int) {
 	Logger = factorlog.New(os.Stdout, factorlog.NewStdFormatter("[%{Date} %{Time}] {%{SEVERITY}:%{File}/%{Function}:%{Line}} %{SafeMessage}"))
-	Logger.SetMinMaxSeverity(factorlog.Severity(1<<uint(Config.DebugLevel)), factorlog.PANIC)
+	Logger.SetMinMaxSeverity(factorlog.Severity(1<<uint(debugLevel)), factorlog.PANIC)
 }
 
 func WebLogging(inner http.Handler, name string) http.Handler {
