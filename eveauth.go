@@ -6,16 +6,31 @@ import (
 	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/web"
+	"os"
 )
 
 func main() {
-	misc.ParseConfigFlags()
+	config, err := misc.LoadConfig()
+	if err != nil {
+		misc.Logger.Criticalf("Failed to load config: [%v]", err)
+		os.Exit(2)
+	}
 
-	misc.SetupLogger()
+	misc.SetupLogger(config.DebugLevel)
 
-	database.SetupDatabase()
+	db, err := database.SetupDatabase(config)
+	if err != nil {
+		misc.Logger.Criticalf("Failed to set up database: [%v]", err)
+		os.Exit(2)
+	}
 
-	web.SetupRouter()
+	err = db.Connect()
+	if err != nil {
+		misc.Logger.Criticalf("Failed to connect to database: [%v]", err)
+		os.Exit(2)
+	}
 
-	web.Router.HandleRequests()
+	controller := web.SetupController(config, db)
+
+	controller.HandleRequests()
 }
