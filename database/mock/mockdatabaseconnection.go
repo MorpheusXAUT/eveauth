@@ -2,15 +2,44 @@ package mock
 
 import (
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/models"
 )
 
 type MockDatabaseConnection struct {
 }
 
-func (connection *MockDatabaseConnection) Connect() error {
+func (c *MockDatabaseConnection) Connect() error {
 	return misc.ErrNotImplemented
 }
 
-func (connection *MockDatabaseConnection) RawQuery(query string, v ...interface{}) ([]interface{}, error) {
+func (c *MockDatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error) {
+	return nil, misc.ErrNotImplemented
+}
+
+func (c *MockDatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
+	return nil, misc.ErrNotImplemented
+}
+
+func (c *MockDatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error) {
+	return nil, misc.ErrNotImplemented
+}
+
+func (c *MockDatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
+	return nil, misc.ErrNotImplemented
+}
+
+func (c *MockDatabaseConnection) LoadAllGroupRoles() ([]*models.Role, error) {
+	return nil, misc.ErrNotImplemented
+}
+
+func (c *MockDatabaseConnection) LoadAllUserRoles() ([]*models.Role, error) {
+	return nil, misc.ErrNotImplemented
+}
+
+func (c *MockDatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
+	return nil, misc.ErrNotImplemented
+}
+
+func (c *MockDatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	return nil, misc.ErrNotImplemented
 }

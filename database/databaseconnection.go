@@ -6,11 +6,19 @@ import (
 	"github.com/morpheusxaut/eveauth/database/mock"
 	"github.com/morpheusxaut/eveauth/database/mysql"
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/models"
 )
 
 type DatabaseConnection interface {
 	Connect() error
-	RawQuery(query string, v ...interface{}) ([]interface{}, error)
+	RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error)
+	LoadAllAPIKeys() ([]*models.APIKey, error)
+	LoadAllCorporations() ([]*models.Corporation, error)
+	LoadAllCharacters() ([]*models.Character, error)
+	LoadAllGroupRoles() ([]*models.Role, error)
+	LoadAllUserRoles() ([]*models.Role, error)
+	LoadAllGroups() ([]*models.Group, error)
+	LoadAllUsers() ([]*models.User, error)
 }
 
 func SetupDatabase(conf *misc.Configuration) (DatabaseConnection, error) {
