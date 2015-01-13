@@ -119,8 +119,8 @@ func TestMySQLDatabaseSetup(t *testing.T) {
 		Convey("Connecting to the database", func() {
 			err = db.Connect()
 
-			Convey("The returned error should be ErrNotImplemented", func() {
-				So(err, ShouldEqual, misc.ErrNotImplemented)
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
 			})
 		})
 	})
