@@ -29,11 +29,11 @@ func (c *MemoryDatabaseConnection) LoadAllCharacters() ([]*models.Character, err
 	return nil, misc.ErrNotImplemented
 }
 
-func (c *MemoryDatabaseConnection) LoadAllGroupRoles() ([]*models.Role, error) {
+func (c *MemoryDatabaseConnection) LoadAllGroupRoles() ([]*models.GroupRole, error) {
 	return nil, misc.ErrNotImplemented
 }
 
-func (c *MemoryDatabaseConnection) LoadAllUserRoles() ([]*models.Role, error) {
+func (c *MemoryDatabaseConnection) LoadAllUserRoles() ([]*models.UserRole, error) {
 	return nil, misc.ErrNotImplemented
 }
 

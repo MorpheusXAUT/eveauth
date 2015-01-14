@@ -28,11 +28,11 @@ func (c *MockDatabaseConnection) LoadAllCharacters() ([]*models.Character, error
 	return nil, misc.ErrNotImplemented
 }
 
-func (c *MockDatabaseConnection) LoadAllGroupRoles() ([]*models.Role, error) {
+func (c *MockDatabaseConnection) LoadAllGroupRoles() ([]*models.GroupRole, error) {
 	return nil, misc.ErrNotImplemented
 }
 
-func (c *MockDatabaseConnection) LoadAllUserRoles() ([]*models.Role, error) {
+func (c *MockDatabaseConnection) LoadAllUserRoles() ([]*models.UserRole, error) {
 	return nil, misc.ErrNotImplemented
 }
 

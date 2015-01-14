@@ -15,8 +15,8 @@ type DatabaseConnection interface {
 	LoadAllAPIKeys() ([]*models.APIKey, error)
 	LoadAllCorporations() ([]*models.Corporation, error)
 	LoadAllCharacters() ([]*models.Character, error)
-	LoadAllGroupRoles() ([]*models.Role, error)
-	LoadAllUserRoles() ([]*models.Role, error)
+	LoadAllGroupRoles() ([]*models.GroupRole, error)
+	LoadAllUserRoles() ([]*models.UserRole, error)
 	LoadAllGroups() ([]*models.Group, error)
 	LoadAllUsers() ([]*models.User, error)
 }
