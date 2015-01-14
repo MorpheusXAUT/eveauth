@@ -6,22 +6,58 @@ import (
 	"github.com/morpheusxaut/eveauth/database/mysql"
 	"github.com/morpheusxaut/eveauth/misc"
 	. "github.com/smartystreets/goconvey/convey"
+	"os"
+	"strconv"
 	"testing"
 )
 
+func createConfig(databaseType int) *misc.Configuration {
+	mysqlHost := "localhost"
+	if len(os.Getenv("MYSQL_HOST")) > 0 {
+		mysqlHost = os.Getenv("MYSQL_HOST")
+	}
+
+	mysqlPort := 3306
+	if len(os.Getenv("MYSQL_PORT")) > 0 {
+		port, err := strconv.ParseInt(os.Getenv("MYSQL_PORT"), 10, 64)
+		if err == nil {
+			mysqlPort = int(port)
+		}
+	}
+
+	mysqlSchema := "eveauth"
+	if len(os.Getenv("MYSQL_SCHEMA")) > 0 {
+		mysqlSchema = os.Getenv("MYSQL_SCHEMA")
+	}
+
+	mysqlUser := "eveauth"
+	if len(os.Getenv("MYSQL_USER")) > 0 {
+		mysqlUser = os.Getenv("MYSQL_USER")
+	}
+
+	mysqlPassword := "eveauth"
+	if len(os.Getenv("MYSQL_PASSWORD")) > 0 {
+		mysqlPassword = os.Getenv("MYSQL_PASSWORD")
+	}
+
+	config := &misc.Configuration{
+		DatabaseType:     databaseType,
+		DatabaseHost:     mysqlHost,
+		DatabasePort:     mysqlPort,
+		DatabaseSchema:   mysqlSchema,
+		DatabaseUser:     mysqlUser,
+		DatabasePassword: mysqlPassword,
+		DebugLevel:       1,
+		HTTPHost:         "localhost",
+		HTTPPort:         5000,
+	}
+
+	return config
+}
+
 func TestMockDatabaseSetup(t *testing.T) {
 	Convey("Running the database setup using a mock configuration", t, func() {
-		config := &misc.Configuration{
-			DatabaseType:     -1,
-			DatabaseHost:     "localhost",
-			DatabasePort:     3306,
-			DatabaseSchema:   "eveauth",
-			DatabaseUser:     "eveauth",
-			DatabasePassword: "eveauth",
-			DebugLevel:       1,
-			HTTPHost:         "localhost",
-			HTTPPort:         5000,
-		}
+		config := createConfig(-1)
 
 		db, err := SetupDatabase(config)
 
@@ -50,17 +86,7 @@ func TestMockDatabaseSetup(t *testing.T) {
 
 func TestMemoryDatabaseSetup(t *testing.T) {
 	Convey("Running the database setup using a memory configuration", t, func() {
-		config := &misc.Configuration{
-			DatabaseType:     0,
-			DatabaseHost:     "localhost",
-			DatabasePort:     3306,
-			DatabaseSchema:   "eveauth",
-			DatabaseUser:     "eveauth",
-			DatabasePassword: "eveauth",
-			DebugLevel:       1,
-			HTTPHost:         "localhost",
-			HTTPPort:         5000,
-		}
+		config := createConfig(0)
 
 		db, err := SetupDatabase(config)
 
@@ -89,17 +115,7 @@ func TestMemoryDatabaseSetup(t *testing.T) {
 
 func TestMySQLDatabaseSetup(t *testing.T) {
 	Convey("Running the database setup using a MySQL configuration", t, func() {
-		config := &misc.Configuration{
-			DatabaseType:     1,
-			DatabaseHost:     "localhost",
-			DatabasePort:     3306,
-			DatabaseSchema:   "eveauth",
-			DatabaseUser:     "eveauth",
-			DatabasePassword: "eveauth",
-			DebugLevel:       1,
-			HTTPHost:         "localhost",
-			HTTPPort:         5000,
-		}
+		config := createConfig(1)
 
 		db, err := SetupDatabase(config)
 
@@ -128,17 +144,7 @@ func TestMySQLDatabaseSetup(t *testing.T) {
 
 func TestInvalidDatabaseSetup(t *testing.T) {
 	Convey("Running the database setup using an invalid configuration", t, func() {
-		config := &misc.Configuration{
-			DatabaseType:     1337,
-			DatabaseHost:     "localhost",
-			DatabasePort:     3306,
-			DatabaseSchema:   "eveauth",
-			DatabaseUser:     "eveauth",
-			DatabasePassword: "eveauth",
-			DebugLevel:       1,
-			HTTPHost:         "localhost",
-			HTTPPort:         5000,
-		}
+		config := createConfig(1337)
 
 		db, err := SetupDatabase(config)
 
