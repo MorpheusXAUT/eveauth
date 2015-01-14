@@ -70,7 +70,19 @@ func (c *MySQLDatabaseConnection) RawQuery(query string, v ...interface{}) ([]ma
 }
 
 func (c *MySQLDatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
-	return nil, misc.ErrNotImplemented
+	err := c.conn.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	apiKeys := make([]*models.APIKey, 0)
+
+	err = c.conn.Select(&apiKeys, "SELECT id, userid, apikeyid, apivcode, active FROM userapikeys")
+	if err != nil {
+		return nil, err
+	}
+
+	return apiKeys, nil
 }
 
 func (c *MySQLDatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error) {
