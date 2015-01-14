@@ -1,3 +1,8 @@
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+
 -- Dumping database structure for eveauth
 CREATE DATABASE IF NOT EXISTS `eveauth` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `eveauth`;
@@ -124,8 +129,8 @@ CREATE TABLE IF NOT EXISTS `userroles` (
   UNIQUE KEY `userid_roleid` (`userid`,`roleid`),
   KEY `fk_userroles_user` (`userid`),
   KEY `fk_userroles_role` (`roleid`),
-  CONSTRAINT `fk_userroles_user` FOREIGN KEY (`userid`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `fk_userroles_role` FOREIGN KEY (`roleid`) REFERENCES `roles` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_userroles_role` FOREIGN KEY (`roleid`) REFERENCES `roles` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_userroles_user` FOREIGN KEY (`userid`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
