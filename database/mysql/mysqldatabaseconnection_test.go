@@ -276,8 +276,10 @@ func TestMySQLDatabaseConnectionLoadAllCorporations(t *testing.T) {
 						So(corporations[0].Name, ShouldEqual, "Test Corp Please Ignore")
 						So(corporations[0].Ticker, ShouldEqual, "TEST")
 						So(corporations[0].EVECorporationID, ShouldEqual, 1)
+						So(corporations[0].APIKeyID.IsZero(), ShouldBeFalse)
 						So(corporations[0].APIKeyID.Valid, ShouldBeTrue)
 						So(corporations[0].APIKeyID.Int64, ShouldEqual, 1)
+						So(corporations[0].APIvCode.IsZero(), ShouldBeFalse)
 						So(corporations[0].APIvCode.Valid, ShouldBeTrue)
 						So(corporations[0].APIvCode.String, ShouldEqual, "a")
 						So(corporations[0].Active, ShouldBeTrue)
@@ -288,8 +290,10 @@ func TestMySQLDatabaseConnectionLoadAllCorporations(t *testing.T) {
 						So(corporations[1].Name, ShouldEqual, "Corp Test Ignore Please")
 						So(corporations[1].Ticker, ShouldEqual, "CORP")
 						So(corporations[1].EVECorporationID, ShouldEqual, 2)
+						So(corporations[1].APIKeyID.IsZero(), ShouldBeTrue)
 						So(corporations[1].APIKeyID.Valid, ShouldBeFalse)
 						So(corporations[1].APIKeyID.Int64, ShouldEqual, 0)
+						So(corporations[1].APIvCode.IsZero(), ShouldBeTrue)
 						So(corporations[1].APIvCode.Valid, ShouldBeFalse)
 						So(corporations[1].APIvCode.String, ShouldEqual, "")
 						So(corporations[1].Active, ShouldBeFalse)
@@ -567,6 +571,7 @@ func TestMySQLDatabaseConnectionLoadAllUsers(t *testing.T) {
 					Convey("Verifying entry #1", func() {
 						So(users[0].ID, ShouldEqual, 1)
 						So(users[0].Username, ShouldEqual, "test1")
+						So(users[0].Password.IsZero(), ShouldBeTrue)
 						So(users[0].Password.Valid, ShouldBeFalse)
 						So(users[0].Password.String, ShouldEqual, "")
 						So(users[0].Active, ShouldBeTrue)
@@ -575,6 +580,7 @@ func TestMySQLDatabaseConnectionLoadAllUsers(t *testing.T) {
 					Convey("Verifying entry #2", func() {
 						So(users[1].ID, ShouldEqual, 2)
 						So(users[1].Username, ShouldEqual, "test2")
+						So(users[1].Password.IsZero(), ShouldBeTrue)
 						So(users[1].Password.Valid, ShouldBeFalse)
 						So(users[1].Password.String, ShouldEqual, "")
 						So(users[1].Active, ShouldBeFalse)
@@ -583,6 +589,7 @@ func TestMySQLDatabaseConnectionLoadAllUsers(t *testing.T) {
 					Convey("Verifying entry #3", func() {
 						So(users[2].ID, ShouldEqual, 3)
 						So(users[2].Username, ShouldEqual, "test3")
+						So(users[2].Password.IsZero(), ShouldBeFalse)
 						So(users[2].Password.Valid, ShouldBeTrue)
 						So(bcrypt.CompareHashAndPassword([]byte(users[2].Password.String), []byte("test3")), ShouldBeNil)
 						So(users[2].Active, ShouldBeTrue)
@@ -591,6 +598,7 @@ func TestMySQLDatabaseConnectionLoadAllUsers(t *testing.T) {
 					Convey("Verifying entry #4", func() {
 						So(users[3].ID, ShouldEqual, 4)
 						So(users[3].Username, ShouldEqual, "test4")
+						So(users[3].Password.IsZero(), ShouldBeFalse)
 						So(users[3].Password.Valid, ShouldBeTrue)
 						So(bcrypt.CompareHashAndPassword([]byte(users[3].Password.String), []byte("test4")), ShouldBeNil)
 						So(users[3].Active, ShouldBeFalse)
