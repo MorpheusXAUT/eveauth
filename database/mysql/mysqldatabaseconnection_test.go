@@ -59,7 +59,7 @@ func createConnection() *MySQLDatabaseConnection {
 }
 
 func TestMySQLDatabaseConnectionConnect(t *testing.T) {
-	Convey("Connecting to a MySQL database with a MySQL configuration", t, func() {
+	Convey("Connecting to a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -73,7 +73,7 @@ func TestMySQLDatabaseConnectionConnect(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionInvalidConnect(t *testing.T) {
-	Convey("Connecting to a MySQL database with an invalid MySQL configuration", t, func() {
+	Convey("Connecting to a MySQL database with an invalid configuration", t, func() {
 		config := &misc.Configuration{
 			DatabaseType:     1,
 			DatabaseHost:     "does.not.exist",
@@ -101,7 +101,7 @@ func TestMySQLDatabaseConnectionInvalidConnect(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionRawQuery(t *testing.T) {
-	Convey("Performing a raw query at a MySQL database with a MySQL configuration", t, func() {
+	Convey("Performing a raw query at a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -141,7 +141,7 @@ func TestMySQLDatabaseConnectionRawQuery(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionRawInvalidQuery(t *testing.T) {
-	Convey("Performing a raw invalid query at a MySQL database with a MySQL configuration", t, func() {
+	Convey("Performing a raw invalid query at a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -167,7 +167,7 @@ func TestMySQLDatabaseConnectionRawInvalidQuery(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionLoadAllAPIKeys(t *testing.T) {
-	Convey("Loading all API keys from a MySQL database with a MySQL configuration", t, func() {
+	Convey("Loading all API keys from a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -246,7 +246,7 @@ func TestMySQLDatabaseConnectionLoadAllAPIKeys(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionLoadAllCorporations(t *testing.T) {
-	Convey("Loading all corporations from a MySQL database with a MySQL configuration", t, func() {
+	Convey("Loading all corporations from a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -305,7 +305,7 @@ func TestMySQLDatabaseConnectionLoadAllCorporations(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionLoadAllCharacters(t *testing.T) {
-	Convey("Loading all characters from a MySQL database with a MySQL configuration", t, func() {
+	Convey("Loading all characters from a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -389,8 +389,63 @@ func TestMySQLDatabaseConnectionLoadAllCharacters(t *testing.T) {
 	})
 }
 
+func TestMySQLDatabaseConnectionLoadRoles(t *testing.T) {
+	Convey("Loading all roles from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			roles, err := db.LoadAllRoles()
+
+			Convey("Loading all roles should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The returned slice should not be nil", func() {
+					So(roles, ShouldNotBeNil)
+				})
+
+				Convey("The length of the returned slice should be 4", func() {
+					So(len(roles), ShouldBeGreaterThan, 0)
+					So(len(roles), ShouldEqual, 4)
+				})
+
+				Convey("The returned roles should match the test data set", func() {
+					Convey("Verifying entry #1", func() {
+						So(roles[0].ID, ShouldEqual, 1)
+						So(roles[0].Name, ShouldEqual, "ping.all")
+						So(roles[0].Active, ShouldBeTrue)
+					})
+
+					Convey("Verifying entry #2", func() {
+						So(roles[1].ID, ShouldEqual, 2)
+						So(roles[1].Name, ShouldEqual, "destroy.world")
+						So(roles[1].Active, ShouldBeFalse)
+					})
+
+					Convey("Verifying entry #3", func() {
+						So(roles[2].ID, ShouldEqual, 3)
+						So(roles[2].Name, ShouldEqual, "logistics.read")
+						So(roles[2].Active, ShouldBeTrue)
+					})
+
+					Convey("Verifying entry #4", func() {
+						So(roles[3].ID, ShouldEqual, 4)
+						So(roles[3].Name, ShouldEqual, "logistics.write")
+						So(roles[3].Active, ShouldBeTrue)
+					})
+				})
+			})
+		})
+	})
+}
+
 func TestMySQLDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
-	Convey("Loading all group roles from a MySQL database with a MySQL configuration", t, func() {
+	Convey("Loading all group roles from a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -418,7 +473,10 @@ func TestMySQLDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 					Convey("Verifying entry #1", func() {
 						So(groupRoles[0].ID, ShouldEqual, 1)
 						So(groupRoles[0].GroupID, ShouldEqual, 1)
-						// TODO verify actual role
+						So(groupRoles[0].Role, ShouldNotBeNil)
+						So(groupRoles[0].Role.ID, ShouldEqual, 1)
+						So(groupRoles[0].Role.Name, ShouldEqual, "ping.all")
+						So(groupRoles[0].Role.Active, ShouldBeTrue)
 						So(groupRoles[0].AutoAdded, ShouldBeTrue)
 						So(groupRoles[0].Granted, ShouldBeTrue)
 					})
@@ -426,7 +484,10 @@ func TestMySQLDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 					Convey("Verifying entry #2", func() {
 						So(groupRoles[1].ID, ShouldEqual, 2)
 						So(groupRoles[1].GroupID, ShouldEqual, 1)
-						// TODO verify actual role
+						So(groupRoles[1].Role, ShouldNotBeNil)
+						So(groupRoles[1].Role.ID, ShouldEqual, 3)
+						So(groupRoles[1].Role.Name, ShouldEqual, "logistics.read")
+						So(groupRoles[1].Role.Active, ShouldBeTrue)
 						So(groupRoles[1].AutoAdded, ShouldBeFalse)
 						So(groupRoles[1].Granted, ShouldBeTrue)
 					})
@@ -434,7 +495,10 @@ func TestMySQLDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 					Convey("Verifying entry #3", func() {
 						So(groupRoles[2].ID, ShouldEqual, 3)
 						So(groupRoles[2].GroupID, ShouldEqual, 2)
-						// TODO verify actual role
+						So(groupRoles[2].Role, ShouldNotBeNil)
+						So(groupRoles[2].Role.ID, ShouldEqual, 2)
+						So(groupRoles[2].Role.Name, ShouldEqual, "destroy.world")
+						So(groupRoles[2].Role.Active, ShouldBeFalse)
 						So(groupRoles[2].AutoAdded, ShouldBeFalse)
 						So(groupRoles[2].Granted, ShouldBeFalse)
 					})
@@ -442,7 +506,10 @@ func TestMySQLDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 					Convey("Verifying entry #4", func() {
 						So(groupRoles[3].ID, ShouldEqual, 4)
 						So(groupRoles[3].GroupID, ShouldEqual, 2)
-						// TODO verify actual role
+						So(groupRoles[3].Role, ShouldNotBeNil)
+						So(groupRoles[3].Role.ID, ShouldEqual, 4)
+						So(groupRoles[3].Role.Name, ShouldEqual, "logistics.write")
+						So(groupRoles[3].Role.Active, ShouldBeTrue)
 						So(groupRoles[3].AutoAdded, ShouldBeTrue)
 						So(groupRoles[3].Granted, ShouldBeFalse)
 					})
@@ -453,7 +520,7 @@ func TestMySQLDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionLoadAllUserRoles(t *testing.T) {
-	Convey("Loading all user roles from a MySQL database with a MySQL configuration", t, func() {
+	Convey("Loading all user roles from a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -481,7 +548,10 @@ func TestMySQLDatabaseConnectionLoadAllUserRoles(t *testing.T) {
 					Convey("Verifying entry #1", func() {
 						So(userRoles[0].ID, ShouldEqual, 1)
 						So(userRoles[0].UserID, ShouldEqual, 1)
-						// TODO verify actual role
+						So(userRoles[0].Role, ShouldNotBeNil)
+						So(userRoles[0].Role.ID, ShouldEqual, 1)
+						So(userRoles[0].Role.Name, ShouldEqual, "ping.all")
+						So(userRoles[0].Role.Active, ShouldBeTrue)
 						So(userRoles[0].AutoAdded, ShouldBeFalse)
 						So(userRoles[0].Granted, ShouldBeFalse)
 					})
@@ -489,7 +559,10 @@ func TestMySQLDatabaseConnectionLoadAllUserRoles(t *testing.T) {
 					Convey("Verifying entry #2", func() {
 						So(userRoles[1].ID, ShouldEqual, 2)
 						So(userRoles[1].UserID, ShouldEqual, 3)
-						// TODO verify actual role
+						So(userRoles[1].Role, ShouldNotBeNil)
+						So(userRoles[1].Role.ID, ShouldEqual, 2)
+						So(userRoles[1].Role.Name, ShouldEqual, "destroy.world")
+						So(userRoles[1].Role.Active, ShouldBeFalse)
 						So(userRoles[1].AutoAdded, ShouldBeTrue)
 						So(userRoles[1].Granted, ShouldBeTrue)
 					})
@@ -500,7 +573,7 @@ func TestMySQLDatabaseConnectionLoadAllUserRoles(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionLoadAllGroups(t *testing.T) {
-	Convey("Loading all groups from a MySQL database with a MySQL configuration", t, func() {
+	Convey("Loading all groups from a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -543,7 +616,7 @@ func TestMySQLDatabaseConnectionLoadAllGroups(t *testing.T) {
 }
 
 func TestMySQLDatabaseConnectionLoadAllUsers(t *testing.T) {
-	Convey("Loading all users from a MySQL database with a MySQL configuration", t, func() {
+	Convey("Loading all users from a MySQL database", t, func() {
 		db := createConnection()
 
 		Convey("Connecting to the database", func() {
@@ -602,6 +675,72 @@ func TestMySQLDatabaseConnectionLoadAllUsers(t *testing.T) {
 						So(users[3].Password.Valid, ShouldBeTrue)
 						So(bcrypt.CompareHashAndPassword([]byte(users[3].Password.String), []byte("test4")), ShouldBeNil)
 						So(users[3].Active, ShouldBeFalse)
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadAPIKey(t *testing.T) {
+	Convey("Loading API key #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			apiKey, err := db.LoadAPIKey(1)
+
+			Convey("Loading API key #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(apiKey, ShouldNotBeNil)
+				})
+
+				Convey("The returned role should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(apiKey.ID, ShouldEqual, 1)
+						So(apiKey.UserID, ShouldEqual, 1)
+						So(apiKey.APIKeyID, ShouldEqual, 1)
+						So(apiKey.APIvCode, ShouldEqual, "a")
+						So(apiKey.Active, ShouldBeTrue)
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadRole(t *testing.T) {
+	Convey("Loading role #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			role, err := db.LoadRole(1)
+
+			Convey("Loading role #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(role, ShouldNotBeNil)
+				})
+
+				Convey("The returned role should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(role.ID, ShouldEqual, 1)
+						So(role.Name, ShouldEqual, "ping.all")
+						So(role.Active, ShouldBeTrue)
 					})
 				})
 			})
