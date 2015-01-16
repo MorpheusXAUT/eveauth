@@ -3,12 +3,58 @@ package mysql
 import (
 	"fmt"
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/models"
 	. "github.com/smartystreets/goconvey/convey"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strconv"
 	"testing"
 )
+
+var testAPIKeys map[int]*models.APIKey = map[int]*models.APIKey{
+	1: &models.APIKey{
+		ID:       1,
+		UserID:   1,
+		APIKeyID: 1,
+		APIvCode: "a",
+		Active:   true,
+	},
+	2: &models.APIKey{
+		ID:       2,
+		UserID:   2,
+		APIKeyID: 2,
+		APIvCode: "b",
+		Active:   false,
+	},
+	3: &models.APIKey{
+		ID:       3,
+		UserID:   3,
+		APIKeyID: 3,
+		APIvCode: "c",
+		Active:   true,
+	},
+	4: &models.APIKey{
+		ID:       4,
+		UserID:   3,
+		APIKeyID: 4,
+		APIvCode: "d",
+		Active:   true,
+	},
+	5: &models.APIKey{
+		ID:       5,
+		UserID:   4,
+		APIKeyID: 5,
+		APIvCode: "e",
+		Active:   false,
+	},
+	6: &models.APIKey{
+		ID:       6,
+		UserID:   4,
+		APIKeyID: 6,
+		APIvCode: "f",
+		Active:   false,
+	},
+}
 
 func createConnection() *MySQLDatabaseConnection {
 	mysqlHost := "localhost"
@@ -192,53 +238,11 @@ func TestMySQLDatabaseConnectionLoadAllAPIKeys(t *testing.T) {
 				})
 
 				Convey("The returned API keys should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(apiKeys[0].ID, ShouldEqual, 1)
-						So(apiKeys[0].UserID, ShouldEqual, 1)
-						So(apiKeys[0].APIKeyID, ShouldEqual, 1)
-						So(apiKeys[0].APIvCode, ShouldEqual, "a")
-						So(apiKeys[0].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(apiKeys[1].ID, ShouldEqual, 2)
-						So(apiKeys[1].UserID, ShouldEqual, 2)
-						So(apiKeys[1].APIKeyID, ShouldEqual, 2)
-						So(apiKeys[1].APIvCode, ShouldEqual, "b")
-						So(apiKeys[1].Active, ShouldBeFalse)
-					})
-
-					Convey("Verifying entry #3", func() {
-						So(apiKeys[2].ID, ShouldEqual, 3)
-						So(apiKeys[2].UserID, ShouldEqual, 3)
-						So(apiKeys[2].APIKeyID, ShouldEqual, 3)
-						So(apiKeys[2].APIvCode, ShouldEqual, "c")
-						So(apiKeys[2].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #4", func() {
-						So(apiKeys[3].ID, ShouldEqual, 4)
-						So(apiKeys[3].UserID, ShouldEqual, 3)
-						So(apiKeys[3].APIKeyID, ShouldEqual, 4)
-						So(apiKeys[3].APIvCode, ShouldEqual, "d")
-						So(apiKeys[3].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #5", func() {
-						So(apiKeys[4].ID, ShouldEqual, 5)
-						So(apiKeys[4].UserID, ShouldEqual, 4)
-						So(apiKeys[4].APIKeyID, ShouldEqual, 5)
-						So(apiKeys[4].APIvCode, ShouldEqual, "e")
-						So(apiKeys[4].Active, ShouldBeFalse)
-					})
-
-					Convey("Verifying entry #6", func() {
-						So(apiKeys[5].ID, ShouldEqual, 6)
-						So(apiKeys[5].UserID, ShouldEqual, 4)
-						So(apiKeys[5].APIKeyID, ShouldEqual, 6)
-						So(apiKeys[5].APIvCode, ShouldEqual, "f")
-						So(apiKeys[5].Active, ShouldBeFalse)
-					})
+					for index, apiKey := range apiKeys {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(apiKey, ShouldResemble, testAPIKeys[index+1])
+						})
+					}
 				})
 			})
 		})
@@ -602,12 +606,48 @@ func TestMySQLDatabaseConnectionLoadAllGroups(t *testing.T) {
 						So(groups[0].ID, ShouldEqual, 1)
 						So(groups[0].Name, ShouldEqual, "Test Group")
 						So(groups[0].Active, ShouldBeTrue)
+						So(groups[0].GroupRoles, ShouldNotBeNil)
+						So(len(groups[0].GroupRoles), ShouldEqual, 2)
+						So(groups[0].GroupRoles[0].ID, ShouldEqual, 1)
+						So(groups[0].GroupRoles[0].GroupID, ShouldEqual, 1)
+						So(groups[0].GroupRoles[0].Role, ShouldNotBeNil)
+						So(groups[0].GroupRoles[0].Role.ID, ShouldEqual, 1)
+						So(groups[0].GroupRoles[0].Role.Name, ShouldEqual, "ping.all")
+						So(groups[0].GroupRoles[0].Role.Active, ShouldBeTrue)
+						So(groups[0].GroupRoles[0].AutoAdded, ShouldBeTrue)
+						So(groups[0].GroupRoles[0].Granted, ShouldBeTrue)
+						So(groups[0].GroupRoles[1].ID, ShouldEqual, 2)
+						So(groups[0].GroupRoles[1].GroupID, ShouldEqual, 1)
+						So(groups[0].GroupRoles[1].Role, ShouldNotBeNil)
+						So(groups[0].GroupRoles[1].Role.ID, ShouldEqual, 3)
+						So(groups[0].GroupRoles[1].Role.Name, ShouldEqual, "logistics.read")
+						So(groups[0].GroupRoles[1].Role.Active, ShouldBeTrue)
+						So(groups[0].GroupRoles[1].AutoAdded, ShouldBeFalse)
+						So(groups[0].GroupRoles[1].Granted, ShouldBeTrue)
 					})
 
 					Convey("Verifying entry #2", func() {
 						So(groups[1].ID, ShouldEqual, 2)
 						So(groups[1].Name, ShouldEqual, "Dank Access")
 						So(groups[1].Active, ShouldBeFalse)
+						So(groups[1].GroupRoles, ShouldNotBeNil)
+						So(len(groups[1].GroupRoles), ShouldEqual, 2)
+						So(groups[1].GroupRoles[0].ID, ShouldEqual, 3)
+						So(groups[1].GroupRoles[0].GroupID, ShouldEqual, 2)
+						So(groups[1].GroupRoles[0].Role, ShouldNotBeNil)
+						So(groups[1].GroupRoles[0].Role.ID, ShouldEqual, 2)
+						So(groups[1].GroupRoles[0].Role.Name, ShouldEqual, "destroy.world")
+						So(groups[1].GroupRoles[0].Role.Active, ShouldBeFalse)
+						So(groups[1].GroupRoles[0].AutoAdded, ShouldBeFalse)
+						So(groups[1].GroupRoles[0].Granted, ShouldBeFalse)
+						So(groups[1].GroupRoles[1].ID, ShouldEqual, 4)
+						So(groups[1].GroupRoles[1].GroupID, ShouldEqual, 2)
+						So(groups[1].GroupRoles[1].Role, ShouldNotBeNil)
+						So(groups[1].GroupRoles[1].Role.ID, ShouldEqual, 4)
+						So(groups[1].GroupRoles[1].Role.Name, ShouldEqual, "logistics.write")
+						So(groups[1].GroupRoles[1].Role.Active, ShouldBeTrue)
+						So(groups[1].GroupRoles[1].AutoAdded, ShouldBeTrue)
+						So(groups[1].GroupRoles[1].Granted, ShouldBeFalse)
 					})
 				})
 			})
@@ -704,11 +744,7 @@ func TestMySQLDatabaseConnectionLoadAPIKey(t *testing.T) {
 
 				Convey("The returned role should match the test data set", func() {
 					Convey("Verifying entry", func() {
-						So(apiKey.ID, ShouldEqual, 1)
-						So(apiKey.UserID, ShouldEqual, 1)
-						So(apiKey.APIKeyID, ShouldEqual, 1)
-						So(apiKey.APIvCode, ShouldEqual, "a")
-						So(apiKey.Active, ShouldBeTrue)
+						So(apiKey, ShouldResemble, testAPIKeys[1])
 					})
 				})
 			})
