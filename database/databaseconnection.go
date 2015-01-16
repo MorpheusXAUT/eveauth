@@ -9,7 +9,9 @@ import (
 
 type DatabaseConnection interface {
 	Connect() error
+
 	RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error)
+
 	LoadAllAPIKeys() ([]*models.APIKey, error)
 	LoadAllCorporations() ([]*models.Corporation, error)
 	LoadAllCharacters() ([]*models.Character, error)
@@ -27,6 +29,12 @@ type DatabaseConnection interface {
 	LoadUserRole(userRoleID int64) (*models.UserRole, error)
 	LoadGroup(groupID int64) (*models.Group, error)
 	LoadUser(userID int64) (*models.User, error)
+
+	LoadAllAPIKeysForUser(userID int64) ([]*models.APIKey, error)
+	LoadAllCharactersForUser(userID int64) ([]*models.Character, error)
+	LoadAllGroupRolesForGroup(groupID int64) ([]*models.GroupRole, error)
+	LoadAllUserRolesForUser(userID int64) ([]*models.UserRole, error)
+	LoadAllGroupsForUser(userID int64) ([]*models.Group, error)
 }
 
 func SetupDatabase(conf *misc.Configuration) (DatabaseConnection, error) {
