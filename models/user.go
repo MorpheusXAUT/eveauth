@@ -9,7 +9,8 @@ type User struct {
 	Username   string       `json:"username"`
 	Password   zero.String  `json:"password"`
 	Active     bool         `json:"active"`
-	UserRoles  []*UserRole  `json:"userRoles,omitempty"`
-	GroupRoles []*GroupRole `json:"groupRoles,omitempty"`
 	Characters []*Character `json:"characters,omitempty"`
+	APIKeys    []*APIKey    `json:"apiKeys,omitempty"`
+	UserRoles  []*UserRole  `json:"userRoles,omitempty"`
+	Groups     []*Group     `json:"groups,omitempty"`
 }
