@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"gopkg.in/guregu/null.v2/zero"
 )
 
@@ -13,4 +14,13 @@ type User struct {
 	APIKeys    []*APIKey    `json:"apiKeys,omitempty"`
 	UserRoles  []*UserRole  `json:"userRoles,omitempty"`
 	Groups     []*Group     `json:"groups,omitempty"`
+}
+
+func (user *User) String() string {
+	jsonContent, err := json.Marshal(user)
+	if err != nil {
+		return ""
+	}
+
+	return string(jsonContent)
 }

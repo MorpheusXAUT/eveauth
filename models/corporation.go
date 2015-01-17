@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"gopkg.in/guregu/null.v2/zero"
 )
 
@@ -12,4 +13,13 @@ type Corporation struct {
 	APIKeyID         zero.Int    `json:"apiKeyID"`
 	APIvCode         zero.String `json:"apivCode"`
 	Active           bool        `json:"active"`
+}
+
+func (corporation *Corporation) String() string {
+	jsonContent, err := json.Marshal(corporation)
+	if err != nil {
+		return ""
+	}
+
+	return string(jsonContent)
 }
