@@ -703,6 +703,198 @@ func TestMySQLDatabaseConnectionLoadUser(t *testing.T) {
 	})
 }
 
+func TestMySQLDatabaseConnectionLoadInvalidAPIKey(t *testing.T) {
+	Convey("Loading invalid API key from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			apiKey, err := db.LoadAPIKey(-1)
+
+			Convey("Loading an invalid API key should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(apiKey, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadInvalidCorporation(t *testing.T) {
+	Convey("Loading invalid corporation from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			corporation, err := db.LoadCorporation(-1)
+
+			Convey("Loading an invalid corporation should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(corporation, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadInvalidCharacter(t *testing.T) {
+	Convey("Loading invalid character from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			character, err := db.LoadCharacter(-1)
+
+			Convey("Loading an invalid character should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(character, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadInvalidRole(t *testing.T) {
+	Convey("Loading invalid role from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			role, err := db.LoadRole(-1)
+
+			Convey("Loading an role should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(role, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadInvalidGroupRole(t *testing.T) {
+	Convey("Loading invalid group role from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			groupRole, err := db.LoadGroupRole(-1)
+
+			Convey("Loading an invalid group role should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(groupRole, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadInvalidUserRole(t *testing.T) {
+	Convey("Loading invalid user role from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			userRole, err := db.LoadUserRole(-1)
+
+			Convey("Loading an invalid user role should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(userRole, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadInvalidGroup(t *testing.T) {
+	Convey("Loading invalid group from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			group, err := db.LoadGroup(-1)
+
+			Convey("Loading an invalid group should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(group, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadInvalidUser(t *testing.T) {
+	Convey("Loading invalid user from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			user, err := db.LoadUser(-1)
+
+			Convey("Loading an invalid user should return an error", func() {
+				So(err, ShouldNotBeNil)
+
+				Convey("The result should be nil", func() {
+					So(user, ShouldBeNil)
+				})
+			})
+		})
+	})
+}
+
 var testAPIKeys map[int]*models.APIKey = map[int]*models.APIKey{
 	1: &models.APIKey{
 		ID:       1,
