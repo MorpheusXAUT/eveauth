@@ -5,56 +5,11 @@ import (
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/models"
 	. "github.com/smartystreets/goconvey/convey"
-	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/guregu/null.v2/zero"
 	"os"
 	"strconv"
 	"testing"
 )
-
-var testAPIKeys map[int]*models.APIKey = map[int]*models.APIKey{
-	1: &models.APIKey{
-		ID:       1,
-		UserID:   1,
-		APIKeyID: 1,
-		APIvCode: "a",
-		Active:   true,
-	},
-	2: &models.APIKey{
-		ID:       2,
-		UserID:   2,
-		APIKeyID: 2,
-		APIvCode: "b",
-		Active:   false,
-	},
-	3: &models.APIKey{
-		ID:       3,
-		UserID:   3,
-		APIKeyID: 3,
-		APIvCode: "c",
-		Active:   true,
-	},
-	4: &models.APIKey{
-		ID:       4,
-		UserID:   3,
-		APIKeyID: 4,
-		APIvCode: "d",
-		Active:   true,
-	},
-	5: &models.APIKey{
-		ID:       5,
-		UserID:   4,
-		APIKeyID: 5,
-		APIvCode: "e",
-		Active:   false,
-	},
-	6: &models.APIKey{
-		ID:       6,
-		UserID:   4,
-		APIKeyID: 6,
-		APIvCode: "f",
-		Active:   false,
-	},
-}
 
 func createConnection() *MySQLDatabaseConnection {
 	mysqlHost := "localhost"
@@ -275,33 +230,11 @@ func TestMySQLDatabaseConnectionLoadAllCorporations(t *testing.T) {
 				})
 
 				Convey("The returned corporations should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(corporations[0].ID, ShouldEqual, 1)
-						So(corporations[0].Name, ShouldEqual, "Test Corp Please Ignore")
-						So(corporations[0].Ticker, ShouldEqual, "TEST")
-						So(corporations[0].EVECorporationID, ShouldEqual, 1)
-						So(corporations[0].APIKeyID.IsZero(), ShouldBeFalse)
-						So(corporations[0].APIKeyID.Valid, ShouldBeTrue)
-						So(corporations[0].APIKeyID.Int64, ShouldEqual, 1)
-						So(corporations[0].APIvCode.IsZero(), ShouldBeFalse)
-						So(corporations[0].APIvCode.Valid, ShouldBeTrue)
-						So(corporations[0].APIvCode.String, ShouldEqual, "a")
-						So(corporations[0].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(corporations[1].ID, ShouldEqual, 2)
-						So(corporations[1].Name, ShouldEqual, "Corp Test Ignore Please")
-						So(corporations[1].Ticker, ShouldEqual, "CORP")
-						So(corporations[1].EVECorporationID, ShouldEqual, 2)
-						So(corporations[1].APIKeyID.IsZero(), ShouldBeTrue)
-						So(corporations[1].APIKeyID.Valid, ShouldBeFalse)
-						So(corporations[1].APIKeyID.Int64, ShouldEqual, 0)
-						So(corporations[1].APIvCode.IsZero(), ShouldBeTrue)
-						So(corporations[1].APIvCode.Valid, ShouldBeFalse)
-						So(corporations[1].APIvCode.String, ShouldEqual, "")
-						So(corporations[1].Active, ShouldBeFalse)
-					})
+					for index, corporation := range corporations {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(corporation, ShouldResemble, testCorporations[index+1])
+						})
+					}
 				})
 			})
 		})
@@ -334,66 +267,18 @@ func TestMySQLDatabaseConnectionLoadAllCharacters(t *testing.T) {
 				})
 
 				Convey("The returned characters should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(characters[0].ID, ShouldEqual, 1)
-						So(characters[0].UserID, ShouldEqual, 1)
-						So(characters[0].CorporationID, ShouldEqual, 1)
-						So(characters[0].Name, ShouldEqual, "Test Character")
-						So(characters[0].EVECharacterID, ShouldEqual, 1)
-						So(characters[0].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(characters[1].ID, ShouldEqual, 2)
-						So(characters[1].UserID, ShouldEqual, 2)
-						So(characters[1].CorporationID, ShouldEqual, 2)
-						So(characters[1].Name, ShouldEqual, "Please Ignore")
-						So(characters[1].EVECharacterID, ShouldEqual, 2)
-						So(characters[1].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #3", func() {
-						So(characters[2].ID, ShouldEqual, 3)
-						So(characters[2].UserID, ShouldEqual, 3)
-						So(characters[2].CorporationID, ShouldEqual, 1)
-						So(characters[2].Name, ShouldEqual, "Herp")
-						So(characters[2].EVECharacterID, ShouldEqual, 3)
-						So(characters[2].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #4", func() {
-						So(characters[3].ID, ShouldEqual, 4)
-						So(characters[3].UserID, ShouldEqual, 3)
-						So(characters[3].CorporationID, ShouldEqual, 1)
-						So(characters[3].Name, ShouldEqual, "Derp")
-						So(characters[3].EVECharacterID, ShouldEqual, 4)
-						So(characters[3].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #5", func() {
-						So(characters[4].ID, ShouldEqual, 5)
-						So(characters[4].UserID, ShouldEqual, 4)
-						So(characters[4].CorporationID, ShouldEqual, 2)
-						So(characters[4].Name, ShouldEqual, "Spai")
-						So(characters[4].EVECharacterID, ShouldEqual, 5)
-						So(characters[4].Active, ShouldBeFalse)
-					})
-
-					Convey("Verifying entry #6", func() {
-						So(characters[5].ID, ShouldEqual, 6)
-						So(characters[5].UserID, ShouldEqual, 4)
-						So(characters[5].CorporationID, ShouldEqual, 2)
-						So(characters[5].Name, ShouldEqual, "NoSpai")
-						So(characters[5].EVECharacterID, ShouldEqual, 6)
-						So(characters[5].Active, ShouldBeFalse)
-					})
+					for index, character := range characters {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(character, ShouldResemble, testCharacters[index+1])
+						})
+					}
 				})
 			})
 		})
 	})
 }
 
-func TestMySQLDatabaseConnectionLoadRoles(t *testing.T) {
+func TestMySQLDatabaseConnectionLoadAllRoles(t *testing.T) {
 	Convey("Loading all roles from a MySQL database", t, func() {
 		db := createConnection()
 
@@ -419,29 +304,11 @@ func TestMySQLDatabaseConnectionLoadRoles(t *testing.T) {
 				})
 
 				Convey("The returned roles should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(roles[0].ID, ShouldEqual, 1)
-						So(roles[0].Name, ShouldEqual, "ping.all")
-						So(roles[0].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(roles[1].ID, ShouldEqual, 2)
-						So(roles[1].Name, ShouldEqual, "destroy.world")
-						So(roles[1].Active, ShouldBeFalse)
-					})
-
-					Convey("Verifying entry #3", func() {
-						So(roles[2].ID, ShouldEqual, 3)
-						So(roles[2].Name, ShouldEqual, "logistics.read")
-						So(roles[2].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #4", func() {
-						So(roles[3].ID, ShouldEqual, 4)
-						So(roles[3].Name, ShouldEqual, "logistics.write")
-						So(roles[3].Active, ShouldBeTrue)
-					})
+					for index, role := range roles {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(role, ShouldResemble, testRoles[index+1])
+						})
+					}
 				})
 			})
 		})
@@ -474,49 +341,11 @@ func TestMySQLDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 				})
 
 				Convey("The returned group roles should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(groupRoles[0].ID, ShouldEqual, 1)
-						So(groupRoles[0].GroupID, ShouldEqual, 1)
-						So(groupRoles[0].Role, ShouldNotBeNil)
-						So(groupRoles[0].Role.ID, ShouldEqual, 1)
-						So(groupRoles[0].Role.Name, ShouldEqual, "ping.all")
-						So(groupRoles[0].Role.Active, ShouldBeTrue)
-						So(groupRoles[0].AutoAdded, ShouldBeTrue)
-						So(groupRoles[0].Granted, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(groupRoles[1].ID, ShouldEqual, 2)
-						So(groupRoles[1].GroupID, ShouldEqual, 1)
-						So(groupRoles[1].Role, ShouldNotBeNil)
-						So(groupRoles[1].Role.ID, ShouldEqual, 3)
-						So(groupRoles[1].Role.Name, ShouldEqual, "logistics.read")
-						So(groupRoles[1].Role.Active, ShouldBeTrue)
-						So(groupRoles[1].AutoAdded, ShouldBeFalse)
-						So(groupRoles[1].Granted, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #3", func() {
-						So(groupRoles[2].ID, ShouldEqual, 3)
-						So(groupRoles[2].GroupID, ShouldEqual, 2)
-						So(groupRoles[2].Role, ShouldNotBeNil)
-						So(groupRoles[2].Role.ID, ShouldEqual, 2)
-						So(groupRoles[2].Role.Name, ShouldEqual, "destroy.world")
-						So(groupRoles[2].Role.Active, ShouldBeFalse)
-						So(groupRoles[2].AutoAdded, ShouldBeFalse)
-						So(groupRoles[2].Granted, ShouldBeFalse)
-					})
-
-					Convey("Verifying entry #4", func() {
-						So(groupRoles[3].ID, ShouldEqual, 4)
-						So(groupRoles[3].GroupID, ShouldEqual, 2)
-						So(groupRoles[3].Role, ShouldNotBeNil)
-						So(groupRoles[3].Role.ID, ShouldEqual, 4)
-						So(groupRoles[3].Role.Name, ShouldEqual, "logistics.write")
-						So(groupRoles[3].Role.Active, ShouldBeTrue)
-						So(groupRoles[3].AutoAdded, ShouldBeTrue)
-						So(groupRoles[3].Granted, ShouldBeFalse)
-					})
+					for index, groupRole := range groupRoles {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(groupRole, ShouldResemble, testGroupRoles[index+1])
+						})
+					}
 				})
 			})
 		})
@@ -549,27 +378,11 @@ func TestMySQLDatabaseConnectionLoadAllUserRoles(t *testing.T) {
 				})
 
 				Convey("The returned user roles should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(userRoles[0].ID, ShouldEqual, 1)
-						So(userRoles[0].UserID, ShouldEqual, 1)
-						So(userRoles[0].Role, ShouldNotBeNil)
-						So(userRoles[0].Role.ID, ShouldEqual, 1)
-						So(userRoles[0].Role.Name, ShouldEqual, "ping.all")
-						So(userRoles[0].Role.Active, ShouldBeTrue)
-						So(userRoles[0].AutoAdded, ShouldBeFalse)
-						So(userRoles[0].Granted, ShouldBeFalse)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(userRoles[1].ID, ShouldEqual, 2)
-						So(userRoles[1].UserID, ShouldEqual, 3)
-						So(userRoles[1].Role, ShouldNotBeNil)
-						So(userRoles[1].Role.ID, ShouldEqual, 2)
-						So(userRoles[1].Role.Name, ShouldEqual, "destroy.world")
-						So(userRoles[1].Role.Active, ShouldBeFalse)
-						So(userRoles[1].AutoAdded, ShouldBeTrue)
-						So(userRoles[1].Granted, ShouldBeTrue)
-					})
+					for index, userRole := range userRoles {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(userRole, ShouldResemble, testUserRoles[index+1])
+						})
+					}
 				})
 			})
 		})
@@ -602,53 +415,11 @@ func TestMySQLDatabaseConnectionLoadAllGroups(t *testing.T) {
 				})
 
 				Convey("The returned groups should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(groups[0].ID, ShouldEqual, 1)
-						So(groups[0].Name, ShouldEqual, "Test Group")
-						So(groups[0].Active, ShouldBeTrue)
-						So(groups[0].GroupRoles, ShouldNotBeNil)
-						So(len(groups[0].GroupRoles), ShouldEqual, 2)
-						So(groups[0].GroupRoles[0].ID, ShouldEqual, 1)
-						So(groups[0].GroupRoles[0].GroupID, ShouldEqual, 1)
-						So(groups[0].GroupRoles[0].Role, ShouldNotBeNil)
-						So(groups[0].GroupRoles[0].Role.ID, ShouldEqual, 1)
-						So(groups[0].GroupRoles[0].Role.Name, ShouldEqual, "ping.all")
-						So(groups[0].GroupRoles[0].Role.Active, ShouldBeTrue)
-						So(groups[0].GroupRoles[0].AutoAdded, ShouldBeTrue)
-						So(groups[0].GroupRoles[0].Granted, ShouldBeTrue)
-						So(groups[0].GroupRoles[1].ID, ShouldEqual, 2)
-						So(groups[0].GroupRoles[1].GroupID, ShouldEqual, 1)
-						So(groups[0].GroupRoles[1].Role, ShouldNotBeNil)
-						So(groups[0].GroupRoles[1].Role.ID, ShouldEqual, 3)
-						So(groups[0].GroupRoles[1].Role.Name, ShouldEqual, "logistics.read")
-						So(groups[0].GroupRoles[1].Role.Active, ShouldBeTrue)
-						So(groups[0].GroupRoles[1].AutoAdded, ShouldBeFalse)
-						So(groups[0].GroupRoles[1].Granted, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(groups[1].ID, ShouldEqual, 2)
-						So(groups[1].Name, ShouldEqual, "Dank Access")
-						So(groups[1].Active, ShouldBeFalse)
-						So(groups[1].GroupRoles, ShouldNotBeNil)
-						So(len(groups[1].GroupRoles), ShouldEqual, 2)
-						So(groups[1].GroupRoles[0].ID, ShouldEqual, 3)
-						So(groups[1].GroupRoles[0].GroupID, ShouldEqual, 2)
-						So(groups[1].GroupRoles[0].Role, ShouldNotBeNil)
-						So(groups[1].GroupRoles[0].Role.ID, ShouldEqual, 2)
-						So(groups[1].GroupRoles[0].Role.Name, ShouldEqual, "destroy.world")
-						So(groups[1].GroupRoles[0].Role.Active, ShouldBeFalse)
-						So(groups[1].GroupRoles[0].AutoAdded, ShouldBeFalse)
-						So(groups[1].GroupRoles[0].Granted, ShouldBeFalse)
-						So(groups[1].GroupRoles[1].ID, ShouldEqual, 4)
-						So(groups[1].GroupRoles[1].GroupID, ShouldEqual, 2)
-						So(groups[1].GroupRoles[1].Role, ShouldNotBeNil)
-						So(groups[1].GroupRoles[1].Role.ID, ShouldEqual, 4)
-						So(groups[1].GroupRoles[1].Role.Name, ShouldEqual, "logistics.write")
-						So(groups[1].GroupRoles[1].Role.Active, ShouldBeTrue)
-						So(groups[1].GroupRoles[1].AutoAdded, ShouldBeTrue)
-						So(groups[1].GroupRoles[1].Granted, ShouldBeFalse)
-					})
+					for index, group := range groups {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(group, ShouldResemble, testGroups[index+1])
+						})
+					}
 				})
 			})
 		})
@@ -681,41 +452,11 @@ func TestMySQLDatabaseConnectionLoadAllUsers(t *testing.T) {
 				})
 
 				Convey("The returned users should match the test data set", func() {
-					Convey("Verifying entry #1", func() {
-						So(users[0].ID, ShouldEqual, 1)
-						So(users[0].Username, ShouldEqual, "test1")
-						So(users[0].Password.IsZero(), ShouldBeTrue)
-						So(users[0].Password.Valid, ShouldBeFalse)
-						So(users[0].Password.String, ShouldEqual, "")
-						So(users[0].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #2", func() {
-						So(users[1].ID, ShouldEqual, 2)
-						So(users[1].Username, ShouldEqual, "test2")
-						So(users[1].Password.IsZero(), ShouldBeTrue)
-						So(users[1].Password.Valid, ShouldBeFalse)
-						So(users[1].Password.String, ShouldEqual, "")
-						So(users[1].Active, ShouldBeFalse)
-					})
-
-					Convey("Verifying entry #3", func() {
-						So(users[2].ID, ShouldEqual, 3)
-						So(users[2].Username, ShouldEqual, "test3")
-						So(users[2].Password.IsZero(), ShouldBeFalse)
-						So(users[2].Password.Valid, ShouldBeTrue)
-						So(bcrypt.CompareHashAndPassword([]byte(users[2].Password.String), []byte("test3")), ShouldBeNil)
-						So(users[2].Active, ShouldBeTrue)
-					})
-
-					Convey("Verifying entry #4", func() {
-						So(users[3].ID, ShouldEqual, 4)
-						So(users[3].Username, ShouldEqual, "test4")
-						So(users[3].Password.IsZero(), ShouldBeFalse)
-						So(users[3].Password.Valid, ShouldBeTrue)
-						So(bcrypt.CompareHashAndPassword([]byte(users[3].Password.String), []byte("test4")), ShouldBeNil)
-						So(users[3].Active, ShouldBeFalse)
-					})
+					for index, user := range users {
+						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+							So(user, ShouldResemble, testUsers[index+1])
+						})
+					}
 				})
 			})
 		})
@@ -752,6 +493,66 @@ func TestMySQLDatabaseConnectionLoadAPIKey(t *testing.T) {
 	})
 }
 
+func TestMySQLDatabaseConnectionLoadCorporation(t *testing.T) {
+	Convey("Loading corporation #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			corporation, err := db.LoadCorporation(1)
+
+			Convey("Loading corporation #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(corporation, ShouldNotBeNil)
+				})
+
+				Convey("The returned corporation should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(corporation, ShouldResemble, testCorporations[1])
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadCharacter(t *testing.T) {
+	Convey("Loading character #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			character, err := db.LoadCharacter(1)
+
+			Convey("Loading character #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(character, ShouldNotBeNil)
+				})
+
+				Convey("The returned character should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(character, ShouldResemble, testCharacters[1])
+					})
+				})
+			})
+		})
+	})
+}
+
 func TestMySQLDatabaseConnectionLoadRole(t *testing.T) {
 	Convey("Loading role #1 from a MySQL database", t, func() {
 		db := createConnection()
@@ -774,12 +575,411 @@ func TestMySQLDatabaseConnectionLoadRole(t *testing.T) {
 
 				Convey("The returned role should match the test data set", func() {
 					Convey("Verifying entry", func() {
-						So(role.ID, ShouldEqual, 1)
-						So(role.Name, ShouldEqual, "ping.all")
-						So(role.Active, ShouldBeTrue)
+						So(role, ShouldResemble, testRoles[1])
 					})
 				})
 			})
 		})
 	})
+}
+
+func TestMySQLDatabaseConnectionLoadGroupRole(t *testing.T) {
+	Convey("Loading group role #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			groupRole, err := db.LoadGroupRole(1)
+
+			Convey("Loading group role #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(groupRole, ShouldNotBeNil)
+				})
+
+				Convey("The returned group role should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(groupRole, ShouldResemble, testGroupRoles[1])
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadUserRole(t *testing.T) {
+	Convey("Loading user role #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			userRole, err := db.LoadUserRole(1)
+
+			Convey("Loading user role #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(userRole, ShouldNotBeNil)
+				})
+
+				Convey("The returned user role should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(userRole, ShouldResemble, testUserRoles[1])
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadGroup(t *testing.T) {
+	Convey("Loading group #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			group, err := db.LoadGroup(1)
+
+			Convey("Loading group #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(group, ShouldNotBeNil)
+				})
+
+				Convey("The returned group should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(group, ShouldResemble, testGroups[1])
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestMySQLDatabaseConnectionLoadUser(t *testing.T) {
+	Convey("Loading user #1 from a MySQL database", t, func() {
+		db := createConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			user, err := db.LoadUser(1)
+
+			Convey("Loading user #1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(user, ShouldNotBeNil)
+				})
+
+				Convey("The returned user should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(user, ShouldResemble, testUsers[1])
+					})
+				})
+			})
+		})
+	})
+}
+
+var testAPIKeys map[int]*models.APIKey = map[int]*models.APIKey{
+	1: &models.APIKey{
+		ID:       1,
+		UserID:   1,
+		APIKeyID: 1,
+		APIvCode: "a",
+		Active:   true,
+	},
+	2: &models.APIKey{
+		ID:       2,
+		UserID:   2,
+		APIKeyID: 2,
+		APIvCode: "b",
+		Active:   false,
+	},
+	3: &models.APIKey{
+		ID:       3,
+		UserID:   3,
+		APIKeyID: 3,
+		APIvCode: "c",
+		Active:   true,
+	},
+	4: &models.APIKey{
+		ID:       4,
+		UserID:   3,
+		APIKeyID: 4,
+		APIvCode: "d",
+		Active:   true,
+	},
+	5: &models.APIKey{
+		ID:       5,
+		UserID:   4,
+		APIKeyID: 5,
+		APIvCode: "e",
+		Active:   false,
+	},
+	6: &models.APIKey{
+		ID:       6,
+		UserID:   4,
+		APIKeyID: 6,
+		APIvCode: "f",
+		Active:   false,
+	},
+}
+
+var testCorporations map[int]*models.Corporation = map[int]*models.Corporation{
+	1: &models.Corporation{
+		ID:               1,
+		Name:             "Test Corp Please Ignore",
+		Ticker:           "TEST",
+		EVECorporationID: 1,
+		APIKeyID:         zero.IntFrom(1),
+		APIvCode:         zero.StringFrom("a"),
+		Active:           true,
+	},
+	2: &models.Corporation{
+		ID:               2,
+		Name:             "Corp Test Ignore Please",
+		Ticker:           "CORP",
+		EVECorporationID: 2,
+		APIKeyID:         zero.NewInt(0, false),
+		APIvCode:         zero.NewString("", false),
+		Active:           false,
+	},
+}
+
+var testCharacters map[int]*models.Character = map[int]*models.Character{
+	1: &models.Character{
+		ID:             1,
+		UserID:         1,
+		CorporationID:  1,
+		Name:           "Test Character",
+		EVECharacterID: 1,
+		Active:         true,
+	},
+	2: &models.Character{
+		ID:             2,
+		UserID:         2,
+		CorporationID:  2,
+		Name:           "Please Ignore",
+		EVECharacterID: 2,
+		Active:         true,
+	},
+	3: &models.Character{
+		ID:             3,
+		UserID:         3,
+		CorporationID:  1,
+		Name:           "Herp",
+		EVECharacterID: 3,
+		Active:         true,
+	},
+	4: &models.Character{
+		ID:             4,
+		UserID:         3,
+		CorporationID:  1,
+		Name:           "Derp",
+		EVECharacterID: 4,
+		Active:         true,
+	},
+	5: &models.Character{
+		ID:             5,
+		UserID:         4,
+		CorporationID:  2,
+		Name:           "Spai",
+		EVECharacterID: 5,
+		Active:         false,
+	},
+	6: &models.Character{
+		ID:             6,
+		UserID:         4,
+		CorporationID:  2,
+		Name:           "NoSpai",
+		EVECharacterID: 6,
+		Active:         false,
+	},
+}
+
+var testRoles map[int]*models.Role = map[int]*models.Role{
+	1: &models.Role{
+		ID:     1,
+		Name:   "ping.all",
+		Active: true,
+	},
+	2: &models.Role{
+		ID:     2,
+		Name:   "destroy.world",
+		Active: false,
+	},
+	3: &models.Role{
+		ID:     3,
+		Name:   "logistics.read",
+		Active: true,
+	},
+	4: &models.Role{
+		ID:     4,
+		Name:   "logistics.write",
+		Active: true,
+	},
+}
+
+var testGroupRoles map[int]*models.GroupRole = map[int]*models.GroupRole{
+	1: &models.GroupRole{
+		ID:        1,
+		GroupID:   1,
+		Role:      testRoles[1],
+		AutoAdded: true,
+		Granted:   true,
+	},
+	2: &models.GroupRole{
+		ID:        2,
+		GroupID:   1,
+		Role:      testRoles[3],
+		AutoAdded: false,
+		Granted:   true,
+	},
+	3: &models.GroupRole{
+		ID:        3,
+		GroupID:   2,
+		Role:      testRoles[2],
+		AutoAdded: false,
+		Granted:   false,
+	},
+	4: &models.GroupRole{
+		ID:        4,
+		GroupID:   2,
+		Role:      testRoles[4],
+		AutoAdded: true,
+		Granted:   false,
+	},
+}
+
+var testUserRoles map[int]*models.UserRole = map[int]*models.UserRole{
+	1: &models.UserRole{
+		ID:        1,
+		UserID:    1,
+		Role:      testRoles[1],
+		AutoAdded: false,
+		Granted:   false,
+	},
+	2: &models.UserRole{
+		ID:        2,
+		UserID:    3,
+		Role:      testRoles[2],
+		AutoAdded: true,
+		Granted:   true,
+	},
+}
+
+var testGroups map[int]*models.Group = map[int]*models.Group{
+	1: &models.Group{
+		ID:     1,
+		Name:   "Test Group",
+		Active: true,
+		GroupRoles: []*models.GroupRole{
+			testGroupRoles[1],
+			testGroupRoles[2],
+		},
+	},
+	2: &models.Group{
+		ID:     2,
+		Name:   "Dank Access",
+		Active: false,
+		GroupRoles: []*models.GroupRole{
+			testGroupRoles[3],
+			testGroupRoles[4],
+		},
+	},
+}
+
+var testUsers map[int]*models.User = map[int]*models.User{
+	1: &models.User{
+		ID:       1,
+		Username: "test1",
+		Password: zero.NewString("", false),
+		Active:   true,
+		Characters: []*models.Character{
+			testCharacters[1],
+		},
+		APIKeys: []*models.APIKey{
+			testAPIKeys[1],
+		},
+		UserRoles: []*models.UserRole{
+			testUserRoles[1],
+		},
+		Groups: []*models.Group{
+			testGroups[1],
+		},
+	},
+	2: &models.User{
+		ID:       2,
+		Username: "test2",
+		Password: zero.NewString("", false),
+		Active:   false,
+		Characters: []*models.Character{
+			testCharacters[2],
+		},
+		APIKeys: []*models.APIKey{
+			testAPIKeys[2],
+		},
+		UserRoles: []*models.UserRole{},
+		Groups:    []*models.Group{},
+	},
+	3: &models.User{
+		ID:       3,
+		Username: "test3",
+		Password: zero.StringFrom("$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q"),
+		Active:   true,
+		Characters: []*models.Character{
+			testCharacters[3],
+			testCharacters[4],
+		},
+		APIKeys: []*models.APIKey{
+			testAPIKeys[3],
+			testAPIKeys[4],
+		},
+		UserRoles: []*models.UserRole{
+			testUserRoles[2],
+		},
+		Groups: []*models.Group{
+			testGroups[1],
+			testGroups[2],
+		},
+	},
+	4: &models.User{
+		ID:       4,
+		Username: "test4",
+		Password: zero.StringFrom("$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy"),
+		Active:   false,
+		Characters: []*models.Character{
+			testCharacters[5],
+			testCharacters[6],
+		},
+		APIKeys: []*models.APIKey{
+			testAPIKeys[5],
+			testAPIKeys[6],
+		},
+		UserRoles: []*models.UserRole{},
+		Groups:    []*models.Group{},
+	},
 }
