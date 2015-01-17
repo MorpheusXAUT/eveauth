@@ -487,5 +487,14 @@ func (c *MySQLDatabaseConnection) LoadAllGroupsForUser(userID int64) ([]*models.
 		return nil, err
 	}
 
+	for _, group := range groups {
+		groupRoles, err := c.LoadAllGroupRolesForGroup(group.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		group.GroupRoles = groupRoles
+	}
+
 	return groups, nil
 }
