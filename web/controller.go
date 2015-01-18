@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/session"
 	"net"
 	"net/http"
 	"strconv"
@@ -15,14 +16,16 @@ import (
 type Controller struct {
 	Config   *misc.Configuration
 	Database database.DatabaseConnection
+	Session  *session.SessionController
 
 	router *mux.Router
 }
 
-func SetupController(config *misc.Configuration, db database.DatabaseConnection) *Controller {
+func SetupController(config *misc.Configuration, db database.DatabaseConnection, sessions *session.SessionController) *Controller {
 	controller := &Controller{
 		Config:   config,
 		Database: db,
+		Session:  sessions,
 		router:   mux.NewRouter().StrictSlash(true),
 	}
 

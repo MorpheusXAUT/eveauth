@@ -5,6 +5,7 @@ package main
 import (
 	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/session"
 	"github.com/morpheusxaut/eveauth/web"
 	"os"
 )
@@ -30,7 +31,15 @@ func main() {
 		os.Exit(2)
 	}
 
-	controller := web.SetupController(config, db)
+	sessionController := session.SetupSessionController(config, db)
+
+	err = sessionController.CleanSessions()
+	if err != nil {
+		misc.Logger.Criticalf("Failed to clean sessions: [%v]", err)
+		os.Exit(2)
+	}
+
+	controller := web.SetupController(config, db, sessionController)
 
 	controller.HandleRequests()
 }
