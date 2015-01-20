@@ -12,7 +12,7 @@ type WebTemplates struct {
 func SetupTemplates() *WebTemplates {
 	templates := &WebTemplates{}
 
-	templates.template = template.Must(template.New("").Funcs(templates.TemplateFunctions(nil)).ParseGlob("web/template/*"))
+	templates.template = template.Must(template.New("").Funcs(templates.TemplateFunctions(nil)).ParseGlob("web/templates/*"))
 
 	return templates
 }
