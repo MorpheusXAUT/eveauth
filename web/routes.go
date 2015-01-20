@@ -19,6 +19,30 @@ func SetupRoutes(controller *Controller) []Route {
 			Pattern:     "/",
 			HandlerFunc: controller.IndexGetHandler,
 		},
+		Route{
+			Name:        "LoginGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/login",
+			HandlerFunc: controller.LoginGetHandler,
+		},
+		Route{
+			Name:        "LoginPost",
+			Methods:     []string{"Post"},
+			Pattern:     "/login",
+			HandlerFunc: controller.LoginPostHandler,
+		},
+		Route{
+			Name:        "LoginSSOGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/login/sso",
+			HandlerFunc: controller.LoginSSOGetHandler,
+		},
+		Route{
+			Name:        "AuthorizeGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/authorize",
+			HandlerFunc: controller.AuthorizeGetHandler,
+		},
 	}
 
 	return r
