@@ -16,6 +16,7 @@ func (controller *Controller) IndexGetHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	response["loggedIn"] = loggedIn
+	response["pageType"] = 1
 	response["success"] = true
 	response["error"] = nil
 
@@ -34,6 +35,7 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	response["loggedIn"] = loggedIn
+	response["pageType"] = 2
 
 	if loggedIn {
 		redirect, err := controller.Session.GetLoginRedirect(r)
@@ -66,6 +68,7 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	response["loggedIn"] = loggedIn
+	response["pageType"] = 2
 
 	if loggedIn {
 		redirect, err := controller.Session.GetLoginRedirect(r)
@@ -98,6 +101,7 @@ func (controller *Controller) LoginSSOGetHandler(w http.ResponseWriter, r *http.
 	}
 
 	response["loggedIn"] = loggedIn
+	response["pageType"] = 2
 
 	if loggedIn {
 		redirect, err := controller.Session.GetLoginRedirect(r)
@@ -130,6 +134,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	}
 
 	response["loggedIn"] = loggedIn
+	response["pageType"] = 3
 
 	if !loggedIn {
 		err = controller.Session.SetLoginRedirect(w, r, "/authorize")
