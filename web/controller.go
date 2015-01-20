@@ -14,19 +14,21 @@ import (
 )
 
 type Controller struct {
-	Config   *misc.Configuration
-	Database database.DatabaseConnection
-	Session  *session.SessionController
+	Config    *misc.Configuration
+	Database  database.DatabaseConnection
+	Session   *session.SessionController
+	Templates *WebTemplates
 
 	router *mux.Router
 }
 
-func SetupController(config *misc.Configuration, db database.DatabaseConnection, sessions *session.SessionController) *Controller {
+func SetupController(config *misc.Configuration, db database.DatabaseConnection, sessions *session.SessionController, templates *WebTemplates) *Controller {
 	controller := &Controller{
-		Config:   config,
-		Database: db,
-		Session:  sessions,
-		router:   mux.NewRouter().StrictSlash(true),
+		Config:    config,
+		Database:  db,
+		Session:   sessions,
+		Templates: templates,
+		router:    mux.NewRouter().StrictSlash(true),
 	}
 
 	routes := SetupRoutes(controller)

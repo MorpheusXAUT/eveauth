@@ -39,7 +39,9 @@ func main() {
 		os.Exit(2)
 	}
 
-	controller := web.SetupController(config, db, sessionController)
+	templates := web.SetupTemplates()
+
+	controller := web.SetupController(config, db, sessionController, templates)
 
 	controller.HandleRequests()
 }
