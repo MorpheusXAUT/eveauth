@@ -1,6 +1,10 @@
 {{ define "login" }}
 {{ template "header" . }}
 {{ template "navigation" . }}
-
+	<div class="jumbotron">
+        <h1>Login using EVE SSO</h1>
+        <p>eveauth uses EVE SSO to authenticate you with the website. We will not receive any EVE information beside your character name and ID or be able to see your login credentials.</p>
+        <div align="center"><a href="https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri={{ .ssoCallbackURL }}&client_id={{ .ssoClientID }}&scope=&state={{ .ssoState }}"><img src="/img/EVE_SSO_Login_Buttons_Large_Black.png" alt="EVE Online SSO" /></a></div>
+	</div>
 {{ template "footer" . }}
 {{ end }}
