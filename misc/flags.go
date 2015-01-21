@@ -12,6 +12,7 @@ var (
 	databaseUserFlag       = flag.String("dbuser", "", "Username for the database to use for backend connections")
 	databasePasswordFlag   = flag.String("dbpassword", "", "Password for the database to use for backend connections")
 	debugLevelFlag         = flag.Int("debug", 3, "Sets the debug level (0-9), lower number displays more messages")
+	debugTemplatesFlag     = flag.Bool("debugtemplates", false, "Enables reloading of HTML templates on every request to help development")
 	httpHostFlag           = flag.String("host", "0.0.0.0", "Hostname for the webserver to bind to")
 	httpPortFlag           = flag.Int("port", 5000, "Port for the webserver to bind to")
 	eveSSOClientIDFlag     = flag.String("ssoid", "", "Client ID used for authenticating with the EVE SSO backend")
@@ -29,6 +30,7 @@ func ParseCommandlineFlags() *Configuration {
 		DatabaseUser:       *databaseUserFlag,
 		DatabasePassword:   *databasePasswordFlag,
 		DebugLevel:         *debugLevelFlag,
+		DebugTemplates:     *debugTemplatesFlag,
 		HTTPHost:           *httpHostFlag,
 		HTTPPort:           *httpPortFlag,
 		EVESSOClientID:     *eveSSOClientIDFlag,

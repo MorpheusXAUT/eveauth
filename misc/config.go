@@ -15,6 +15,7 @@ type Configuration struct {
 	DatabaseUser       string
 	DatabasePassword   string
 	DebugLevel         int
+	DebugTemplates     bool
 	HTTPHost           string
 	HTTPPort           int
 	EVESSOClientID     string

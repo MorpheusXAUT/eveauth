@@ -57,6 +57,10 @@ func (controller *Controller) ServeHTTP(inner http.Handler, name string) http.Ha
 			}
 		}
 
+		if controller.Config.DebugTemplates {
+			controller.Templates.ReloadTemplates()
+		}
+
 		inner.ServeHTTP(w, r)
 
 		misc.Logger.Debugf("ServeHTTP: [%s] %s %q {%s} - %s ", r.Method, r.RemoteAddr, r.RequestURI, name, time.Since(start))
