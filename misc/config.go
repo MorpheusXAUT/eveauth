@@ -8,15 +8,18 @@ import (
 )
 
 type Configuration struct {
-	DatabaseType     int
-	DatabaseHost     string
-	DatabasePort     int
-	DatabaseSchema   string
-	DatabaseUser     string
-	DatabasePassword string
-	DebugLevel       int
-	HTTPHost         string
-	HTTPPort         int
+	DatabaseType       int
+	DatabaseHost       string
+	DatabasePort       int
+	DatabaseSchema     string
+	DatabaseUser       string
+	DatabasePassword   string
+	DebugLevel         int
+	HTTPHost           string
+	HTTPPort           int
+	EVESSOClientID     string
+	EVESSOClientSecret string
+	EVESSOCallbackURL  string
 }
 
 func LoadConfig() (*Configuration, error) {
