@@ -15,7 +15,7 @@
           		<ul class="nav navbar-nav">
                     {{ if not .loggedIn }}<li {{ if eq .pageType 2 }} class="active" {{ end }}><a href="/login">Login</a></li>{{ else }}<li><a href="/logout">Logout</a></li>{{ end }}
                     <li class="dropdown {{ if eq .pageType 4 }} active {{ end }}" >
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Account<span class="caret"></span></a>
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Settings<span class="caret"></span></a>
 						<ul class="dropdown-menu" role="menu">
 							<li><a href="/settings">Settings</a></li>
                             <li class="divider"></li>
