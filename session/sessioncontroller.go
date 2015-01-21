@@ -1,7 +1,6 @@
 package session
 
 import (
-	"fmt"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/morpheusxaut/eveauth/database"
@@ -23,7 +22,7 @@ func SetupSessionController(conf *misc.Configuration, db database.DatabaseConnec
 	controller := &SessionController{
 		config:   conf,
 		database: db,
-		store:    sessions.NewFilesystemStore("web/sessions", []byte(securecookie.GenerateRandomKey(128))),
+		store:    sessions.NewFilesystemStore("app/sessions", []byte(securecookie.GenerateRandomKey(128))),
 	}
 
 	return controller
@@ -60,38 +59,33 @@ func (controller *SessionController) DestroySession(w http.ResponseWriter, r *ht
 	})
 }
 
-func (controller *SessionController) IsLoggedIn(w http.ResponseWriter, r *http.Request) (bool, error) {
-	session, err := controller.store.Get(r, "eveauth_login")
-	if err != nil {
-		return false, err
-	}
+func (controller *SessionController) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
+	session, _ := controller.store.Get(r, "eveauth_login")
 
 	if session.IsNew {
-		return false, nil
+		return false
 	}
 
 	timeStamp, ok := session.Values["timestamp"].(time.Time)
 	if !ok {
-		return false, fmt.Errorf("Failed to load timestamp from login session")
+		controller.DestroySession(w, r)
+		return false
 	}
 
 	if time.Now().Sub(timeStamp).Minutes() >= 168 {
 		controller.DestroySession(w, r)
-		return false, fmt.Errorf("Login session expired")
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
 func (controller *SessionController) SetLoginRedirect(w http.ResponseWriter, r *http.Request, redirect string) error {
-	session, err := controller.store.Get(r, "eveauth_login")
-	if err != nil {
-		return err
-	}
+	session, _ := controller.store.Get(r, "eveauth_login")
 
 	session.Values["loginRedirect"] = redirect
 
-	err = session.Save(r, w)
+	err := session.Save(r, w)
 	if err != nil {
 		return err
 	}
@@ -99,20 +93,17 @@ func (controller *SessionController) SetLoginRedirect(w http.ResponseWriter, r *
 	return nil
 }
 
-func (controller *SessionController) GetLoginRedirect(r *http.Request) (string, error) {
-	session, err := controller.store.Get(r, "eveauth_login")
-	if err != nil {
-		return "/", err
-	}
+func (controller *SessionController) GetLoginRedirect(r *http.Request) string {
+	session, _ := controller.store.Get(r, "eveauth_login")
 
 	if session.IsNew {
-		return "/", nil
+		return "/"
 	}
 
 	redirect, ok := session.Values["loginRedirect"].(string)
 	if !ok {
-		return "/", err
+		return "/"
 	}
 
-	return redirect, nil
+	return redirect
 }
