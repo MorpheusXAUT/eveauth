@@ -7,13 +7,17 @@ import (
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/session"
 	"github.com/morpheusxaut/eveauth/web"
+	"log"
 	"os"
+	"runtime"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	config, err := misc.LoadConfig()
 	if err != nil {
-		misc.Logger.Criticalf("Failed to load config: [%v]", err)
+		log.Fatalf("Failed to load config: [%v]", err)
 		os.Exit(2)
 	}
 
