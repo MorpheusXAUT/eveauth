@@ -1,8 +1,10 @@
 package web
 
 import (
+	"fmt"
 	"github.com/morpheusxaut/eveauth/misc"
 	"net/http"
+	"strings"
 )
 
 func (controller *Controller) IndexGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +40,43 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 	response["ssoState"] = state
 	response["ssoClientID"] = controller.Config.EVESSOClientID
 	response["ssoCallbackURL"] = controller.Config.EVESSOCallbackURL
+
+	err := controller.Session.SetSSOState(w, r, state)
+	if err != nil {
+		response["success"] = false
+		response["error"] = err
+
+		misc.Logger.Warnf("Failed to set SSO state: [%v]", err)
+		controller.SendResponse(w, r, "login", response)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		response["success"] = false
+		response["error"] = err
+
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		controller.SendResponse(w, r, "login", response)
+		return
+	}
+
+	errorType := r.FormValue("error")
+
+	if len(errorType) > 0 {
+		response["success"] = false
+
+		switch strings.ToLower(errorType) {
+		case "ssostate":
+			response["error"] = fmt.Errorf("Failed to verify EVE SSO login, please try again!")
+			break
+		default:
+			response["error"] = errorType
+		}
+
+		controller.SendResponse(w, r, "login", response)
+		return
+	}
 
 	response["success"] = true
 	response["error"] = nil
@@ -76,6 +115,29 @@ func (controller *Controller) LoginSSOGetHandler(w http.ResponseWriter, r *http.
 
 	if loggedIn {
 		http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		controller.SendRawError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	authorizationCode := r.FormValue("code")
+	state := r.FormValue("state")
+
+	if len(authorizationCode) == 0 || len(state) == 0 {
+		misc.Logger.Warnf("Received empty authorization code or SSO state")
+		controller.SendRawError(w, http.StatusBadRequest, fmt.Errorf("Received invalid response from EVE SSO login"))
+		return
+	}
+
+	savedState := controller.Session.GetSSOState(r)
+	if !strings.EqualFold(savedState, state) {
+		misc.Logger.Warnf("Failed to verify SSO state")
+		http.Redirect(w, r, "/login?error=ssoState", http.StatusSeeOther)
 		return
 	}
 
