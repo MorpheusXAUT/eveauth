@@ -1,50 +1,52 @@
 package database
 
 import (
-	"github.com/morpheusxaut/eveauth/database/mysql"
-	"github.com/morpheusxaut/eveauth/misc"
-	. "github.com/smartystreets/goconvey/convey"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/morpheusxaut/eveauth/database/mysql"
+	"github.com/morpheusxaut/eveauth/misc"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func createConfig(databaseType int) *misc.Configuration {
-	mysqlHost := "localhost"
-	if len(os.Getenv("MYSQL_HOST")) > 0 {
-		mysqlHost = os.Getenv("MYSQL_HOST")
+	databaseHost := "localhost"
+	if len(os.Getenv("DATABASE_HOST")) > 0 {
+		databaseHost = os.Getenv("DATABASE_HOST")
 	}
 
-	mysqlPort := 3306
-	if len(os.Getenv("MYSQL_PORT")) > 0 {
-		port, err := strconv.ParseInt(os.Getenv("MYSQL_PORT"), 10, 64)
+	databasePort := 3306
+	if len(os.Getenv("DATABASE_PORT")) > 0 {
+		port, err := strconv.ParseInt(os.Getenv("DATABASE_PORT"), 10, 64)
 		if err == nil {
-			mysqlPort = int(port)
+			databasePort = int(port)
 		}
 	}
 
-	mysqlSchema := "eveauth"
-	if len(os.Getenv("MYSQL_SCHEMA")) > 0 {
-		mysqlSchema = os.Getenv("MYSQL_SCHEMA")
+	databaseSchema := "eveauth"
+	if len(os.Getenv("DATABASE_SCHEMA")) > 0 {
+		databaseSchema = os.Getenv("DATABASE_SCHEMA")
 	}
 
-	mysqlUser := "eveauth"
-	if len(os.Getenv("MYSQL_USER")) > 0 {
-		mysqlUser = os.Getenv("MYSQL_USER")
+	databaseUser := "eveauth"
+	if len(os.Getenv("DATABASE_USER")) > 0 {
+		databaseUser = os.Getenv("DATABASE_USER")
 	}
 
-	mysqlPassword := "eveauth"
-	if len(os.Getenv("MYSQL_PASSWORD")) > 0 {
-		mysqlPassword = os.Getenv("MYSQL_PASSWORD")
+	databasePassword := "eveauth"
+	if len(os.Getenv("DATABASE_PASSWORD")) > 0 {
+		databasePassword = os.Getenv("DATABASE_PASSWORD")
 	}
 
 	config := &misc.Configuration{
 		DatabaseType:     databaseType,
-		DatabaseHost:     mysqlHost,
-		DatabasePort:     mysqlPort,
-		DatabaseSchema:   mysqlSchema,
-		DatabaseUser:     mysqlUser,
-		DatabasePassword: mysqlPassword,
+		DatabaseHost:     databaseHost,
+		DatabasePort:     databasePort,
+		DatabaseSchema:   databaseSchema,
+		DatabaseUser:     databaseUser,
+		DatabasePassword: databasePassword,
 		DebugLevel:       1,
 		HTTPHost:         "localhost",
 		HTTPPort:         5000,
@@ -68,7 +70,7 @@ func TestMySQLDatabaseSetup(t *testing.T) {
 		})
 
 		Convey("The returned DatabaseConnection's type should be MySQLDatabaseConnection", func() {
-			mysqlDbConn := &mysql.MySQLDatabaseConnection{}
+			mysqlDbConn := &mysql.DatabaseConnection{}
 			So(db, ShouldHaveSameTypeAs, mysqlDbConn)
 		})
 

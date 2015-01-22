@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+
 	"gopkg.in/guregu/null.v2/zero"
 )
 

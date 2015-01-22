@@ -2,28 +2,30 @@ package web
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/morpheusxaut/eveauth/database"
-	"github.com/morpheusxaut/eveauth/misc"
-	"github.com/morpheusxaut/eveauth/session"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/morpheusxaut/eveauth/database"
+	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/session"
+
+	"github.com/gorilla/mux"
 )
 
 type Controller struct {
 	Config    *misc.Configuration
-	Database  database.DatabaseConnection
-	Session   *session.SessionController
-	Templates *WebTemplates
+	Database  database.Connection
+	Session   *session.Controller
+	Templates *Templates
 	Checksums *AssetChecksums
 
 	router *mux.Router
 }
 
-func SetupController(config *misc.Configuration, db database.DatabaseConnection, sessions *session.SessionController, templates *WebTemplates, checksums *AssetChecksums) *Controller {
+func SetupController(config *misc.Configuration, db database.Connection, sessions *session.Controller, templates *Templates, checksums *AssetChecksums) *Controller {
 	controller := &Controller{
 		Config:    config,
 		Database:  db,

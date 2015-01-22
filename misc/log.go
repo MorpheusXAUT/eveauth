@@ -1,8 +1,9 @@
 package misc
 
 import (
-	"github.com/kdar/factorlog"
 	"os"
+
+	"github.com/kdar/factorlog"
 )
 
 var (

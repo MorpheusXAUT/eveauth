@@ -2,21 +2,24 @@ package mysql
 
 import (
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
-	"github.com/morpheusxaut/eveauth/misc"
-	"github.com/morpheusxaut/eveauth/models"
 	"net"
 	"strconv"
+
+	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/models"
+
+	// Blank import of the MySQL driver to use with sqlx
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
-type MySQLDatabaseConnection struct {
+type DatabaseConnection struct {
 	Config *misc.Configuration
 
 	conn *sqlx.DB
 }
 
-func (c *MySQLDatabaseConnection) Connect() error {
+func (c *DatabaseConnection) Connect() error {
 	conn, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", c.Config.DatabaseUser, c.Config.DatabasePassword, net.JoinHostPort(c.Config.DatabaseHost, strconv.Itoa(c.Config.DatabasePort)), c.Config.DatabaseSchema))
 	if err != nil {
 		return err
@@ -27,7 +30,7 @@ func (c *MySQLDatabaseConnection) Connect() error {
 	return nil
 }
 
-func (c *MySQLDatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error) {
+func (c *DatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error) {
 	rows, err := c.conn.Query(query, v...)
 	if err != nil {
 		return nil, err
@@ -41,7 +44,7 @@ func (c *MySQLDatabaseConnection) RawQuery(query string, v ...interface{}) ([]ma
 	var results []map[string]interface{}
 
 	for rows.Next() {
-		for i, _ := range columns {
+		for i := range columns {
 			valuePtrs[i] = &values[i]
 		}
 
@@ -59,8 +62,8 @@ func (c *MySQLDatabaseConnection) RawQuery(query string, v ...interface{}) ([]ma
 	return results, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
-	apiKeys := make([]*models.APIKey, 0)
+func (c *DatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
+	var apiKeys []*models.APIKey
 
 	err := c.conn.Select(&apiKeys, "SELECT id, userid, apikeyid, apivcode, active FROM userapikeys")
 	if err != nil {
@@ -70,8 +73,8 @@ func (c *MySQLDatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
 	return apiKeys, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error) {
-	corporations := make([]*models.Corporation, 0)
+func (c *DatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error) {
+	var corporations []*models.Corporation
 
 	err := c.conn.Select(&corporations, "SELECT id, name, ticker, evecorporationid, apikeyid, apivcode, active FROM corporations")
 	if err != nil {
@@ -81,8 +84,8 @@ func (c *MySQLDatabaseConnection) LoadAllCorporations() ([]*models.Corporation, 
 	return corporations, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
-	characters := make([]*models.Character, 0)
+func (c *DatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
+	var characters []*models.Character
 
 	err := c.conn.Select(&characters, "SELECT id, userid, corporationid, name, evecharacterid, active FROM characters")
 	if err != nil {
@@ -92,8 +95,8 @@ func (c *MySQLDatabaseConnection) LoadAllCharacters() ([]*models.Character, erro
 	return characters, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllGroupRoles() ([]*models.GroupRole, error) {
-	groupRoles := make([]*models.GroupRole, 0)
+func (c *DatabaseConnection) LoadAllGroupRoles() ([]*models.GroupRole, error) {
+	var groupRoles []*models.GroupRole
 
 	rows, err := c.conn.Queryx("SELECT id, groupid, roleid, autoadded, granted FROM grouproles")
 	if err != nil {
@@ -128,8 +131,8 @@ func (c *MySQLDatabaseConnection) LoadAllGroupRoles() ([]*models.GroupRole, erro
 	return groupRoles, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllRoles() ([]*models.Role, error) {
-	roles := make([]*models.Role, 0)
+func (c *DatabaseConnection) LoadAllRoles() ([]*models.Role, error) {
+	var roles []*models.Role
 
 	err := c.conn.Select(&roles, "SELECT id, name, active FROM roles")
 	if err != nil {
@@ -139,8 +142,8 @@ func (c *MySQLDatabaseConnection) LoadAllRoles() ([]*models.Role, error) {
 	return roles, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllUserRoles() ([]*models.UserRole, error) {
-	userRoles := make([]*models.UserRole, 0)
+func (c *DatabaseConnection) LoadAllUserRoles() ([]*models.UserRole, error) {
+	var userRoles []*models.UserRole
 
 	rows, err := c.conn.Queryx("SELECT id, userid, roleid, autoadded, granted FROM userroles")
 	if err != nil {
@@ -175,8 +178,8 @@ func (c *MySQLDatabaseConnection) LoadAllUserRoles() ([]*models.UserRole, error)
 	return userRoles, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
-	groups := make([]*models.Group, 0)
+func (c *DatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
+	var groups []*models.Group
 
 	err := c.conn.Select(&groups, "SELECT id, name, active FROM groups")
 	if err != nil {
@@ -195,8 +198,8 @@ func (c *MySQLDatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
 	return groups, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllUsers() ([]*models.User, error) {
-	users := make([]*models.User, 0)
+func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
+	var users []*models.User
 
 	err := c.conn.Select(&users, "SELECT id, username, password, active FROM users")
 	if err != nil {
@@ -233,7 +236,7 @@ func (c *MySQLDatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	return users, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAPIKey(apiKeyID int64) (*models.APIKey, error) {
+func (c *DatabaseConnection) LoadAPIKey(apiKeyID int64) (*models.APIKey, error) {
 	apiKey := &models.APIKey{}
 
 	err := c.conn.Get(apiKey, "SELECT id, userid, apikeyid, apivcode, active FROM userapikeys WHERE id=?", apiKeyID)
@@ -244,7 +247,7 @@ func (c *MySQLDatabaseConnection) LoadAPIKey(apiKeyID int64) (*models.APIKey, er
 	return apiKey, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadCorporation(corporationID int64) (*models.Corporation, error) {
+func (c *DatabaseConnection) LoadCorporation(corporationID int64) (*models.Corporation, error) {
 	corporation := &models.Corporation{}
 
 	err := c.conn.Get(corporation, "SELECT id, name, ticker, evecorporationid, apikeyid, apivcode, active FROM corporations WHERE id=?", corporationID)
@@ -255,7 +258,7 @@ func (c *MySQLDatabaseConnection) LoadCorporation(corporationID int64) (*models.
 	return corporation, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadCharacter(characterID int64) (*models.Character, error) {
+func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character, error) {
 	character := &models.Character{}
 
 	err := c.conn.Get(character, "SELECT id, userid, corporationid, name, evecharacterid, active FROM characters WHERE id=?", characterID)
@@ -266,7 +269,7 @@ func (c *MySQLDatabaseConnection) LoadCharacter(characterID int64) (*models.Char
 	return character, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadRole(roleID int64) (*models.Role, error) {
+func (c *DatabaseConnection) LoadRole(roleID int64) (*models.Role, error) {
 	role := &models.Role{}
 
 	err := c.conn.Get(role, "SELECT id, name, active FROM roles WHERE id=?", roleID)
@@ -277,7 +280,7 @@ func (c *MySQLDatabaseConnection) LoadRole(roleID int64) (*models.Role, error) {
 	return role, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadGroupRole(groupRoleID int64) (*models.GroupRole, error) {
+func (c *DatabaseConnection) LoadGroupRole(groupRoleID int64) (*models.GroupRole, error) {
 	row := c.conn.QueryRowx("SELECT id, groupid, roleid, autoadded, granted FROM grouproles WHERE id=?", groupRoleID)
 
 	var id, groupID, roleID int64
@@ -304,7 +307,7 @@ func (c *MySQLDatabaseConnection) LoadGroupRole(groupRoleID int64) (*models.Grou
 	return groupRole, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadUserRole(userRoleID int64) (*models.UserRole, error) {
+func (c *DatabaseConnection) LoadUserRole(userRoleID int64) (*models.UserRole, error) {
 	row := c.conn.QueryRowx("SELECT id, userid, roleid, autoadded, granted FROM userroles WHERE id=?", userRoleID)
 
 	var id, userID, roleID int64
@@ -331,7 +334,7 @@ func (c *MySQLDatabaseConnection) LoadUserRole(userRoleID int64) (*models.UserRo
 	return userRole, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadGroup(groupID int64) (*models.Group, error) {
+func (c *DatabaseConnection) LoadGroup(groupID int64) (*models.Group, error) {
 	group := &models.Group{}
 
 	err := c.conn.Get(group, "SELECT id, name, active FROM groups WHERE id=?", groupID)
@@ -349,7 +352,7 @@ func (c *MySQLDatabaseConnection) LoadGroup(groupID int64) (*models.Group, error
 	return group, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadUser(userID int64) (*models.User, error) {
+func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 	user := &models.User{}
 
 	err := c.conn.Get(user, "SELECT id, username, password, active FROM users WHERE id=?", userID)
@@ -385,8 +388,8 @@ func (c *MySQLDatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 	return user, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllAPIKeysForUser(userID int64) ([]*models.APIKey, error) {
-	apiKeys := make([]*models.APIKey, 0)
+func (c *DatabaseConnection) LoadAllAPIKeysForUser(userID int64) ([]*models.APIKey, error) {
+	var apiKeys []*models.APIKey
 
 	err := c.conn.Select(&apiKeys, "SELECT id, userid, apikeyid, apivcode, active FROM userapikeys WHERE userid=?", userID)
 	if err != nil {
@@ -396,8 +399,8 @@ func (c *MySQLDatabaseConnection) LoadAllAPIKeysForUser(userID int64) ([]*models
 	return apiKeys, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllCharactersForUser(userID int64) ([]*models.Character, error) {
-	characters := make([]*models.Character, 0)
+func (c *DatabaseConnection) LoadAllCharactersForUser(userID int64) ([]*models.Character, error) {
+	var characters []*models.Character
 
 	err := c.conn.Select(&characters, "SELECT id, userid, corporationid, name, evecharacterid, active FROM characters WHERE userid=?", userID)
 	if err != nil {
@@ -407,8 +410,8 @@ func (c *MySQLDatabaseConnection) LoadAllCharactersForUser(userID int64) ([]*mod
 	return characters, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllGroupRolesForGroup(groupID int64) ([]*models.GroupRole, error) {
-	groupRoles := make([]*models.GroupRole, 0)
+func (c *DatabaseConnection) LoadAllGroupRolesForGroup(groupID int64) ([]*models.GroupRole, error) {
+	var groupRoles []*models.GroupRole
 
 	rows, err := c.conn.Queryx("SELECT id, groupid, roleid, autoadded, granted FROM grouproles WHERE groupid=?", groupID)
 	if err != nil {
@@ -443,8 +446,10 @@ func (c *MySQLDatabaseConnection) LoadAllGroupRolesForGroup(groupID int64) ([]*m
 	return groupRoles, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllUserRolesForUser(userID int64) ([]*models.UserRole, error) {
-	userRoles := make([]*models.UserRole, 0)
+func (c *DatabaseConnection) LoadAllUserRolesForUser(userID int64) ([]*models.UserRole, error) {
+	// For whatever weird reason, only using "var userRoles []*models.UserRole" does not work in this case and throws an error...
+	var userRoles []*models.UserRole
+	userRoles = make([]*models.UserRole, 0)
 
 	rows, err := c.conn.Queryx("SELECT id, userid, roleid, autoadded, granted FROM userroles WHERE userid=?", userID)
 	if err != nil {
@@ -479,8 +484,10 @@ func (c *MySQLDatabaseConnection) LoadAllUserRolesForUser(userID int64) ([]*mode
 	return userRoles, nil
 }
 
-func (c *MySQLDatabaseConnection) LoadAllGroupsForUser(userID int64) ([]*models.Group, error) {
-	groups := make([]*models.Group, 0)
+func (c *DatabaseConnection) LoadAllGroupsForUser(userID int64) ([]*models.Group, error) {
+	// For whatever weird reason, only using "var groups []*models.Group" does not work in this case and throws an error...
+	var groups []*models.Group
+	groups = make([]*models.Group, 0)
 
 	err := c.conn.Select(&groups, "SELECT g.id, g.name, g.active FROM groups AS g INNER JOIN usergroups AS ug ON (g.id = ug.groupid) WHERE ug.active=1 AND ug.userid=? GROUP BY g.id", userID)
 	if err != nil {

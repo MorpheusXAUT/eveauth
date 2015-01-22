@@ -2,12 +2,13 @@ package database
 
 import (
 	"fmt"
+
 	"github.com/morpheusxaut/eveauth/database/mysql"
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/models"
 )
 
-type DatabaseConnection interface {
+type Connection interface {
 	Connect() error
 
 	RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error)
@@ -37,17 +38,17 @@ type DatabaseConnection interface {
 	LoadAllGroupsForUser(userID int64) ([]*models.Group, error)
 }
 
-func SetupDatabase(conf *misc.Configuration) (DatabaseConnection, error) {
-	var database DatabaseConnection
+func SetupDatabase(conf *misc.Configuration) (Connection, error) {
+	var database Connection
 
-	switch DatabaseType(conf.DatabaseType) {
-	case DatabaseTypeMySQL:
-		database = &mysql.MySQLDatabaseConnection{
+	switch Type(conf.DatabaseType) {
+	case TypeMySQL:
+		database = &mysql.DatabaseConnection{
 			Config: conf,
 		}
 		break
 	default:
-		return nil, fmt.Errorf("Unknown DatabaseType #%d", conf.DatabaseType)
+		return nil, fmt.Errorf("Unknown type #%d", conf.DatabaseType)
 	}
 
 	return database, nil

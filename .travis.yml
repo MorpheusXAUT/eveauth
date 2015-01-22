@@ -12,6 +12,6 @@ install:
   - go get -d -v github.com/smartystreets/goconvey
 
 before_script:
-  - echo "GRANT ALL PRIVILEGES ON *.* TO $MYSQL_USER@localhost IDENTIFIED BY '$MYSQL_PASSWORD';" | mysql --user=$MYSQL_ROOT_USER --password=$MYSQL_ROOT_PASSWORD
-  - mysql --user=$MYSQL_USER --password=$MYSQL_PASSWORD < database/mysql/eveauth_create.sql
-  - mysql --user=$MYSQL_USER --password=$MYSQL_PASSWORD < database/mysql/eveauth_testdata.sql
+  - echo "GRANT ALL PRIVILEGES ON *.* TO $DATABASE_USER@localhost IDENTIFIED BY '$DATABASE_PASSWORD';" | mysql --user=$MYSQL_USER --password=$MYSQL_PASSWORD
+  - mysql --user=$DATABASE_USER --password=$DATABASE_PASSWORD < database/mysql/eveauth_create.sql
+  - mysql --user=$DATABASE_USER --password=$DATABASE_PASSWORD < database/mysql/eveauth_testdata.sql

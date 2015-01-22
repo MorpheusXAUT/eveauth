@@ -1,34 +1,41 @@
 package session
 
 import (
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
-	"github.com/morpheusxaut/eveauth/database"
-	"github.com/morpheusxaut/eveauth/misc"
-	"time"
-
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/morpheusxaut/eveauth/database"
+	"github.com/morpheusxaut/eveauth/misc"
+
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 )
 
-type SessionController struct {
+type Controller struct {
 	config   *misc.Configuration
-	database database.DatabaseConnection
+	database database.Connection
 	store    *sessions.FilesystemStore
 }
 
-func SetupSessionController(conf *misc.Configuration, db database.DatabaseConnection) *SessionController {
-	controller := &SessionController{
+func SetupSessionController(conf *misc.Configuration, db database.Connection) *Controller {
+	controller := &Controller{
 		config:   conf,
 		database: db,
 		store:    sessions.NewFilesystemStore("app/sessions", []byte(securecookie.GenerateRandomKey(128))),
 	}
 
+	controller.store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   86400,
+		HttpOnly: true,
+	}
+
 	return controller
 }
 
-func (controller *SessionController) CleanSessions() error {
+func (controller *Controller) CleanSessions() error {
 	sessions, err := filepath.Glob("app/sessions/session_*")
 	if err != nil {
 		return err
@@ -44,7 +51,7 @@ func (controller *SessionController) CleanSessions() error {
 	return nil
 }
 
-func (controller *SessionController) DestroySession(w http.ResponseWriter, r *http.Request) {
+func (controller *Controller) DestroySession(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "eveauth_user",
 		Value:  "",
@@ -59,7 +66,7 @@ func (controller *SessionController) DestroySession(w http.ResponseWriter, r *ht
 	})
 }
 
-func (controller *SessionController) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
+func (controller *Controller) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
 	if session.IsNew {
@@ -80,7 +87,7 @@ func (controller *SessionController) IsLoggedIn(w http.ResponseWriter, r *http.R
 	return true
 }
 
-func (controller *SessionController) SetLoginRedirect(w http.ResponseWriter, r *http.Request, redirect string) error {
+func (controller *Controller) SetLoginRedirect(w http.ResponseWriter, r *http.Request, redirect string) error {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
 	session.Values["loginRedirect"] = redirect
@@ -88,7 +95,7 @@ func (controller *SessionController) SetLoginRedirect(w http.ResponseWriter, r *
 	return session.Save(r, w)
 }
 
-func (controller *SessionController) GetLoginRedirect(r *http.Request) string {
+func (controller *Controller) GetLoginRedirect(r *http.Request) string {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
 	if session.IsNew {
@@ -103,7 +110,7 @@ func (controller *SessionController) GetLoginRedirect(r *http.Request) string {
 	return redirect
 }
 
-func (controller *SessionController) SetSSOState(w http.ResponseWriter, r *http.Request, state string) error {
+func (controller *Controller) SetSSOState(w http.ResponseWriter, r *http.Request, state string) error {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
 	session.Values["ssoState"] = state
@@ -111,7 +118,7 @@ func (controller *SessionController) SetSSOState(w http.ResponseWriter, r *http.
 	return session.Save(r, w)
 }
 
-func (controller *SessionController) GetSSOState(r *http.Request) string {
+func (controller *Controller) GetSSOState(r *http.Request) string {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
 	if session.IsNew {

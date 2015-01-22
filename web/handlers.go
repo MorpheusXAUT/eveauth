@@ -2,9 +2,10 @@ package web
 
 import (
 	"fmt"
-	"github.com/morpheusxaut/eveauth/misc"
 	"net/http"
 	"strings"
+
+	"github.com/morpheusxaut/eveauth/misc"
 )
 
 func (controller *Controller) IndexGetHandler(w http.ResponseWriter, r *http.Request) {

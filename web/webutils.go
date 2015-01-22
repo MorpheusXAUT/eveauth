@@ -3,9 +3,10 @@ package web
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/morpheusxaut/eveauth/misc"
 	"net/http"
 	"strconv"
+
+	"github.com/morpheusxaut/eveauth/misc"
 )
 
 func (controller *Controller) SendResponse(w http.ResponseWriter, r *http.Request, template string, response map[string]interface{}) {

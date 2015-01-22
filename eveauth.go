@@ -3,13 +3,14 @@
 package main
 
 import (
+	"log"
+	"os"
+	"runtime"
+
 	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/session"
 	"github.com/morpheusxaut/eveauth/web"
-	"log"
-	"os"
-	"runtime"
 )
 
 func main() {
