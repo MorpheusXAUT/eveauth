@@ -41,7 +41,13 @@ func main() {
 
 	templates := web.SetupTemplates()
 
-	controller := web.SetupController(config, db, sessionController, templates)
+	checksums, err := web.SetupAssetChecksums()
+	if err != nil {
+		misc.Logger.Criticalf("Failed to calculate asset checkums: [%v]", err)
+		os.Exit(2)
+	}
+
+	controller := web.SetupController(config, db, sessionController, templates, checksums)
 
 	controller.HandleRequests()
 }

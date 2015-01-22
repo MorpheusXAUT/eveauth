@@ -18,16 +18,18 @@ type Controller struct {
 	Database  database.DatabaseConnection
 	Session   *session.SessionController
 	Templates *WebTemplates
+	Checksums *AssetChecksums
 
 	router *mux.Router
 }
 
-func SetupController(config *misc.Configuration, db database.DatabaseConnection, sessions *session.SessionController, templates *WebTemplates) *Controller {
+func SetupController(config *misc.Configuration, db database.DatabaseConnection, sessions *session.SessionController, templates *WebTemplates, checksums *AssetChecksums) *Controller {
 	controller := &Controller{
 		Config:    config,
 		Database:  db,
 		Session:   sessions,
 		Templates: templates,
+		Checksums: checksums,
 		router:    mux.NewRouter().StrictSlash(true),
 	}
 

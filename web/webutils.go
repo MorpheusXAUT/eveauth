@@ -9,6 +9,8 @@ import (
 )
 
 func (controller *Controller) SendResponse(w http.ResponseWriter, r *http.Request, template string, response map[string]interface{}) {
+	response["assetChecksums"] = controller.Checksums
+
 	err := controller.Templates.ExecuteTemplates(w, r, template, response)
 	if err != nil {
 		misc.Logger.Warnf("Failed to execute template %q: [%v]", template, err)
