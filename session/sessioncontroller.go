@@ -85,12 +85,7 @@ func (controller *SessionController) SetLoginRedirect(w http.ResponseWriter, r *
 
 	session.Values["loginRedirect"] = redirect
 
-	err := session.Save(r, w)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return session.Save(r, w)
 }
 
 func (controller *SessionController) GetLoginRedirect(r *http.Request) string {
@@ -106,4 +101,27 @@ func (controller *SessionController) GetLoginRedirect(r *http.Request) string {
 	}
 
 	return redirect
+}
+
+func (controller *SessionController) SetSSOState(w http.ResponseWriter, r *http.Request, state string) error {
+	session, _ := controller.store.Get(r, "eveauth_login")
+
+	session.Values["ssoState"] = state
+
+	return session.Save(r, w)
+}
+
+func (controller *SessionController) GetSSOState(r *http.Request) string {
+	session, _ := controller.store.Get(r, "eveauth_login")
+
+	if session.IsNew {
+		return ""
+	}
+
+	state, ok := session.Values["ssoState"].(string)
+	if !ok {
+		return ""
+	}
+
+	return state
 }
