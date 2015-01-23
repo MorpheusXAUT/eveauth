@@ -21,6 +21,7 @@ var (
 	configFileFlag         = flag.String("config", "", "Path to the config file to parse")
 )
 
+// ParseCommandlineFlags parses the command line flags used with the application
 func ParseCommandlineFlags() *Configuration {
 	config := &Configuration{
 		DatabaseType:       *databaseTypeFlag,

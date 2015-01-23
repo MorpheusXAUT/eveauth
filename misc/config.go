@@ -7,22 +7,37 @@ import (
 	"os"
 )
 
+// Configuration stores all configuration values required by the application
 type Configuration struct {
-	DatabaseType       int
-	DatabaseHost       string
-	DatabasePort       int
-	DatabaseSchema     string
-	DatabaseUser       string
-	DatabasePassword   string
-	DebugLevel         int
-	DebugTemplates     bool
-	HTTPHost           string
-	HTTPPort           int
-	EVESSOClientID     string
+	// DatabaseType represents the database type to be used as a backend
+	DatabaseType int
+	// DatabaseHost represents the hostname of the database backend
+	DatabaseHost string
+	// DatabasePort represents the port of the database backend
+	DatabasePort int
+	// DatabaseSchema represents the schema/collection of the database backend
+	DatabaseSchema string
+	// DatabaseUser represents the username used to authenticate with the database backend
+	DatabaseUser string
+	// DatabasePassword represents the password used to authenticate with the database backend
+	DatabasePassword string
+	// DebugLevel represents the debug level for log messages
+	DebugLevel int
+	// DebugTemplates toggles the reloading of all templates for every request
+	DebugTemplates bool
+	// HTTPHost represents the hostname/IP the application should listen to for requests
+	HTTPHost string
+	// HTTPPort represents the port the application should listen to for requests
+	HTTPPort int
+	// EVESSOClientID represents the client ID for the EVE SSO application
+	EVESSOClientID string
+	// EVESSOClientSecret represents the client secret for the EVE SSO application
 	EVESSOClientSecret string
-	EVESSOCallbackURL  string
+	// EVESSOCallbackURL represents the callback URL for the EVE SSO application
+	EVESSOCallbackURL string
 }
 
+// LoadConfig creates a Configuration by either using commandline flags or a configuration file, returning an error if the parsing failed
 func LoadConfig() (*Configuration, error) {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: eveauth [options]\n")
@@ -45,6 +60,7 @@ func LoadConfig() (*Configuration, error) {
 	return config, err
 }
 
+// ParseJSONConfig parses a Configuration from a JSON encoded file, returning an error if the process failed
 func ParseJSONConfig(path string) (*Configuration, error) {
 	configFile, err := os.Open(path)
 	if err != nil {

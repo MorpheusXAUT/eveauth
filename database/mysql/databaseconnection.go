@@ -13,12 +13,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// DatabaseConnection provides an implementation of the Connection interface using a MySQL database
 type DatabaseConnection struct {
+	// Config stores the current configuration values being used
 	Config *misc.Configuration
 
 	conn *sqlx.DB
 }
 
+// Connect tries to establish a connection to the MySQL backend, returning an error if the attempt failed
 func (c *DatabaseConnection) Connect() error {
 	conn, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", c.Config.DatabaseUser, c.Config.DatabasePassword, net.JoinHostPort(c.Config.DatabaseHost, strconv.Itoa(c.Config.DatabasePort)), c.Config.DatabaseSchema))
 	if err != nil {
@@ -30,6 +33,7 @@ func (c *DatabaseConnection) Connect() error {
 	return nil
 }
 
+// RawQuery performs a raw MySQL query and returns a map of interfaces containing the retrieve data. An error is returned if the query failed
 func (c *DatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error) {
 	rows, err := c.conn.Query(query, v...)
 	if err != nil {
@@ -62,6 +66,7 @@ func (c *DatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[str
 	return results, nil
 }
 
+// LoadAllAPIKeys retrieves all API keys from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
 	var apiKeys []*models.APIKey
 
@@ -73,6 +78,7 @@ func (c *DatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
 	return apiKeys, nil
 }
 
+// LoadAllCorporations retrieves all corporations from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error) {
 	var corporations []*models.Corporation
 
@@ -84,6 +90,7 @@ func (c *DatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error
 	return corporations, nil
 }
 
+// LoadAllCharacters retrieves all characters from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
 	var characters []*models.Character
 
@@ -95,6 +102,19 @@ func (c *DatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
 	return characters, nil
 }
 
+// LoadAllRoles retrieves all roles from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAllRoles() ([]*models.Role, error) {
+	var roles []*models.Role
+
+	err := c.conn.Select(&roles, "SELECT id, name, active FROM roles")
+	if err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
+// LoadAllGroupRoles retrieves all group roles (and their associated roles) from the database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllGroupRoles() ([]*models.GroupRole, error) {
 	var groupRoles []*models.GroupRole
 
@@ -131,17 +151,7 @@ func (c *DatabaseConnection) LoadAllGroupRoles() ([]*models.GroupRole, error) {
 	return groupRoles, nil
 }
 
-func (c *DatabaseConnection) LoadAllRoles() ([]*models.Role, error) {
-	var roles []*models.Role
-
-	err := c.conn.Select(&roles, "SELECT id, name, active FROM roles")
-	if err != nil {
-		return nil, err
-	}
-
-	return roles, nil
-}
-
+// LoadAllUserRoles retrieves all user roles (and their associated roles) from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllUserRoles() ([]*models.UserRole, error) {
 	var userRoles []*models.UserRole
 
@@ -178,6 +188,7 @@ func (c *DatabaseConnection) LoadAllUserRoles() ([]*models.UserRole, error) {
 	return userRoles, nil
 }
 
+// LoadAllGroups retrieves all groups (and their associated group roles) from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
 	var groups []*models.Group
 
@@ -198,6 +209,7 @@ func (c *DatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
 	return groups, nil
 }
 
+// LoadAllUsers retrieves all users (and their associates groups and user roles) from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	var users []*models.User
 
@@ -236,6 +248,7 @@ func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	return users, nil
 }
 
+// LoadAPIKey retrieves the API key with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAPIKey(apiKeyID int64) (*models.APIKey, error) {
 	apiKey := &models.APIKey{}
 
@@ -247,6 +260,7 @@ func (c *DatabaseConnection) LoadAPIKey(apiKeyID int64) (*models.APIKey, error) 
 	return apiKey, nil
 }
 
+// LoadCorporation retrieves the corporation with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadCorporation(corporationID int64) (*models.Corporation, error) {
 	corporation := &models.Corporation{}
 
@@ -258,6 +272,7 @@ func (c *DatabaseConnection) LoadCorporation(corporationID int64) (*models.Corpo
 	return corporation, nil
 }
 
+// LoadCharacter retrieves the character with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character, error) {
 	character := &models.Character{}
 
@@ -269,6 +284,7 @@ func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character
 	return character, nil
 }
 
+// LoadRole retrieves the role with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadRole(roleID int64) (*models.Role, error) {
 	role := &models.Role{}
 
@@ -280,6 +296,7 @@ func (c *DatabaseConnection) LoadRole(roleID int64) (*models.Role, error) {
 	return role, nil
 }
 
+// LoadGroupRole retrieves the group role (and its associated role) with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadGroupRole(groupRoleID int64) (*models.GroupRole, error) {
 	row := c.conn.QueryRowx("SELECT id, groupid, roleid, autoadded, granted FROM grouproles WHERE id=?", groupRoleID)
 
@@ -307,6 +324,7 @@ func (c *DatabaseConnection) LoadGroupRole(groupRoleID int64) (*models.GroupRole
 	return groupRole, nil
 }
 
+// LoadUserRole retrieves the user role (and its associated role) with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadUserRole(userRoleID int64) (*models.UserRole, error) {
 	row := c.conn.QueryRowx("SELECT id, userid, roleid, autoadded, granted FROM userroles WHERE id=?", userRoleID)
 
@@ -334,6 +352,7 @@ func (c *DatabaseConnection) LoadUserRole(userRoleID int64) (*models.UserRole, e
 	return userRole, nil
 }
 
+// LoadGroup retrieves the group (and its associated group roles) with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadGroup(groupID int64) (*models.Group, error) {
 	group := &models.Group{}
 
@@ -352,6 +371,7 @@ func (c *DatabaseConnection) LoadGroup(groupID int64) (*models.Group, error) {
 	return group, nil
 }
 
+// LoadUser retrieves the user (and its associated groups and user roles) with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 	user := &models.User{}
 
@@ -388,6 +408,7 @@ func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 	return user, nil
 }
 
+// LoadAllAPIKeysForUser retrieves all API keys associated with the given user from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllAPIKeysForUser(userID int64) ([]*models.APIKey, error) {
 	var apiKeys []*models.APIKey
 
@@ -399,6 +420,7 @@ func (c *DatabaseConnection) LoadAllAPIKeysForUser(userID int64) ([]*models.APIK
 	return apiKeys, nil
 }
 
+// LoadAllCharactersForUser retrieves all characters associated with the given user from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllCharactersForUser(userID int64) ([]*models.Character, error) {
 	var characters []*models.Character
 
@@ -410,6 +432,7 @@ func (c *DatabaseConnection) LoadAllCharactersForUser(userID int64) ([]*models.C
 	return characters, nil
 }
 
+// LoadAllGroupRolesForGroup retrieves all group roles (and their associated roles) associated with the given group from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllGroupRolesForGroup(groupID int64) ([]*models.GroupRole, error) {
 	var groupRoles []*models.GroupRole
 
@@ -446,6 +469,7 @@ func (c *DatabaseConnection) LoadAllGroupRolesForGroup(groupID int64) ([]*models
 	return groupRoles, nil
 }
 
+// LoadAllUserRolesForUser retrieves all user roles (and their associated roles) associated with the given user from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllUserRolesForUser(userID int64) ([]*models.UserRole, error) {
 	// For whatever weird reason, only using "var userRoles []*models.UserRole" does not work in this case and throws an error...
 	var userRoles []*models.UserRole
@@ -484,6 +508,7 @@ func (c *DatabaseConnection) LoadAllUserRolesForUser(userID int64) ([]*models.Us
 	return userRoles, nil
 }
 
+// LoadAllGroupsForUser retrieves all groups (and their associated group roles) associated with the given user from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllGroupsForUser(userID int64) ([]*models.Group, error) {
 	// For whatever weird reason, only using "var groups []*models.Group" does not work in this case and throws an error...
 	var groups []*models.Group

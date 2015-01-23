@@ -4,6 +4,7 @@ import (
 	"math/rand"
 )
 
+// GenerateRandomString returns a random alphanumerical string with the given length
 func GenerateRandomString(length int) string {
 	chars := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
