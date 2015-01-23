@@ -8,20 +8,37 @@ CREATE DATABASE IF NOT EXISTS `eveauth` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `eveauth`;
 
 
+-- Dumping structure for table eveauth.accounts
+CREATE TABLE IF NOT EXISTS `accounts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userid` int(11) NOT NULL,
+  `apikeyid` int(11) NOT NULL,
+  `apivcode` varchar(64) NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `keyid` (`apikeyid`),
+  KEY `fk_userapikeys_user` (`userid`),
+  CONSTRAINT `fk_userapikeys_user` FOREIGN KEY (`userid`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table eveauth.characters
 CREATE TABLE IF NOT EXISTS `characters` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
+  `accountid` int(11) NOT NULL,
   `corporationid` int(11) NOT NULL,
   `name` varchar(64) NOT NULL,
   `evecharacterid` int(11) NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
-  KEY `userid` (`userid`),
+  UNIQUE KEY `evecharacterid` (`evecharacterid`),
   KEY `corporationid` (`corporationid`),
-  CONSTRAINT `fk_characters_corporation` FOREIGN KEY (`corporationid`) REFERENCES `corporations` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `fk_characters_user` FOREIGN KEY (`userid`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  KEY `fk_characters_account` (`accountid`),
+  CONSTRAINT `fk_characters_account` FOREIGN KEY (`accountid`) REFERENCES `accounts` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_characters_corporation` FOREIGN KEY (`corporationid`) REFERENCES `corporations` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
@@ -37,7 +54,10 @@ CREATE TABLE IF NOT EXISTS `corporations` (
   `apivcode` varchar(64) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `ticker` (`ticker`),
+  UNIQUE KEY `evecorporationid` (`evecorporationid`),
+  UNIQUE KEY `apikeyid` (`apikeyid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
@@ -85,22 +105,6 @@ CREATE TABLE IF NOT EXISTS `roles` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.userapikeys
-CREATE TABLE IF NOT EXISTS `userapikeys` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
-  `apikeyid` int(11) NOT NULL,
-  `apivcode` varchar(64) NOT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `keyid` (`apikeyid`),
-  KEY `fk_userapikeys_user` (`userid`),
-  CONSTRAINT `fk_userapikeys_user` FOREIGN KEY (`userid`) REFERENCES `users` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- Data exporting was unselected.
-
-
 -- Dumping structure for table eveauth.usergroups
 CREATE TABLE IF NOT EXISTS `usergroups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -140,10 +144,12 @@ CREATE TABLE IF NOT EXISTS `userroles` (
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
-  `password` varchar(60) DEFAULT NULL,
+  `password` varchar(60) NOT NULL,
+  `email` varchar(128) NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`)
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
