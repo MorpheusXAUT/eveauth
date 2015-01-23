@@ -13,12 +13,14 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+// Controller provides functionality to handle sessions and cached values as well as retrieval of data
 type Controller struct {
 	config   *misc.Configuration
 	database database.Connection
 	store    *sessions.FilesystemStore
 }
 
+// SetupSessionController prepares the controller's session store and sets a default session lifespan
 func SetupSessionController(conf *misc.Configuration, db database.Connection) *Controller {
 	controller := &Controller{
 		config:   conf,
@@ -35,6 +37,7 @@ func SetupSessionController(conf *misc.Configuration, db database.Connection) *C
 	return controller
 }
 
+// CleanSessions removes all old session files from disk
 func (controller *Controller) CleanSessions() error {
 	sessions, err := filepath.Glob("app/sessions/session_*")
 	if err != nil {
@@ -51,6 +54,7 @@ func (controller *Controller) CleanSessions() error {
 	return nil
 }
 
+// DestroySession destroys a user's session by invalidating the cookies used for storage
 func (controller *Controller) DestroySession(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "eveauth_user",
@@ -66,6 +70,7 @@ func (controller *Controller) DestroySession(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+// IsLoggedIn checks whether the user is currently logged in and has an appropriate timestamp set
 func (controller *Controller) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
@@ -87,6 +92,7 @@ func (controller *Controller) IsLoggedIn(w http.ResponseWriter, r *http.Request)
 	return true
 }
 
+// SetLoginRedirect saves the given path as a redirect after successful login
 func (controller *Controller) SetLoginRedirect(w http.ResponseWriter, r *http.Request, redirect string) error {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
@@ -95,6 +101,7 @@ func (controller *Controller) SetLoginRedirect(w http.ResponseWriter, r *http.Re
 	return session.Save(r, w)
 }
 
+// GetLoginRedirect retrieves the previously set path for redirection after login
 func (controller *Controller) GetLoginRedirect(r *http.Request) string {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
@@ -110,6 +117,7 @@ func (controller *Controller) GetLoginRedirect(r *http.Request) string {
 	return redirect
 }
 
+// SetSSOState saves the given SSO state and allows for login validation
 func (controller *Controller) SetSSOState(w http.ResponseWriter, r *http.Request, state string) error {
 	session, _ := controller.store.Get(r, "eveauth_login")
 
@@ -118,6 +126,7 @@ func (controller *Controller) SetSSOState(w http.ResponseWriter, r *http.Request
 	return session.Save(r, w)
 }
 
+// GetSSOState retrieves the previously set SSO state for login validation
 func (controller *Controller) GetSSOState(r *http.Request) string {
 	session, _ := controller.store.Get(r, "eveauth_login")
 

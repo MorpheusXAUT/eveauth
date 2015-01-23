@@ -15,6 +15,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Controller provides functionality for handling web requests and accessing session and backend data
 type Controller struct {
 	Config    *misc.Configuration
 	Database  database.Connection
@@ -25,6 +26,7 @@ type Controller struct {
 	router *mux.Router
 }
 
+// SetupController prepares the web controller and initialises the router and handled routes
 func SetupController(config *misc.Configuration, db database.Connection, sessions *session.Controller, templates *Templates, checksums *AssetChecksums) *Controller {
 	controller := &Controller{
 		Config:    config,
@@ -46,6 +48,7 @@ func SetupController(config *misc.Configuration, db database.Connection, session
 	return controller
 }
 
+// ServeHTTP acts as a middleware between parsed requests, logging the requests and replacing the remote address with the proxy-value if needed
 func (controller *Controller) ServeHTTP(inner http.Handler, name string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -71,6 +74,7 @@ func (controller *Controller) ServeHTTP(inner http.Handler, name string) http.Ha
 	})
 }
 
+// HandleRequests starts the blocking call to handle web requests
 func (controller *Controller) HandleRequests() {
 	misc.Logger.Infof("Listening for HTTP requests on %q...", net.JoinHostPort(controller.Config.HTTPHost, strconv.Itoa(controller.Config.HTTPPort)))
 

@@ -8,10 +8,13 @@ import (
 	"path/filepath"
 )
 
+// AssetChecksums stores MD5 checksums for all JS and CSS assets the web app uses
 type AssetChecksums struct {
+	// Checksums represents a map of checksums, indexed by the file's name
 	Checksums map[string]string
 }
 
+// SetupAssetChecksums prepares the checksums of all files by walking the appropriate directories and calculating MD5 values
 func SetupAssetChecksums() (*AssetChecksums, error) {
 	checksums := &AssetChecksums{
 		Checksums: make(map[string]string),
@@ -30,6 +33,7 @@ func SetupAssetChecksums() (*AssetChecksums, error) {
 	return checksums, nil
 }
 
+// CalculateFileChecksum reads the content of a file and calculates its MD5 checksum
 func (checksums *AssetChecksums) CalculateFileChecksum(path string, info os.FileInfo, err error) error {
 	if info.IsDir() {
 		return nil
