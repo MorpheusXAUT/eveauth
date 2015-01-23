@@ -16,8 +16,8 @@ type Connection interface {
 	// RawQuery performs a raw database query and returns a map of interfaces containing the retrieve data. An error is returned if the query failed
 	RawQuery(query string, v ...interface{}) ([]map[string]interface{}, error)
 
-	// LoadAllAPIKeys retrieves all API keys from the database, returning an error if the query failed
-	LoadAllAPIKeys() ([]*models.APIKey, error)
+	// LoadAllAccounts retrieves all accounts from the database, returning an error if the query failed
+	LoadAllAccounts() ([]*models.Account, error)
 	// LoadAllCorporations retrieves all corporations from the database, returning an error if the query failed
 	LoadAllCorporations() ([]*models.Corporation, error)
 	// LoadAllCharacters retrieves all characters from the database, returning an error if the query failed
@@ -33,8 +33,8 @@ type Connection interface {
 	// LoadAllUsers retrieves all users (and their associates groups and user roles) from the database, returning an error if the query failed
 	LoadAllUsers() ([]*models.User, error)
 
-	// LoadAPIKey retrieves the API key with the given ID from the database, returning an error if the query failed
-	LoadAPIKey(apiKeyID int64) (*models.APIKey, error)
+	// LoadAccount retrieves the account with the given ID from the database, returning an error if the query failed
+	LoadAccount(accountID int64) (*models.Account, error)
 	// LoadCorporation retrieves the corporation with the given ID from the database, returning an error if the query failed
 	LoadCorporation(corporationID int64) (*models.Corporation, error)
 	// LoadCharacter retrieves the character with the given ID from the database, returning an error if the query failed
@@ -50,10 +50,10 @@ type Connection interface {
 	// LoadUser retrieves the user (and its associated groups and user roles) with the given ID from the database, returning an error if the query failed
 	LoadUser(userID int64) (*models.User, error)
 
-	// LoadAllAPIKeysForUser retrieves all API keys associated with the given user from the database, returning an error if the query failed
-	LoadAllAPIKeysForUser(userID int64) ([]*models.APIKey, error)
-	// LoadAllCharactersForUser retrieves all characters associated with the given user from the database, returning an error if the query failed
-	LoadAllCharactersForUser(userID int64) ([]*models.Character, error)
+	// LoadAllAccountsForUser retrieves all accounts associated with the given user from the database, returning an error if the query failed
+	LoadAllAccountsForUser(userID int64) ([]*models.Account, error)
+	// LoadAllCharactersForAccount retrieves all characters associated with the given account from the database, returning an error if the query failed
+	LoadAllCharactersForAccount(accountID int64) ([]*models.Character, error)
 	// LoadAllGroupRolesForGroup retrieves all group roles (and their associated roles) associated with the given group from the database, returning an error if the query failed
 	LoadAllGroupRolesForGroup(groupID int64) ([]*models.GroupRole, error)
 	// LoadAllUserRolesForUser retrieves all user roles (and their associated roles) associated with the given user from the database, returning an error if the query failed

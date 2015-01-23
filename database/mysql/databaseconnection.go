@@ -66,16 +66,25 @@ func (c *DatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[str
 	return results, nil
 }
 
-// LoadAllAPIKeys retrieves all API keys from the MySQL database, returning an error if the query failed
-func (c *DatabaseConnection) LoadAllAPIKeys() ([]*models.APIKey, error) {
-	var apiKeys []*models.APIKey
+// LoadAllAccounts retrieves all accounts from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAllAccounts() ([]*models.Account, error) {
+	var accounts []*models.Account
 
-	err := c.conn.Select(&apiKeys, "SELECT id, userid, apikeyid, apivcode, active FROM userapikeys")
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, active FROM accounts")
 	if err != nil {
 		return nil, err
 	}
 
-	return apiKeys, nil
+	for _, account := range accounts {
+		characters, err := c.LoadAllCharactersForAccount(account.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		account.Characters = characters
+	}
+
+	return accounts, nil
 }
 
 // LoadAllCorporations retrieves all corporations from the MySQL database, returning an error if the query failed
@@ -94,7 +103,7 @@ func (c *DatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error
 func (c *DatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
 	var characters []*models.Character
 
-	err := c.conn.Select(&characters, "SELECT id, userid, corporationid, name, evecharacterid, active FROM characters")
+	err := c.conn.Select(&characters, "SELECT id, accountid, corporationid, name, evecharacterid, active FROM characters")
 	if err != nil {
 		return nil, err
 	}
@@ -213,18 +222,13 @@ func (c *DatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
 func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	var users []*models.User
 
-	err := c.conn.Select(&users, "SELECT id, username, password, active FROM users")
+	err := c.conn.Select(&users, "SELECT id, username, password, email, active FROM users")
 	if err != nil {
 		return nil, err
 	}
 
 	for _, user := range users {
-		characters, err := c.LoadAllCharactersForUser(user.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		apiKeys, err := c.LoadAllAPIKeysForUser(user.ID)
+		accounts, err := c.LoadAllAccountsForUser(user.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -239,8 +243,7 @@ func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 			return nil, err
 		}
 
-		user.Characters = characters
-		user.APIKeys = apiKeys
+		user.Accounts = accounts
 		user.UserRoles = userRoles
 		user.Groups = groups
 	}
@@ -248,16 +251,23 @@ func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	return users, nil
 }
 
-// LoadAPIKey retrieves the API key with the given ID from the MySQL database, returning an error if the query failed
-func (c *DatabaseConnection) LoadAPIKey(apiKeyID int64) (*models.APIKey, error) {
-	apiKey := &models.APIKey{}
+// LoadAccount retrieves the account with the given ID from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAccount(accountID int64) (*models.Account, error) {
+	account := &models.Account{}
 
-	err := c.conn.Get(apiKey, "SELECT id, userid, apikeyid, apivcode, active FROM userapikeys WHERE id=?", apiKeyID)
+	err := c.conn.Get(account, "SELECT id, userid, apikeyid, apivcode, active FROM accounts WHERE id=?", accountID)
 	if err != nil {
 		return nil, err
 	}
 
-	return apiKey, nil
+	characters, err := c.LoadAllCharactersForAccount(account.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	account.Characters = characters
+
+	return account, nil
 }
 
 // LoadCorporation retrieves the corporation with the given ID from the MySQL database, returning an error if the query failed
@@ -276,7 +286,7 @@ func (c *DatabaseConnection) LoadCorporation(corporationID int64) (*models.Corpo
 func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character, error) {
 	character := &models.Character{}
 
-	err := c.conn.Get(character, "SELECT id, userid, corporationid, name, evecharacterid, active FROM characters WHERE id=?", characterID)
+	err := c.conn.Get(character, "SELECT id, accountid, corporationid, name, evecharacterid, active FROM characters WHERE id=?", characterID)
 	if err != nil {
 		return nil, err
 	}
@@ -375,17 +385,12 @@ func (c *DatabaseConnection) LoadGroup(groupID int64) (*models.Group, error) {
 func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 	user := &models.User{}
 
-	err := c.conn.Get(user, "SELECT id, username, password, active FROM users WHERE id=?", userID)
+	err := c.conn.Get(user, "SELECT id, username, password, email, active FROM users WHERE id=?", userID)
 	if err != nil {
 		return nil, err
 	}
 
-	characters, err := c.LoadAllCharactersForUser(user.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	apiKeys, err := c.LoadAllAPIKeysForUser(user.ID)
+	accounts, err := c.LoadAllAccountsForUser(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -400,31 +405,39 @@ func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 		return nil, err
 	}
 
-	user.Characters = characters
-	user.APIKeys = apiKeys
+	user.Accounts = accounts
 	user.UserRoles = userRoles
 	user.Groups = groups
 
 	return user, nil
 }
 
-// LoadAllAPIKeysForUser retrieves all API keys associated with the given user from the MySQL database, returning an error if the query failed
-func (c *DatabaseConnection) LoadAllAPIKeysForUser(userID int64) ([]*models.APIKey, error) {
-	var apiKeys []*models.APIKey
+// LoadAllAccountsForUser retrieves all accounts associated with the given user from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAllAccountsForUser(userID int64) ([]*models.Account, error) {
+	var accounts []*models.Account
 
-	err := c.conn.Select(&apiKeys, "SELECT id, userid, apikeyid, apivcode, active FROM userapikeys WHERE userid=?", userID)
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, active FROM accounts WHERE userid=?", userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return apiKeys, nil
+	for _, account := range accounts {
+		characters, err := c.LoadAllCharactersForAccount(account.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		account.Characters = characters
+	}
+
+	return accounts, nil
 }
 
-// LoadAllCharactersForUser retrieves all characters associated with the given user from the MySQL database, returning an error if the query failed
-func (c *DatabaseConnection) LoadAllCharactersForUser(userID int64) ([]*models.Character, error) {
+// LoadAllCharactersForAccount retrieves all characters associated with the given account from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAllCharactersForAccount(accountID int64) ([]*models.Character, error) {
 	var characters []*models.Character
 
-	err := c.conn.Select(&characters, "SELECT id, userid, corporationid, name, evecharacterid, active FROM characters WHERE userid=?", userID)
+	err := c.conn.Select(&characters, "SELECT id, accountid, corporationid, name, evecharacterid, active FROM characters WHERE accountid=?", accountID)
 	if err != nil {
 		return nil, err
 	}

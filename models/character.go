@@ -8,8 +8,8 @@ import (
 type Character struct {
 	// ID represents the database ID of the Character
 	ID int64 `json:"id"`
-	// UserID represents the database ID of the user the Character is assigned to
-	UserID int64 `json:"userID"`
+	// AccountID represents the database ID of the user the Character is assigned to
+	AccountID int64 `json:"accountID"`
 	// CorporationID represents the ID of the corporation the Character is in
 	CorporationID int64 `json:"corporationID"`
 	// Name represents the ingame name of the Character

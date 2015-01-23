@@ -4,9 +4,21 @@ USE `eveauth`;
 /*!40101 SET NAMES utf8mb4 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+
+-- Dumping data for table eveauth.accounts: ~6 rows (approximately)
+/*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
+INSERT IGNORE INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `active`) VALUES
+	(1, 1, 1, 'a', 1),
+	(2, 2, 2, 'b', 0),
+	(3, 3, 3, 'c', 1),
+	(4, 3, 4, 'd', 1),
+	(5, 4, 5, 'e', 0),
+	(6, 4, 6, 'f', 0);
+/*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
+
 -- Dumping data for table eveauth.characters: ~6 rows (approximately)
 /*!40000 ALTER TABLE `characters` DISABLE KEYS */;
-INSERT IGNORE INTO `characters` (`id`, `userid`, `corporationid`, `name`, `evecharacterid`, `active`) VALUES
+INSERT IGNORE INTO `characters` (`id`, `accountid`, `corporationid`, `name`, `evecharacterid`, `active`) VALUES
 	(1, 1, 1, 'Test Character', 1, 1),
 	(2, 2, 2, 'Please Ignore', 2, 1),
 	(3, 3, 1, 'Herp', 3, 1),
@@ -47,17 +59,6 @@ INSERT IGNORE INTO `roles` (`id`, `name`, `active`) VALUES
 	(4, 'logistics.write', 1);
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 
--- Dumping data for table eveauth.userapikeys: ~6 rows (approximately)
-/*!40000 ALTER TABLE `userapikeys` DISABLE KEYS */;
-INSERT IGNORE INTO `userapikeys` (`id`, `userid`, `apikeyid`, `apivcode`, `active`) VALUES
-	(1, 1, 1, 'a', 1),
-	(2, 2, 2, 'b', 0),
-	(3, 3, 3, 'c', 1),
-	(4, 3, 4, 'd', 1),
-	(5, 4, 5, 'e', 0),
-	(6, 4, 6, 'f', 0);
-/*!40000 ALTER TABLE `userapikeys` ENABLE KEYS */;
-
 -- Dumping data for table eveauth.usergroups: ~6 rows (approximately)
 /*!40000 ALTER TABLE `usergroups` DISABLE KEYS */;
 INSERT IGNORE INTO `usergroups` (`id`, `userid`, `groupid`, `active`) VALUES
@@ -78,11 +79,11 @@ INSERT IGNORE INTO `userroles` (`id`, `userid`, `roleid`, `autoadded`, `granted`
 
 -- Dumping data for table eveauth.users: ~4 rows (approximately)
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT IGNORE INTO `users` (`id`, `username`, `password`, `active`) VALUES
-	(1, 'test1', NULL, 1),
-	(2, 'test2', NULL, 0),
-	(3, 'test3', '$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q', 1),
-	(4, 'test4', '$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy', 0);
+INSERT IGNORE INTO `users` (`id`, `username`, `password`, `email`, `active`) VALUES
+	(1, 'test1', '$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe', 'test1@example.com', 1),
+	(2, 'test2', '$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK', 'test2@example.com', 0),
+	(3, 'test3', '$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q', 'test3@example.com', 1),
+	(4, 'test4', '$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy', 'test4@example.com', 0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

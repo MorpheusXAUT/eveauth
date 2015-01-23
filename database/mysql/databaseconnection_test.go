@@ -132,9 +132,9 @@ func TestDatabaseConnectionRawQuery(t *testing.T) {
 
 				Convey("Iterating over the result map", func() {
 					for key, value := range result {
-						Convey(fmt.Sprintf("The raw data table for key %v should have 4 entries", key), func() {
+						Convey(fmt.Sprintf("The raw data table for key %v should have 5 entries", key), func() {
 							So(len(value), ShouldBeGreaterThan, 0)
-							So(len(value), ShouldEqual, 4)
+							So(len(value), ShouldEqual, 5)
 						})
 					}
 				})
@@ -169,8 +169,8 @@ func TestDatabaseConnectionRawInvalidQuery(t *testing.T) {
 	})
 }
 
-func TestDatabaseConnectionLoadAllAPIKeys(t *testing.T) {
-	Convey("Loading all API keys from a MySQL database", t, func() {
+func TestDatabaseConnectionLoadAllAccounts(t *testing.T) {
+	Convey("Loading all accounts from a MySQL database", t, func() {
 		db := createMySQLConnection()
 
 		Convey("Connecting to the database", func() {
@@ -180,24 +180,24 @@ func TestDatabaseConnectionLoadAllAPIKeys(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			apiKeys, err := db.LoadAllAPIKeys()
+			accounts, err := db.LoadAllAccounts()
 
-			Convey("Loading all API keys should return no error", func() {
+			Convey("Loading all accounts should return no error", func() {
 				So(err, ShouldBeNil)
 
 				Convey("The returned slice should not be nil", func() {
-					So(apiKeys, ShouldNotBeNil)
+					So(accounts, ShouldNotBeNil)
 				})
 
 				Convey("The length of the returned slice should be 6", func() {
-					So(len(apiKeys), ShouldBeGreaterThan, 0)
-					So(len(apiKeys), ShouldEqual, 6)
+					So(len(accounts), ShouldBeGreaterThan, 0)
+					So(len(accounts), ShouldEqual, 6)
 				})
 
-				Convey("The returned API keys should match the test data set", func() {
-					for index, apiKey := range apiKeys {
+				Convey("The returned accounts should match the test data set", func() {
+					for index, account := range accounts {
 						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(apiKey, ShouldResemble, testAPIKeys[index+1])
+							So(account, ShouldResemble, testAccounts[index+1])
 						})
 					}
 				})
@@ -465,8 +465,8 @@ func TestDatabaseConnectionLoadAllUsers(t *testing.T) {
 	})
 }
 
-func TestDatabaseConnectionLoadAPIKey(t *testing.T) {
-	Convey("Loading API key #1 from a MySQL database", t, func() {
+func TestDatabaseConnectionLoadAccount(t *testing.T) {
+	Convey("Loading account #1 from a MySQL database", t, func() {
 		db := createMySQLConnection()
 
 		Convey("Connecting to the database", func() {
@@ -476,18 +476,18 @@ func TestDatabaseConnectionLoadAPIKey(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			apiKey, err := db.LoadAPIKey(1)
+			account, err := db.LoadAccount(1)
 
-			Convey("Loading API key #1 should return no error", func() {
+			Convey("Loading account #1 should return no error", func() {
 				So(err, ShouldBeNil)
 
 				Convey("The result should not be nil", func() {
-					So(apiKey, ShouldNotBeNil)
+					So(account, ShouldNotBeNil)
 				})
 
-				Convey("The returned role should match the test data set", func() {
+				Convey("The returned account should match the test data set", func() {
 					Convey("Verifying entry", func() {
-						So(apiKey, ShouldResemble, testAPIKeys[1])
+						So(account, ShouldResemble, testAccounts[1])
 					})
 				})
 			})
@@ -705,8 +705,8 @@ func TestDatabaseConnectionLoadUser(t *testing.T) {
 	})
 }
 
-func TestDatabaseConnectionLoadInvalidAPIKey(t *testing.T) {
-	Convey("Loading invalid API key from a MySQL database", t, func() {
+func TestDatabaseConnectionLoadInvalidAccount(t *testing.T) {
+	Convey("Loading invalid account from a MySQL database", t, func() {
 		db := createMySQLConnection()
 
 		Convey("Connecting to the database", func() {
@@ -716,13 +716,13 @@ func TestDatabaseConnectionLoadInvalidAPIKey(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			apiKey, err := db.LoadAPIKey(-1)
+			account, err := db.LoadAccount(-1)
 
-			Convey("Loading an invalid API key should return an error", func() {
+			Convey("Loading an invalid account should return an error", func() {
 				So(err, ShouldNotBeNil)
 
 				Convey("The result should be nil", func() {
-					So(apiKey, ShouldBeNil)
+					So(account, ShouldBeNil)
 				})
 			})
 		})
@@ -898,47 +898,61 @@ func TestDatabaseConnectionLoadInvalidUser(t *testing.T) {
 }
 
 var (
-	testAPIKeys = map[int]*models.APIKey{
-		1: &models.APIKey{
+	testAccounts = map[int]*models.Account{
+		1: &models.Account{
 			ID:       1,
 			UserID:   1,
-			APIKeyID: 1,
-			APIvCode: "a",
+			APIKeyID: zero.IntFrom(1),
+			APIvCode: zero.StringFrom("a"),
 			Active:   true,
+			Characters: []*models.Character{
+				testCharacters[1],
+			},
 		},
-		2: &models.APIKey{
+		2: &models.Account{
 			ID:       2,
 			UserID:   2,
-			APIKeyID: 2,
-			APIvCode: "b",
+			APIKeyID: zero.IntFrom(2),
+			APIvCode: zero.StringFrom("b"),
 			Active:   false,
+			Characters: []*models.Character{
+				testCharacters[2],
+			},
 		},
-		3: &models.APIKey{
+		3: &models.Account{
 			ID:       3,
 			UserID:   3,
-			APIKeyID: 3,
-			APIvCode: "c",
+			APIKeyID: zero.IntFrom(3),
+			APIvCode: zero.StringFrom("c"),
 			Active:   true,
+			Characters: []*models.Character{
+				testCharacters[3],
+				testCharacters[4],
+			},
 		},
-		4: &models.APIKey{
+		4: &models.Account{
 			ID:       4,
 			UserID:   3,
-			APIKeyID: 4,
-			APIvCode: "d",
+			APIKeyID: zero.IntFrom(4),
+			APIvCode: zero.StringFrom("d"),
 			Active:   true,
+			Characters: []*models.Character{
+				testCharacters[5],
+				testCharacters[6],
+			},
 		},
-		5: &models.APIKey{
+		5: &models.Account{
 			ID:       5,
 			UserID:   4,
-			APIKeyID: 5,
-			APIvCode: "e",
+			APIKeyID: zero.IntFrom(5),
+			APIvCode: zero.StringFrom("e"),
 			Active:   false,
 		},
-		6: &models.APIKey{
+		6: &models.Account{
 			ID:       6,
 			UserID:   4,
-			APIKeyID: 6,
-			APIvCode: "f",
+			APIKeyID: zero.IntFrom(6),
+			APIvCode: zero.StringFrom("f"),
 			Active:   false,
 		},
 	}
@@ -967,7 +981,7 @@ var (
 	testCharacters = map[int]*models.Character{
 		1: &models.Character{
 			ID:             1,
-			UserID:         1,
+			AccountID:      1,
 			CorporationID:  1,
 			Name:           "Test Character",
 			EVECharacterID: 1,
@@ -975,7 +989,7 @@ var (
 		},
 		2: &models.Character{
 			ID:             2,
-			UserID:         2,
+			AccountID:      2,
 			CorporationID:  2,
 			Name:           "Please Ignore",
 			EVECharacterID: 2,
@@ -983,7 +997,7 @@ var (
 		},
 		3: &models.Character{
 			ID:             3,
-			UserID:         3,
+			AccountID:      3,
 			CorporationID:  1,
 			Name:           "Herp",
 			EVECharacterID: 3,
@@ -991,7 +1005,7 @@ var (
 		},
 		4: &models.Character{
 			ID:             4,
-			UserID:         3,
+			AccountID:      3,
 			CorporationID:  1,
 			Name:           "Derp",
 			EVECharacterID: 4,
@@ -999,7 +1013,7 @@ var (
 		},
 		5: &models.Character{
 			ID:             5,
-			UserID:         4,
+			AccountID:      4,
 			CorporationID:  2,
 			Name:           "Spai",
 			EVECharacterID: 5,
@@ -1007,7 +1021,7 @@ var (
 		},
 		6: &models.Character{
 			ID:             6,
-			UserID:         4,
+			AccountID:      4,
 			CorporationID:  2,
 			Name:           "NoSpai",
 			EVECharacterID: 6,
@@ -1111,13 +1125,11 @@ var (
 		1: &models.User{
 			ID:       1,
 			Username: "test1",
-			Password: zero.NewString("", false),
+			Password: "$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe",
+			Email:    "test1@example.com",
 			Active:   true,
-			Characters: []*models.Character{
-				testCharacters[1],
-			},
-			APIKeys: []*models.APIKey{
-				testAPIKeys[1],
+			Accounts: []*models.Account{
+				testAccounts[1],
 			},
 			UserRoles: []*models.UserRole{
 				testUserRoles[1],
@@ -1129,13 +1141,11 @@ var (
 		2: &models.User{
 			ID:       2,
 			Username: "test2",
-			Password: zero.NewString("", false),
+			Password: "$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK",
+			Email:    "test2@example.com",
 			Active:   false,
-			Characters: []*models.Character{
-				testCharacters[2],
-			},
-			APIKeys: []*models.APIKey{
-				testAPIKeys[2],
+			Accounts: []*models.Account{
+				testAccounts[2],
 			},
 			UserRoles: []*models.UserRole{},
 			Groups:    []*models.Group{},
@@ -1143,15 +1153,12 @@ var (
 		3: &models.User{
 			ID:       3,
 			Username: "test3",
-			Password: zero.StringFrom("$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q"),
+			Password: "$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q",
+			Email:    "test3@example.com",
 			Active:   true,
-			Characters: []*models.Character{
-				testCharacters[3],
-				testCharacters[4],
-			},
-			APIKeys: []*models.APIKey{
-				testAPIKeys[3],
-				testAPIKeys[4],
+			Accounts: []*models.Account{
+				testAccounts[3],
+				testAccounts[4],
 			},
 			UserRoles: []*models.UserRole{
 				testUserRoles[2],
@@ -1164,15 +1171,12 @@ var (
 		4: &models.User{
 			ID:       4,
 			Username: "test4",
-			Password: zero.StringFrom("$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy"),
+			Password: "$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy",
+			Email:    "test4@example.com",
 			Active:   false,
-			Characters: []*models.Character{
-				testCharacters[5],
-				testCharacters[6],
-			},
-			APIKeys: []*models.APIKey{
-				testAPIKeys[5],
-				testAPIKeys[6],
+			Accounts: []*models.Account{
+				testAccounts[5],
+				testAccounts[6],
 			},
 			UserRoles: []*models.UserRole{},
 			Groups:    []*models.Group{},

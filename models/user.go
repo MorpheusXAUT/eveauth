@@ -2,8 +2,6 @@ package models
 
 import (
 	"encoding/json"
-
-	"gopkg.in/guregu/null.v2/zero"
 )
 
 // User represents an user within the authentication system
@@ -13,13 +11,13 @@ type User struct {
 	// Username represents the username of the User
 	Username string `json:"username"`
 	// Password represents the bcrypt-hashed password of the User
-	Password zero.String `json:"password"`
+	Password string `json:"password"`
+	// Email represents the email address of the User
+	Email string `json:"email"`
 	// Active indicates whether the User is set as active
 	Active bool `json:"active"`
-	// Characters contains all characters associated with the User
-	Characters []*Character `json:"characters,omitempty"`
-	// APIKeys contains all API keys associated with the User
-	APIKeys []*APIKey `json:"apiKeys,omitempty"`
+	// Accounts contains all accounts associated with the User
+	Accounts []*Account `json:"accounts,omitempty"`
 	// UserRoles contains all UserRoles associated with the User
 	UserRoles []*UserRole `json:"userRoles,omitempty"`
 	// Groups contains all Groups associated with the User
