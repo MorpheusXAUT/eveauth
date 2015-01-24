@@ -24,6 +24,22 @@ type User struct {
 	Groups []*Group `json:"groups,omitempty"`
 }
 
+// NewUser creates a new user with the given information
+func NewUser(username string, password string, email string, active bool) *User {
+	user := &User{
+		ID:        -1,
+		Username:  username,
+		Password:  password,
+		Email:     email,
+		Active:    active,
+		Accounts:  make([]*Account, 0),
+		UserRoles: make([]*UserRole, 0),
+		Groups:    make([]*Group, 0),
+	}
+
+	return user
+}
+
 // String represents a JSON encoded representation of the user
 func (user *User) String() string {
 	jsonContent, err := json.Marshal(user)

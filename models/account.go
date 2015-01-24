@@ -22,6 +22,20 @@ type Account struct {
 	Characters []*Character `json:"characters,omitempty"`
 }
 
+// NewAccount creates a new account with the given information
+func NewAccount(userID int64, apiKeyID zero.Int, apivCode zero.String, active bool) *Account {
+	account := &Account{
+		ID:         -1,
+		UserID:     userID,
+		APIKeyID:   apiKeyID,
+		APIvCode:   apivCode,
+		Active:     active,
+		Characters: make([]*Character, 0),
+	}
+
+	return account
+}
+
 // String represents a JSON encoded representation of the account
 func (account *Account) String() string {
 	jsonContent, err := json.Marshal(account)

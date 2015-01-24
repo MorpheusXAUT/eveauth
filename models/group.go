@@ -16,6 +16,18 @@ type Group struct {
 	GroupRoles []*GroupRole `json:"groupRoles,omitempty"`
 }
 
+// NewGroup creates a new group with the given information
+func NewGroup(name string, active bool) *Group {
+	group := &Group{
+		ID:         -1,
+		Name:       name,
+		Active:     active,
+		GroupRoles: make([]*GroupRole, 0),
+	}
+
+	return group
+}
+
 // String represents a JSON encoded representation of the character
 func (group *Group) String() string {
 	jsonContent, err := json.Marshal(group)

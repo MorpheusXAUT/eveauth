@@ -24,6 +24,21 @@ type Corporation struct {
 	Active bool `json:"active"`
 }
 
+// NewCorporation creates a new corporation with the given information
+func NewCorporation(name string, ticker string, eveCorporationID int64, apiKeyID zero.Int, apivCode zero.String, active bool) *Corporation {
+	corporation := &Corporation{
+		ID:               -1,
+		Name:             name,
+		Ticker:           ticker,
+		EVECorporationID: eveCorporationID,
+		APIKeyID:         apiKeyID,
+		APIvCode:         apivCode,
+		Active:           active,
+	}
+
+	return corporation
+}
+
 // String represents a JSON encoded representation of the corporation
 func (corporation *Corporation) String() string {
 	jsonContent, err := json.Marshal(corporation)

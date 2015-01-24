@@ -20,6 +20,20 @@ type Character struct {
 	Active bool `json:"active"`
 }
 
+// NewCharacter creates a new character with the given information
+func NewCharacter(accountID int64, corporationID int64, name string, eveCharacterID int64, active bool) *Character {
+	character := &Character{
+		ID:             -1,
+		AccountID:      accountID,
+		CorporationID:  corporationID,
+		Name:           name,
+		EVECharacterID: eveCharacterID,
+		Active:         active,
+	}
+
+	return character
+}
+
 // String represents a JSON encoded representation of the character
 func (character *Character) String() string {
 	jsonContent, err := json.Marshal(character)

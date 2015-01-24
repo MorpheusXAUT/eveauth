@@ -42,6 +42,43 @@ type UserRole struct {
 	Granted bool `json:"granted"`
 }
 
+// NewRole creates a new role with the given information
+func NewRole(name string, active bool) *Role {
+	role := &Role{
+		ID:     -1,
+		Name:   name,
+		Active: active,
+	}
+
+	return role
+}
+
+// NewGroupRole creates a new group role with the given information
+func NewGroupRole(groupID int64, role *Role, autoAdded bool, granted bool) *GroupRole {
+	groupRole := &GroupRole{
+		ID:        -1,
+		GroupID:   groupID,
+		Role:      role,
+		AutoAdded: autoAdded,
+		Granted:   granted,
+	}
+
+	return groupRole
+}
+
+// NewUserRole creates a new user role with the given information
+func NewUserRole(userID int64, role *Role, autoAdded bool, granted bool) *UserRole {
+	userRole := &UserRole{
+		ID:        -1,
+		UserID:    userID,
+		Role:      role,
+		AutoAdded: autoAdded,
+		Granted:   granted,
+	}
+
+	return userRole
+}
+
 // String represents a JSON encoded representation of the role
 func (role *Role) String() string {
 	jsonContent, err := json.Marshal(role)
