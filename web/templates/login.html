@@ -1,10 +1,27 @@
 {{ define "login" }}
 {{ template "header" . }}
 {{ template "navigation" . }}
-	<div class="jumbotron">
-        <h1>Login using EVE SSO</h1>
-        <p>eveauth uses EVE SSO to authenticate you with the website. We will not receive any EVE information beside your character name and ID or be able to see your login credentials.</p>
-        <div align="center"><a href="https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri={{ .ssoCallbackURL }}&client_id={{ .ssoClientID }}&scope=&state={{ .ssoState }}"><img src="/img/EVE_SSO_Login_Buttons_Large_Black.png" alt="EVE Online SSO" /></a></div>
-	</div>
+	<div class="panel panel-default">
+        <div class="panel-heading">
+            <h3>Login</h3>
+        </div>
+        <div class="panel-body">
+        	<form action="/login" method="post">
+            	<div class="form-group">
+                	<label for="loginUsername">Username</label>
+                    <input type="text" class="form-control" id="loginUsername" name="username" placeholder="Enter Username" required="required" />
+                </div>
+                <div class="form-group">
+                	<label for="loginPassword">Password</label>
+                    <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Enter Password" required="required" />
+                </div>
+				<div class="form-group" align="center">
+                	<button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </form>
+            <p>Don't have an account yet? <a href="/login/register">Click here to register!</a><br />
+            Forgot your password? <a href="/login/reset">Click here to reset your password!</a></p>
+        </div>
+    </div>
 {{ template "footer" . }}
 {{ end }}
