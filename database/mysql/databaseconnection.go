@@ -543,3 +543,51 @@ func (c *DatabaseConnection) LoadAllGroupsForUser(userID int64) ([]*models.Group
 
 	return groups, nil
 }
+
+// LoadPasswordForUser retrieves the password associated with the given username from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadPasswordForUser(username string) (string, error) {
+	row := c.conn.QueryRowx("SELECT password FROM users WHERE username LIKE ?", username)
+
+	var password string
+
+	err := row.Scan(&password)
+	if err != nil {
+		return "", err
+	}
+
+	return password, nil
+}
+
+// QueryUserIDExists checks whether a user with the given user ID exists in the database, returning an error if the query failed
+func (c *DatabaseConnection) QueryUserIDExists(userID int64) (bool, error) {
+	row := c.conn.QueryRowx("SELECT COUNT(userid) AS count FROM users WHERE id=?", userID)
+
+	var count int
+
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return (count > 0), nil
+}
+
+// QueryUserNameEmailExists checks whether a user with the given username or email address exists in the database, returning an error if the query failed
+func (c *DatabaseConnection) QueryUserNameEmailExists(username string, email string) (bool, error) {
+	row := c.conn.QueryRowx("SELECT COUNT(username) AS count FROM users WHERE username LIKE ? OR email LIKE ?", username, email)
+
+	var count int
+
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return (count > 0), nil
+}
+
+// SaveUser saves a user to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
+	// TODO Add implementation
+	return nil, fmt.Errorf("Not implemented")
+}

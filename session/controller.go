@@ -8,9 +8,11 @@ import (
 
 	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/models"
 
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Controller provides functionality to handle sessions and cached values as well as retrieval of data
@@ -78,13 +80,12 @@ func (controller *Controller) IsLoggedIn(w http.ResponseWriter, r *http.Request)
 		return false
 	}
 
-	timeStamp, ok := session.Values["timestamp"].(time.Time)
+	timeStamp, ok := session.Values["timestamp"].(int64)
 	if !ok {
-		controller.DestroySession(w, r)
 		return false
 	}
 
-	if time.Now().Sub(timeStamp).Minutes() >= 168 {
+	if time.Now().Sub(time.Unix(timeStamp, 0)).Minutes() >= 168 {
 		controller.DestroySession(w, r)
 		return false
 	}
@@ -117,27 +118,41 @@ func (controller *Controller) GetLoginRedirect(r *http.Request) string {
 	return redirect
 }
 
-// SetSSOState saves the given SSO state and allows for login validation
-func (controller *Controller) SetSSOState(w http.ResponseWriter, r *http.Request, state string) error {
+// Authenticate validates the given username and password against the database and creates a new session with timestamp if successful
+func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Request, username string, password string) error {
+	storedPassword, err := controller.database.LoadPasswordForUser(username)
+
+	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password))
+	if err != nil {
+		return err
+	}
+
 	session, _ := controller.store.Get(r, "eveauth_login")
 
-	session.Values["ssoState"] = state
+	session.Values["username"] = username
+	session.Values["timestamp"] = time.Now().Unix()
 
 	return session.Save(r, w)
 }
 
-// GetSSOState retrieves the previously set SSO state for login validation
-func (controller *Controller) GetSSOState(r *http.Request) string {
+// CreateNewUser creates a new user in the database and saves the user's data in the current session
+func (controller *Controller) CreateNewUser(w http.ResponseWriter, r *http.Request, username string, email string, password string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	user := models.NewUser(username, string(hashedPassword), email, true)
+
+	user, err = controller.database.SaveUser(user)
+	if err != nil {
+		return err
+	}
+
 	session, _ := controller.store.Get(r, "eveauth_login")
 
-	if session.IsNew {
-		return ""
-	}
+	session.Values["username"] = user.Username
+	session.Values["timestamp"] = time.Now().Unix()
 
-	state, ok := session.Values["ssoState"].(string)
-	if !ok {
-		return ""
-	}
-
-	return state
+	return session.Save(r, w)
 }

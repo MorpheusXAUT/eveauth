@@ -29,12 +29,6 @@ type Configuration struct {
 	HTTPHost string
 	// HTTPPort represents the port the application should listen to for requests
 	HTTPPort int
-	// EVESSOClientID represents the client ID for the EVE SSO application
-	EVESSOClientID string
-	// EVESSOClientSecret represents the client secret for the EVE SSO application
-	EVESSOClientSecret string
-	// EVESSOCallbackURL represents the callback URL for the EVE SSO application
-	EVESSOCallbackURL string
 }
 
 // LoadConfig creates a Configuration by either using commandline flags or a configuration file, returning an error if the parsing failed

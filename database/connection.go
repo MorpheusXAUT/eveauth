@@ -60,6 +60,17 @@ type Connection interface {
 	LoadAllUserRolesForUser(userID int64) ([]*models.UserRole, error)
 	// LoadAllGroupsForUser retrieves all groups (and their associated group roles) associated with the given user from the database, returning an error if the query failed
 	LoadAllGroupsForUser(userID int64) ([]*models.Group, error)
+
+	// LoadPasswordForUser retrieves the password associated with the given username from the database, returning an error if the query failed
+	LoadPasswordForUser(username string) (string, error)
+
+	// QueryUserIDExists checks whether a user with the given user ID exists in the database, returning an error if the query failed
+	QueryUserIDExists(userID int64) (bool, error)
+	// QueryUserNameEmailExists checks whether a user with the given username or email address exists in the database, returning an error if the query failed
+	QueryUserNameEmailExists(username string, email string) (bool, error)
+
+	// SaveUser saves a user to the database, returning the updated model or an error if the query failed
+	SaveUser(user *models.User) (*models.User, error)
 }
 
 // SetupDatabase parses the database type set in the configuration and returns an appropriate database implementation or an error if the type is unknown

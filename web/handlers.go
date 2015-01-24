@@ -38,23 +38,7 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	state := misc.GenerateRandomString(32)
-
-	response["ssoState"] = state
-	response["ssoClientID"] = controller.Config.EVESSOClientID
-	response["ssoCallbackURL"] = controller.Config.EVESSOCallbackURL
-
-	err := controller.Session.SetSSOState(w, r, state)
-	if err != nil {
-		response["success"] = false
-		response["error"] = err
-
-		misc.Logger.Warnf("Failed to set SSO state: [%v]", err)
-		controller.SendResponse(w, r, "login", response)
-		return
-	}
-
-	err = r.ParseForm()
+	err := r.ParseForm()
 	if err != nil {
 		response["success"] = false
 		response["error"] = err
@@ -70,8 +54,11 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 		response["success"] = false
 
 		switch strings.ToLower(errorType) {
-		case "ssostate":
-			response["error"] = fmt.Errorf("Failed to verify EVE SSO login, please try again!")
+		case "credentials":
+			response["error"] = fmt.Errorf("Invalid username or password, please try again!")
+			break
+		case "parse":
+			response["error"] = fmt.Errorf("Failed to parse request, please try again!")
 			break
 		default:
 			response["error"] = errorType
@@ -89,34 +76,7 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 
 // LoginPostHandler handles submitted data from the login page and verifies the user's credentials
 func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
-	response := make(map[string]interface{})
-	response["pageType"] = 2
-	response["pageTitle"] = "LoginForm"
-
 	loggedIn := controller.Session.IsLoggedIn(w, r)
-
-	response["loggedIn"] = loggedIn
-
-	if loggedIn {
-		http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
-		return
-	}
-
-	response["success"] = true
-	response["error"] = nil
-
-	// TODO Send response to client
-}
-
-// LoginSSOGetHandler acts as a callback for the SSO and verifies the retrieved information
-func (controller *Controller) LoginSSOGetHandler(w http.ResponseWriter, r *http.Request) {
-	response := make(map[string]interface{})
-	response["pageType"] = 2
-	response["pageTitle"] = "LoginSSO"
-
-	loggedIn := controller.Session.IsLoggedIn(w, r)
-
-	response["loggedIn"] = loggedIn
 
 	if loggedIn {
 		http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
@@ -126,30 +86,133 @@ func (controller *Controller) LoginSSOGetHandler(w http.ResponseWriter, r *http.
 	err := r.ParseForm()
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
-		controller.SendRawError(w, http.StatusBadRequest, err)
+		http.Redirect(w, r, "/login?error=parse", http.StatusSeeOther)
 		return
 	}
 
-	authorizationCode := r.FormValue("code")
-	state := r.FormValue("state")
+	username := r.FormValue("username")
+	password := r.FormValue("password")
 
-	if len(authorizationCode) == 0 || len(state) == 0 {
-		misc.Logger.Warnf("Received empty authorization code or SSO state")
-		controller.SendRawError(w, http.StatusBadRequest, fmt.Errorf("Received invalid response from EVE SSO login"))
+	if len(username) == 0 || len(password) == 0 {
+		misc.Logger.Warnf("Received empty username or password")
+		http.Redirect(w, r, "/login?error=parse", http.StatusSeeOther)
 		return
 	}
 
-	savedState := controller.Session.GetSSOState(r)
-	if !strings.EqualFold(savedState, state) {
-		misc.Logger.Warnf("Failed to verify SSO state")
-		http.Redirect(w, r, "/login?error=ssoState", http.StatusSeeOther)
+	err = controller.Session.Authenticate(w, r, username, password)
+	if err != nil {
+		misc.Logger.Warnf("Failed to authenticate user: [%v]", err)
+		http.Redirect(w, r, "/login?error=credentials", http.StatusSeeOther)
 		return
 	}
 
+	http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+}
+
+// LoginRegisterGetHandler displays the registration page of the web app
+func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Register"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		response["success"] = false
+		response["error"] = err
+
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		controller.SendResponse(w, r, "loginregister", response)
+		return
+	}
+
+	errorType := r.FormValue("error")
+
+	if len(errorType) > 0 {
+		response["success"] = false
+
+		switch strings.ToLower(errorType) {
+		case "duplicate":
+			response["error"] = fmt.Errorf("An account with this name or email already exists, please try again!")
+			break
+		case "parse":
+			response["error"] = fmt.Errorf("Failed to parse request, please try again!")
+			break
+		default:
+			response["error"] = errorType
+		}
+
+		controller.SendResponse(w, r, "loginregister", response)
+		return
+	}
+
+	response["loggedIn"] = loggedIn
 	response["success"] = true
 	response["error"] = nil
 
-	// TODO Send response to client
+	controller.SendResponse(w, r, "loginregister", response)
+}
+
+// LoginRegisterPostHandler handles submitted data from the registration page and creates a new user
+func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r *http.Request) {
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		http.Redirect(w, r, "/login/register?error=parse", http.StatusSeeOther)
+		return
+	}
+
+	username := r.FormValue("username")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	if len(username) == 0 || len(email) == 0 || len(password) == 0 {
+		misc.Logger.Warnf("Received empty username, email or password")
+		http.Redirect(w, r, "/login?error=parse", http.StatusSeeOther)
+		return
+	}
+
+	err = controller.Session.CreateNewUser(w, r, username, email, password)
+	if err != nil {
+		misc.Logger.Warnf("Failed to create new user: [%v]", err)
+		http.Redirect(w, r, "/login?error=duplicate", http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+}
+
+// LoginResetGetHandler allows the user to reset their password
+func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Reset"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	response["loggedIn"] = loggedIn
+	response["success"] = true
+	response["error"] = nil
+
+	controller.SendResponse(w, r, "loginreset", response)
 }
 
 // LogoutGetHandler destroys the user's current session and thus logs him out

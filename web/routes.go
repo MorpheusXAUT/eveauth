@@ -38,10 +38,22 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.LoginPostHandler,
 		},
 		Route{
-			Name:        "LoginSSOGet",
+			Name:        "LoginRegisterGet",
 			Methods:     []string{"GET"},
-			Pattern:     "/login/sso",
-			HandlerFunc: controller.LoginSSOGetHandler,
+			Pattern:     "/login/register",
+			HandlerFunc: controller.LoginRegisterGetHandler,
+		},
+		Route{
+			Name:        "LoginRegisterPost",
+			Methods:     []string{"POST"},
+			Pattern:     "/login/register",
+			HandlerFunc: controller.LoginRegisterPostHandler,
+		},
+		Route{
+			Name:        "LoginResetGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/login/reset",
+			HandlerFunc: controller.LoginResetGetHandler,
 		},
 		Route{
 			Name:        "LogoutGet",
