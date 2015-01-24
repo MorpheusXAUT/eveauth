@@ -1,29 +1,29 @@
 {{ define "loginregister" }}
 {{ template "header" . }}
 {{ template "navigation" . }}
-	<div class="panel panel-default">
-        <div class="panel-heading">
-            <h3>Register a new user account</h3>
-        </div>
-        <div class="panel-body">
-        	<form action="/login/register" method="post">
-            	<div class="form-group">
-                	<label for="registerUsername">Username</label>
-                    <input type="text" class="form-control" id="registerUsername" name="username" placeholder="Enter Username" required="required" />
-                </div>
-                <div class="form-group">
-                	<label for="registerEmail">Email</label>
-                    <input type="email" class="form-control" id="registerEmail" name="email" placeholder="Enter Email" required="required" />
-                </div>
-                <div class="form-group">
-                	<label for="registerPassword">Password</label>
-                    <input type="password" class="form-control" id="registerPassword" name="password" placeholder="Enter Password" required="required" />
-                </div>
-				<div class="form-group" align="center">
-                	<button type="submit" class="btn btn-default">Submit</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3>Register a new user account</h3>
+	</div>
+	<div class="panel-body">
+		<form action="/login/register" method="post">
+			<div class="form-group">
+				<label for="registerUsername">Username</label>
+				<input type="text" class="form-control" id="registerUsername" name="username" placeholder="Enter Username" required="required" />
+			</div>
+			<div class="form-group">
+				<label for="registerEmail">Email</label>
+				<input type="email" class="form-control" id="registerEmail" name="email" placeholder="Enter Email" required="required" />
+			</div>
+			<div class="form-group">
+				<label for="registerPassword">Password</label>
+				<input type="password" class="form-control" id="registerPassword" name="password" placeholder="Enter Password" required="required" />
+			</div>
+			<div class="form-group" align="center">
+				<button type="submit" class="btn btn-default">Submit</button>
+			</div>
+		</form>
+	</div>
+</div>
 {{ template "footer" . }}
 {{ end }}
