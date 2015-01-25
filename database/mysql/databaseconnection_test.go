@@ -132,9 +132,9 @@ func TestDatabaseConnectionRawQuery(t *testing.T) {
 
 				Convey("Iterating over the result map", func() {
 					for key, value := range result {
-						Convey(fmt.Sprintf("The raw data table for key %v should have 5 entries", key), func() {
+						Convey(fmt.Sprintf("The raw data table for key %v should have 6 entries", key), func() {
 							So(len(value), ShouldBeGreaterThan, 0)
-							So(len(value), ShouldEqual, 5)
+							So(len(value), ShouldEqual, 6)
 						})
 					}
 				})

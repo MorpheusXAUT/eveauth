@@ -139,7 +139,7 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 
 		switch strings.ToLower(errorType) {
 		case "duplicate":
-			response["error"] = fmt.Errorf("An account with this name or email already exists, please try again!")
+			response["error"] = fmt.Errorf("An account with this name already exists, please try again!")
 			break
 		case "parse":
 			response["error"] = fmt.Errorf("Failed to parse request, please try again!")
