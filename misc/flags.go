@@ -16,7 +16,7 @@ var (
 	httpHostFlag         = flag.String("host", "0.0.0.0", "Hostname for the webserver to bind to")
 	httpPortFlag         = flag.Int("port", 5000, "Port for the webserver to bind to")
 	smtpHostFlag         = flag.String("smtphost", "localhost", "Hostname of the SMTP server to use")
-	smtpPortFlag         = flag.Int("port", 587, "Port of the SMTP server to use")
+	smtpPortFlag         = flag.Int("smtpport", 587, "Port of the SMTP server to use")
 	smtpUserFlag         = flag.String("smtpuser", "", "Username used to authenticate with the SMTP server")
 	smtpPasswordFlag     = flag.String("smtppassword", "", "Hostname of the SMTP server to use")
 	smtpSenderFlag       = flag.String("smtpsender", "", "Address to send emails as")
