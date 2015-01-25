@@ -152,6 +152,27 @@ func (controller *Controller) CreateNewUser(w http.ResponseWriter, r *http.Reque
 	session, _ := controller.store.Get(r, "eveauth_login")
 
 	session.Values["username"] = user.Username
+
+	return session.Save(r, w)
+}
+
+// SendEmailVerification sends an email with a verification link to the given address, currently not implemented
+func (controller *Controller) SendEmailVerification(username string, email string) error {
+	verification := misc.GenerateRandomString(32)
+
+	// TODO actual implementation, skipped for now
+	misc.Logger.Tracef("Sending email verification for user %q to email %q using verification code %q", username, email, verification)
+
+	return nil
+}
+
+// VerifyEmail checks the given code and verifies the presented email address is correct, currently not implemented
+func (controller *Controller) VerifyEmail(w http.ResponseWriter, r *http.Request, email string, verification string) error {
+	// TODO actual implementation, skipped for now
+	misc.Logger.Tracef("Verifying email %q using verification code %q", email, verification)
+
+	session, _ := controller.store.Get(r, "eveauth_login")
+
 	session.Values["timestamp"] = time.Now().Unix()
 
 	return session.Save(r, w)

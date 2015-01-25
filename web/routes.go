@@ -50,6 +50,12 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.LoginRegisterPostHandler,
 		},
 		Route{
+			Name:        "LoginVerifyGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/login/verify",
+			HandlerFunc: controller.LoginVerifyGetHandler,
+		},
+		Route{
 			Name:        "LoginResetGet",
 			Methods:     []string{"GET"},
 			Pattern:     "/login/reset",

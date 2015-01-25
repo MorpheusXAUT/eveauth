@@ -144,6 +144,9 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 		case "parse":
 			response["error"] = fmt.Errorf("Failed to parse request, please try again!")
 			break
+		case "verify":
+			response["error"] = fmt.Errorf("Email verification failed, please try again!")
+			break
 		default:
 			response["error"] = errorType
 		}
@@ -181,14 +184,56 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 
 	if len(username) == 0 || len(email) == 0 || len(password) == 0 {
 		misc.Logger.Warnf("Received empty username, email or password")
-		http.Redirect(w, r, "/login?error=parse", http.StatusSeeOther)
+		http.Redirect(w, r, "/login/register?error=parse", http.StatusSeeOther)
 		return
 	}
 
 	err = controller.Session.CreateNewUser(w, r, username, email, password)
 	if err != nil {
 		misc.Logger.Warnf("Failed to create new user: [%v]", err)
-		http.Redirect(w, r, "/login?error=duplicate", http.StatusSeeOther)
+		http.Redirect(w, r, "/login/register?error=duplicate", http.StatusSeeOther)
+		return
+	}
+
+	err = controller.Session.SendEmailVerification(username, email)
+	if err != nil {
+		misc.Logger.Warnf("Failed to send email verification: [%v]", err)
+		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+}
+
+// LoginVerifyGetHandler handles the verification of email addresses as produced by the registration system
+func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *http.Request) {
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
+		return
+	}
+
+	email := r.FormValue("email")
+	verification := r.FormValue("verification")
+
+	if len(email) == 0 || len(verification) == 0 {
+		misc.Logger.Warnf("Received empty email or verification code")
+		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
+		return
+	}
+
+	err = controller.Session.VerifyEmail(w, r, email, verification)
+	if err != nil {
+		misc.Logger.Warnf("Failed to verify email: [%v]", err)
+		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
 		return
 	}
 
