@@ -15,6 +15,11 @@ var (
 	debugTemplatesFlag   = flag.Bool("debugtemplates", false, "Enables reloading of HTML templates on every request to help development")
 	httpHostFlag         = flag.String("host", "0.0.0.0", "Hostname for the webserver to bind to")
 	httpPortFlag         = flag.Int("port", 5000, "Port for the webserver to bind to")
+	smtpHostFlag         = flag.String("smtphost", "localhost", "Hostname of the SMTP server to use")
+	smtpPortFlag         = flag.Int("port", 587, "Port of the SMTP server to use")
+	smtpUserFlag         = flag.String("smtpuser", "", "Username used to authenticate with the SMTP server")
+	smtpPasswordFlag     = flag.String("smtppassword", "", "Hostname of the SMTP server to use")
+	smtpSenderFlag       = flag.String("smtpsender", "", "Address to send emails as")
 	configFileFlag       = flag.String("config", "", "Path to the config file to parse")
 )
 
@@ -31,6 +36,11 @@ func ParseCommandlineFlags() *Configuration {
 		DebugTemplates:   *debugTemplatesFlag,
 		HTTPHost:         *httpHostFlag,
 		HTTPPort:         *httpPortFlag,
+		SMTPHost:         *smtpHostFlag,
+		SMTPPort:         *smtpPortFlag,
+		SMTPUser:         *smtpUserFlag,
+		SMTPPassword:     *smtpPasswordFlag,
+		SMTPSender:       *smtpSenderFlag,
 	}
 
 	return config

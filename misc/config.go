@@ -29,6 +29,16 @@ type Configuration struct {
 	HTTPHost string
 	// HTTPPort represents the port the application should listen to for requests
 	HTTPPort int
+	// SMTPHost represents the hostname/IP of the SMTP server used for sending mails
+	SMTPHost string
+	// SMTPPort represents the port of the SMTP server used for sending mails
+	SMTPPort int
+	// SMTPUser represents the username used to authenticate with the SMTP server
+	SMTPUser string
+	// SMTPPassword represents the password used to authenticate with the SMTP server
+	SMTPPassword string
+	// SMTPSender represents the email address set as the sender of all outgoing emails
+	SMTPSender string
 }
 
 // LoadConfig creates a Configuration by either using commandline flags or a configuration file, returning an error if the parsing failed
