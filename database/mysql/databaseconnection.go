@@ -588,6 +588,33 @@ func (c *DatabaseConnection) QueryUserNameEmailExists(username string, email str
 
 // SaveUser saves a user to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
-	// TODO Add implementation
-	return nil, fmt.Errorf("Not implemented")
+	if user.ID > 0 {
+		resp, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.Active, user.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		rowsAffected, err := resp.RowsAffected()
+		if err != nil {
+			return nil, err
+		}
+
+		if rowsAffected != 1 {
+			return nil, fmt.Errorf("Failed to save user - no rows affected")
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO users(username, password, email, active) VALUES(?, ?, ?, ?)", user.Username, user.Password, user.Email, user.Active)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		user.ID = lastInsertedID
+	}
+
+	return user, nil
 }
