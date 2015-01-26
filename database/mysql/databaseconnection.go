@@ -412,6 +412,37 @@ func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 	return user, nil
 }
 
+// LoadUserFromUsername retrieves the user (and its associated groups and user roles) with the given username from the database, returning an error if the query failed
+func (c *DatabaseConnection) LoadUserFromUsername(username string) (*models.User, error) {
+	user := &models.User{}
+
+	err := c.conn.Get(user, "SELECT id, username, password, email, active FROM users WHERE username LIKE ?", username)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts, err := c.LoadAllAccountsForUser(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	userRoles, err := c.LoadAllUserRolesForUser(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	groups, err := c.LoadAllGroupsForUser(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Accounts = accounts
+	user.UserRoles = userRoles
+	user.Groups = groups
+
+	return user, nil
+}
+
 // LoadAllAccountsForUser retrieves all accounts associated with the given user from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllAccountsForUser(userID int64) ([]*models.Account, error) {
 	var accounts []*models.Account
@@ -586,21 +617,43 @@ func (c *DatabaseConnection) QueryUserNameEmailExists(username string, email str
 	return (count > 0), nil
 }
 
+// SaveAccount saves an account to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Account, error) {
+	if account.ID > 0 {
+		_, err := c.conn.Exec("UPDATE accounts SET userid=?, apikeyid=?, apivcode=?, apiaccessmask=?, active=? WHERE id=?", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.Active, account.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO accounts(userid, apikeyid, apivcode, apiaccessmask, active) VALUES(?, ?, ?, ?, ?)", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.Active)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		account.ID = lastInsertedID
+	}
+
+	return account, nil
+}
+
 // SaveUser saves a user to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 	if user.ID > 0 {
-		resp, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.Active, user.ID)
+		_, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.Active, user.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		rowsAffected, err := resp.RowsAffected()
-		if err != nil {
-			return nil, err
-		}
-
-		if rowsAffected != 1 {
-			return nil, fmt.Errorf("Failed to save user - no rows affected")
+		for _, account := range user.Accounts {
+			account, err = c.SaveAccount(account)
+			if err != nil {
+				return nil, err
+			}
 		}
 	} else {
 		resp, err := c.conn.Exec("INSERT INTO users(username, password, email, active) VALUES(?, ?, ?, ?)", user.Username, user.Password, user.Email, user.Active)

@@ -49,6 +49,8 @@ type Connection interface {
 	LoadGroup(groupID int64) (*models.Group, error)
 	// LoadUser retrieves the user (and its associated groups and user roles) with the given ID from the database, returning an error if the query failed
 	LoadUser(userID int64) (*models.User, error)
+	// LoadUserFromUsername retrieves the user (and its associated groups and user roles) with the given username from the database, returning an error if the query failed
+	LoadUserFromUsername(username string) (*models.User, error)
 
 	// LoadAllAccountsForUser retrieves all accounts associated with the given user from the database, returning an error if the query failed
 	LoadAllAccountsForUser(userID int64) ([]*models.Account, error)
@@ -69,6 +71,8 @@ type Connection interface {
 	// QueryUserNameEmailExists checks whether a user with the given username or email address exists in the database, returning an error if the query failed
 	QueryUserNameEmailExists(username string, email string) (bool, error)
 
+	// SaveAccount saves an account to the database, returning the updated model or an error if the query failed
+	SaveAccount(account *models.Account) (*models.Account, error)
 	// SaveUser saves a user to the database, returning the updated model or an error if the query failed
 	SaveUser(user *models.User) (*models.User, error)
 }
