@@ -11,7 +11,7 @@ type User struct {
 	// Username represents the username of the User
 	Username string `json:"username"`
 	// Password represents the bcrypt-hashed password of the User
-	Password string `json:"password"`
+	Password string `json:"-"`
 	// Email represents the email address of the User
 	Email string `json:"email"`
 	// Active indicates whether the User is set as active
