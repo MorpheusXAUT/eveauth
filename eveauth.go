@@ -36,11 +36,9 @@ func main() {
 		os.Exit(2)
 	}
 
-	sessionController := session.SetupSessionController(config, db)
-
-	err = sessionController.CleanSessions()
+	sessionController, err := session.SetupSessionController(config, db)
 	if err != nil {
-		misc.Logger.Criticalf("Failed to clean sessions: [%v]", err)
+		misc.Logger.Criticalf("Failed to set up session controller: [%v]", err)
 		os.Exit(2)
 	}
 
