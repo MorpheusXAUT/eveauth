@@ -1,24 +1,24 @@
-USE `eveauth`;
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET NAMES utf8mb4 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
+USE `eveauth`;
+
 -- Dumping data for table eveauth.accounts: ~6 rows (approximately)
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT IGNORE INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `active`) VALUES
-	(1, 1, 1, 'a', 1),
-	(2, 2, 2, 'b', 0),
-	(3, 3, 3, 'c', 1),
-	(4, 3, 4, 'd', 1),
-	(5, 4, 5, 'e', 0),
-	(6, 4, 6, 'f', 0);
+INSERT INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `apiaccessmask`, `active`) VALUES
+	(1, 1, 1, 'a', 0, 1),
+	(2, 2, 2, 'b', 0, 0),
+	(3, 3, 3, 'c', 0, 1),
+	(4, 3, 4, 'd', 268435455, 1),
+	(5, 4, 5, 'e', 268435455, 0),
+	(6, 4, 6, 'f', 268435455, 0);
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.characters: ~6 rows (approximately)
 /*!40000 ALTER TABLE `characters` DISABLE KEYS */;
-INSERT IGNORE INTO `characters` (`id`, `accountid`, `corporationid`, `name`, `evecharacterid`, `active`) VALUES
+INSERT INTO `characters` (`id`, `accountid`, `corporationid`, `name`, `evecharacterid`, `active`) VALUES
 	(1, 1, 1, 'Test Character', 1, 1),
 	(2, 2, 2, 'Please Ignore', 2, 1),
 	(3, 3, 1, 'Herp', 3, 1),
@@ -29,14 +29,14 @@ INSERT IGNORE INTO `characters` (`id`, `accountid`, `corporationid`, `name`, `ev
 
 -- Dumping data for table eveauth.corporations: ~2 rows (approximately)
 /*!40000 ALTER TABLE `corporations` DISABLE KEYS */;
-INSERT IGNORE INTO `corporations` (`id`, `name`, `ticker`, `evecorporationid`, `apikeyid`, `apivcode`, `active`) VALUES
+INSERT INTO `corporations` (`id`, `name`, `ticker`, `evecorporationid`, `apikeyid`, `apivcode`, `active`) VALUES
 	(1, 'Test Corp Please Ignore', 'TEST', 1, 1, 'a', 1),
 	(2, 'Corp Test Ignore Please', 'CORP', 2, NULL, NULL, 0);
 /*!40000 ALTER TABLE `corporations` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.grouproles: ~4 rows (approximately)
 /*!40000 ALTER TABLE `grouproles` DISABLE KEYS */;
-INSERT IGNORE INTO `grouproles` (`id`, `groupid`, `roleid`, `autoadded`, `granted`) VALUES
+INSERT INTO `grouproles` (`id`, `groupid`, `roleid`, `autoadded`, `granted`) VALUES
 	(1, 1, 1, 1, 1),
 	(2, 1, 3, 0, 1),
 	(3, 2, 2, 0, 0),
@@ -45,14 +45,14 @@ INSERT IGNORE INTO `grouproles` (`id`, `groupid`, `roleid`, `autoadded`, `grante
 
 -- Dumping data for table eveauth.groups: ~2 rows (approximately)
 /*!40000 ALTER TABLE `groups` DISABLE KEYS */;
-INSERT IGNORE INTO `groups` (`id`, `name`, `active`) VALUES
+INSERT INTO `groups` (`id`, `name`, `active`) VALUES
 	(1, 'Test Group', 1),
 	(2, 'Dank Access', 0);
 /*!40000 ALTER TABLE `groups` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.roles: ~4 rows (approximately)
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT IGNORE INTO `roles` (`id`, `name`, `active`) VALUES
+INSERT INTO `roles` (`id`, `name`, `active`) VALUES
 	(1, 'ping.all', 1),
 	(2, 'destroy.world', 0),
 	(3, 'logistics.read', 1),
@@ -61,7 +61,7 @@ INSERT IGNORE INTO `roles` (`id`, `name`, `active`) VALUES
 
 -- Dumping data for table eveauth.usergroups: ~6 rows (approximately)
 /*!40000 ALTER TABLE `usergroups` DISABLE KEYS */;
-INSERT IGNORE INTO `usergroups` (`id`, `userid`, `groupid`, `active`) VALUES
+INSERT INTO `usergroups` (`id`, `userid`, `groupid`, `active`) VALUES
 	(1, 1, 1, 1),
 	(2, 2, 1, 0),
 	(3, 3, 1, 1),
@@ -72,18 +72,18 @@ INSERT IGNORE INTO `usergroups` (`id`, `userid`, `groupid`, `active`) VALUES
 
 -- Dumping data for table eveauth.userroles: ~2 rows (approximately)
 /*!40000 ALTER TABLE `userroles` DISABLE KEYS */;
-INSERT IGNORE INTO `userroles` (`id`, `userid`, `roleid`, `autoadded`, `granted`) VALUES
+INSERT INTO `userroles` (`id`, `userid`, `roleid`, `autoadded`, `granted`) VALUES
 	(1, 1, 1, 0, 0),
 	(2, 3, 2, 1, 1);
 /*!40000 ALTER TABLE `userroles` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.users: ~4 rows (approximately)
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT IGNORE INTO `users` (`id`, `username`, `password`, `email`, `active`) VALUES
-	(1, 'test1', '$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe', 'test1@example.com', 1),
-	(2, 'test2', '$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK', 'test2@example.com', 0),
-	(3, 'test3', '$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q', 'test3@example.com', 1),
-	(4, 'test4', '$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy', 'test4@example.com', 0);
+INSERT INTO `users` (`id`, `username`, `password`, `email`, `emailverification`, `active`) VALUES
+	(1, 'test1', '$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe', 'test1@example.com', NULL, 1),
+	(2, 'test2', '$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK', 'test2@example.com', NULL, 0),
+	(3, 'test3', '$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q', 'test3@example.com', NULL, 1),
+	(4, 'test4', '$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy', 'test4@example.com', NULL, 0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

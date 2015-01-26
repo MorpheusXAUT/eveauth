@@ -70,7 +70,7 @@ func (c *DatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[str
 func (c *DatabaseConnection) LoadAllAccounts() ([]*models.Account, error) {
 	var accounts []*models.Account
 
-	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, active FROM accounts")
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts")
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 func (c *DatabaseConnection) LoadAccount(accountID int64) (*models.Account, error) {
 	account := &models.Account{}
 
-	err := c.conn.Get(account, "SELECT id, userid, apikeyid, apivcode, active FROM accounts WHERE id=?", accountID)
+	err := c.conn.Get(account, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts WHERE id=?", accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +416,7 @@ func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 func (c *DatabaseConnection) LoadAllAccountsForUser(userID int64) ([]*models.Account, error) {
 	var accounts []*models.Account
 
-	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, active FROM accounts WHERE userid=?", userID)
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts WHERE userid=?", userID)
 	if err != nil {
 		return nil, err
 	}

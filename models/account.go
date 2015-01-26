@@ -2,8 +2,6 @@ package models
 
 import (
 	"encoding/json"
-
-	"gopkg.in/guregu/null.v2/zero"
 )
 
 // Account represents an EVE Online account linked with an API key and a User
@@ -13,9 +11,11 @@ type Account struct {
 	// UserID represents the database ID of the user the Account is assigned to
 	UserID int64 `json:"userID"`
 	// APIKeyID represents the EVE Online API key ID
-	APIKeyID zero.Int `json:"apiKeyID"`
+	APIKeyID int64 `json:"apiKeyID"`
 	// APIvCode represents the EVE Online API verification code
-	APIvCode zero.String `json:"apivCode"`
+	APIvCode string `json:"apivCode"`
+	// APIAccesMask represents the access mask the EVE Online API key is set to
+	APIAccessMask int `json:"apiAccessMask"`
 	// Active indicates whether the Account is set as active
 	Active bool `json:"active"`
 	// Characters stores all characters associated to this Account
@@ -23,14 +23,15 @@ type Account struct {
 }
 
 // NewAccount creates a new account with the given information
-func NewAccount(userID int64, apiKeyID zero.Int, apivCode zero.String, active bool) *Account {
+func NewAccount(userID int64, apiKeyID int64, apivCode string, apiAccessMask int, active bool) *Account {
 	account := &Account{
-		ID:         -1,
-		UserID:     userID,
-		APIKeyID:   apiKeyID,
-		APIvCode:   apivCode,
-		Active:     active,
-		Characters: make([]*Character, 0),
+		ID:            -1,
+		UserID:        userID,
+		APIKeyID:      apiKeyID,
+		APIvCode:      apivCode,
+		APIAccessMask: apiAccessMask,
+		Active:        active,
+		Characters:    make([]*Character, 0),
 	}
 
 	return account
