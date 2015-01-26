@@ -186,7 +186,7 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 		return
 	}
 
-	http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+	http.Redirect(w, r, "/settings/apikeys", http.StatusSeeOther)
 }
 
 // LoginVerifyGetHandler handles the verification of email addresses as produced by the registration system
@@ -242,7 +242,7 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+	http.Redirect(w, r, "/settings/apikeys", http.StatusSeeOther)
 }
 
 // LoginResetGetHandler allows the user to reset their password
