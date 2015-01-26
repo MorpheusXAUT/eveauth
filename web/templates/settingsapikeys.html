@@ -1,7 +1,7 @@
 {{ define "settingsapikeys" }}
 {{ template "header" . }}
 {{ template "navigation" . }}
-<div class="panel panel-default">
+<div class="panel panel-info">
 	<div class="panel-heading">
 		<h3>Manage your API keys</h3>
 	</div>
@@ -13,7 +13,7 @@
 		</p>
 	</div>
 </div>
-<div class="panel panel-default">
+<div class="panel panel-primary">
 	<div class="panel-heading">
 		<h3>Existing API keys</h3>
 	</div>
@@ -31,24 +31,24 @@
 			<tbody>
 				{{ range $account := .accounts }}
 					<tr>
-						<td>$account.ID</td>
-						<td>$account.APIKeyID</td>
-						<td>$account.APIvCode</td>
-						<td>$account.APIAccessMask</td>
-						<td><a class="btn btn-primary">Edit</a>&nbsp;<a class="btn btn-danger">Delete</a></td>
+						<td>{{ $account.ID }}</td>
+						<td>{{ $account.APIKeyID }}</td>
+						<td>{{ $account.APIvCode }}</td>
+						<td>{{ $account.APIAccessMask }}</td>
+						<td><a class="btn btn-primary api-key-edit">Edit</a>&nbsp;<a class="btn btn-danger api-key-delete">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
 		</table>
 	</div>
 </div>
-<div class="panel panel-default">
+<div class="panel panel-success">
 	<div class="panel-heading">
 		<h3>Add a new API key</h3>
 	</div>
 	<div class="panel-body">
 		<p>You can create a new API key with the (minimum) required access mask by following <a href="https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=0" target="_blank">this link</a>.</p>
-		<form>
+		<form role="form-horizontal" id="apiKeyAdd">
 			<div class="form-group">
 				<label for="apiKeyID">Key ID</label>
 				<input type="number" class="form-control" id="apiKeyID" name="apiKeyID" required="required" />
@@ -58,10 +58,13 @@
 				<input type="text" class="form-control" id="apivCode" name="apivCode" required="required" />
 			</div>
 			<div class="form-group" align="center">
-				<button type="submit" class="btn btn-success">Submit</button>
+				<input type="hidden" name="command" value="apiKeyAdd" />
+				<a class="btn btn-success api-key-add">Submit</a>
 			</div>
 		</form>
 	</div>
 </div>
+
+<script src="/js/settingsapikeys.js"></script>
 {{ template "footer" . }}
 {{ end }}
