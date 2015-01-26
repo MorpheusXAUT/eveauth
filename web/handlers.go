@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/morpheusxaut/eveauth/misc"
 )
@@ -38,36 +37,6 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		response["success"] = false
-		response["error"] = err
-
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
-		controller.SendResponse(w, r, "login", response)
-		return
-	}
-
-	errorType := r.FormValue("error")
-
-	if len(errorType) > 0 {
-		response["success"] = false
-
-		switch strings.ToLower(errorType) {
-		case "credentials":
-			response["error"] = fmt.Errorf("Invalid username or password, please try again!")
-			break
-		case "parse":
-			response["error"] = fmt.Errorf("Failed to parse request, please try again!")
-			break
-		default:
-			response["error"] = errorType
-		}
-
-		controller.SendResponse(w, r, "login", response)
-		return
-	}
-
 	response["success"] = true
 	response["error"] = nil
 
@@ -76,7 +45,13 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 
 // LoginPostHandler handles submitted data from the login page and verifies the user's credentials
 func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Login"
+
 	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
 
 	if loggedIn {
 		http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
@@ -86,7 +61,12 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 	err := r.ParseForm()
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
-		http.Redirect(w, r, "/login?error=parse", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "login", response)
+
 		return
 	}
 
@@ -95,14 +75,24 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 
 	if len(username) == 0 || len(password) == 0 {
 		misc.Logger.Warnf("Received empty username or password")
-		http.Redirect(w, r, "/login?error=parse", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Empty username or password, please try again!")
+
+		controller.SendResponse(w, r, "login", response)
+
 		return
 	}
 
 	err = controller.Session.Authenticate(w, r, username, password)
 	if err != nil {
 		misc.Logger.Warnf("Failed to authenticate user: [%v]", err)
-		http.Redirect(w, r, "/login?error=credentials", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Invalid username or password, please try again!")
+
+		controller.SendResponse(w, r, "login", response)
+
 		return
 	}
 
@@ -117,45 +107,13 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
+	response["loggedIn"] = loggedIn
+
 	if loggedIn {
 		http.Redirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		response["success"] = false
-		response["error"] = err
-
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
-		controller.SendResponse(w, r, "loginregister", response)
-		return
-	}
-
-	errorType := r.FormValue("error")
-
-	if len(errorType) > 0 {
-		response["success"] = false
-
-		switch strings.ToLower(errorType) {
-		case "duplicate":
-			response["error"] = fmt.Errorf("An account with this name already exists, please try again!")
-			break
-		case "parse":
-			response["error"] = fmt.Errorf("Failed to parse request, please try again!")
-			break
-		case "verify":
-			response["error"] = fmt.Errorf("Email verification failed, please try again!")
-			break
-		default:
-			response["error"] = errorType
-		}
-
-		controller.SendResponse(w, r, "loginregister", response)
-		return
-	}
-
-	response["loggedIn"] = loggedIn
 	response["success"] = true
 	response["error"] = nil
 
@@ -164,7 +122,13 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 
 // LoginRegisterPostHandler handles submitted data from the registration page and creates a new user
 func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Register"
+
 	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
 
 	if loggedIn {
 		http.Redirect(w, r, "/settings", http.StatusSeeOther)
@@ -174,7 +138,12 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	err := r.ParseForm()
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
-		http.Redirect(w, r, "/login/register?error=parse", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
 		return
 	}
 
@@ -184,21 +153,36 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 
 	if len(username) == 0 || len(email) == 0 || len(password) == 0 {
 		misc.Logger.Warnf("Received empty username, email or password")
-		http.Redirect(w, r, "/login/register?error=parse", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Empty username, email or password, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
 		return
 	}
 
 	err = controller.Session.CreateNewUser(w, r, username, email, password)
 	if err != nil {
 		misc.Logger.Warnf("Failed to create new user: [%v]", err)
-		http.Redirect(w, r, "/login/register?error=duplicate", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to create new user, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
 		return
 	}
 
 	err = controller.Session.SendEmailVerification(username, email)
 	if err != nil {
 		misc.Logger.Warnf("Failed to send email verification: [%v]", err)
-		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to send email verification, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
 		return
 	}
 
@@ -207,6 +191,10 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 
 // LoginVerifyGetHandler handles the verification of email addresses as produced by the registration system
 func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Register"
+
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
@@ -214,10 +202,17 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
+	response["loggedIn"] = loggedIn
+
 	err := r.ParseForm()
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
-		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
 		return
 	}
 
@@ -226,14 +221,24 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 
 	if len(email) == 0 || len(verification) == 0 {
 		misc.Logger.Warnf("Received empty email or verification code")
-		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Empty email or verification code, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
 		return
 	}
 
 	err = controller.Session.VerifyEmail(w, r, email, verification)
 	if err != nil {
 		misc.Logger.Warnf("Failed to verify email: [%v]", err)
-		http.Redirect(w, r, "/login/register?error=verify", http.StatusSeeOther)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to verify email, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
 		return
 	}
 
