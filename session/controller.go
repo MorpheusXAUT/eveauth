@@ -1,6 +1,8 @@
 package session
 
 import (
+	"encoding/gob"
+	"fmt"
 	"net"
 	"net/http"
 	"strconv"
@@ -30,7 +32,7 @@ func SetupSessionController(conf *misc.Configuration, db database.Connection) (*
 		database: db,
 	}
 
-	store, err := redistore.NewRediStore(10, "tcp", net.JoinHostPort(controller.config.RedisHost, strconv.Itoa(controller.config.RedisPort)), controller.config.RedisPassword, securecookie.GenerateRandomKey(128))
+	store, err := redistore.NewRediStore(10, "tcp", net.JoinHostPort(controller.config.RedisHost, strconv.Itoa(controller.config.RedisPort)), controller.config.RedisPassword, securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
 	if err != nil {
 		return nil, err
 	}
@@ -43,16 +45,18 @@ func SetupSessionController(conf *misc.Configuration, db database.Connection) (*
 		HttpOnly: true,
 	}
 
+	gob.Register(&models.User{})
+
 	return controller, nil
 }
 
 // DestroySession destroys a user's session by setting a negative maximum age
 func (controller *Controller) DestroySession(w http.ResponseWriter, r *http.Request) {
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
-	userSession, _ := controller.store.Get(r, "eveauthUser")
+	dataSession, _ := controller.store.Get(r, "eveauthData")
 
 	loginSession.Options.MaxAge = -1
-	userSession.Options.MaxAge = -1
+	dataSession.Options.MaxAge = -1
 
 	err := sessions.Save(r, w)
 	if err != nil {
@@ -115,12 +119,21 @@ func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	loginSession, _ := controller.store.Get(r, "eveauthLogin")
+	user, err := controller.database.LoadUserFromUsername(username)
+	if err != nil {
+		return err
+	}
 
-	loginSession.Values["username"] = username
+	loginSession, _ := controller.store.Get(r, "eveauthLogin")
+	dataSession, _ := controller.store.Get(r, "eveauthData")
+
+	loginSession.Values["username"] = user.Username
+	loginSession.Values["userID"] = user.ID
 	loginSession.Values["timestamp"] = time.Now().Unix()
 
-	return loginSession.Save(r, w)
+	dataSession.Values["user"] = user
+
+	return sessions.Save(r, w)
 }
 
 // CreateNewUser creates a new user in the database and saves the user's data in the current session
@@ -138,10 +151,14 @@ func (controller *Controller) CreateNewUser(w http.ResponseWriter, r *http.Reque
 	}
 
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
+	dataSession, _ := controller.store.Get(r, "eveauthData")
 
 	loginSession.Values["username"] = user.Username
+	loginSession.Values["userID"] = user.ID
 
-	return loginSession.Save(r, w)
+	dataSession.Values["user"] = user
+
+	return sessions.Save(r, w)
 }
 
 // SendEmailVerification sends an email with a verification link to the given address, currently not implemented
@@ -163,5 +180,41 @@ func (controller *Controller) VerifyEmail(w http.ResponseWriter, r *http.Request
 
 	loginSession.Values["timestamp"] = time.Now().Unix()
 
-	return loginSession.Save(r, w)
+	return sessions.Save(r, w)
+}
+
+// SaveAPIKey saves the given API key ID and verification code to the database and updated the user-object in the data session
+func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request, apiKeyID int64, apivCode string) error {
+	dataSession, _ := controller.store.Get(r, "eveauthData")
+
+	user, ok := dataSession.Values["user"].(*models.User)
+	if !ok {
+		return fmt.Errorf("Failed to retrieve user from data session")
+	}
+
+	account := models.NewAccount(user.ID, apiKeyID, apivCode, 0, true)
+
+	user.Accounts = append(user.Accounts, account)
+
+	var err error
+	user, err = controller.database.SaveUser(user)
+	if err != nil {
+		return err
+	}
+
+	dataSession.Values["user"] = user
+
+	return sessions.Save(r, w)
+}
+
+// GetUser returns the user-object stored in the data session
+func (controller *Controller) GetUser(r *http.Request) (*models.User, error) {
+	dataSession, _ := controller.store.Get(r, "eveauthData")
+
+	user, ok := dataSession.Values["user"].(*models.User)
+	if !ok {
+		return nil, fmt.Errorf("Failed to retrieve user from data session")
+	}
+
+	return user, nil
 }
