@@ -21,14 +21,12 @@ type Configuration struct {
 	DatabaseUser string
 	// DatabasePassword represents the password used to authenticate with the database backend
 	DatabasePassword string
-	// DebugLevel represents the debug level for log messages
-	DebugLevel int
-	// DebugTemplates toggles the reloading of all templates for every request
-	DebugTemplates bool
-	// HTTPHost represents the hostname/IP the application should listen to for requests
-	HTTPHost string
-	// HTTPPort represents the port the application should listen to for requests
-	HTTPPort int
+	// RedisHost represents the hostname of the Redis data store
+	RedisHost string
+	// RedisPort represents the port of the Redis data store
+	RedisPort int
+	// RedisPassword represents the password used to authenticate with the Redis data store
+	RedisPassword string
 	// SMTPHost represents the hostname/IP of the SMTP server used for sending mails
 	SMTPHost string
 	// SMTPPort represents the port of the SMTP server used for sending mails
@@ -39,6 +37,14 @@ type Configuration struct {
 	SMTPPassword string
 	// SMTPSender represents the email address set as the sender of all outgoing emails
 	SMTPSender string
+	// DebugLevel represents the debug level for log messages
+	DebugLevel int
+	// DebugTemplates toggles the reloading of all templates for every request
+	DebugTemplates bool
+	// HTTPHost represents the hostname/IP the application should listen to for requests
+	HTTPHost string
+	// HTTPPort represents the port the application should listen to for requests
+	HTTPPort int
 }
 
 // LoadConfig creates a Configuration by either using commandline flags or a configuration file, returning an error if the parsing failed
@@ -51,15 +57,8 @@ func LoadConfig() (*Configuration, error) {
 
 	flag.Parse()
 
-	var config *Configuration
-	var err error
-
-	if len(*configFileFlag) > 0 {
-		config, err = ParseJSONConfig(*configFileFlag)
-	} else {
-		config = ParseCommandlineFlags()
-		err = nil
-	}
+	config, err := ParseJSONConfig(*configFileFlag)
+	config = ParseCommandlineFlags(config)
 
 	return config, err
 }
