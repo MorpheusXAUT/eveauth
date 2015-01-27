@@ -86,16 +86,10 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.SettingsAccountsGetHandler,
 		},
 		Route{
-			Name:        "SettingsAPIKeysGet",
-			Methods:     []string{"GET"},
-			Pattern:     "/settings/apikeys",
-			HandlerFunc: controller.SettingsAPIKeysGetHandler,
-		},
-		Route{
-			Name:        "SettingsAPIKeysPut",
+			Name:        "SettingsAccountsPut",
 			Methods:     []string{"PUT"},
-			Pattern:     "/settings/apikeys",
-			HandlerFunc: controller.SettingsAPIKeysPutHandler,
+			Pattern:     "/settings/accounts",
+			HandlerFunc: controller.SettingsAccountsPutHandler,
 		},
 		Route{
 			Name:        "SettingsCharactersGet",

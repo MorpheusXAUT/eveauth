@@ -16,7 +16,7 @@ $(document).ready(function(e) {
 			},
 			timeout: 10000,
 			type: "PUT",
-			url: "/settings/apikeys"
+			url: "/settings/accounts"
 		});
 	});
 });

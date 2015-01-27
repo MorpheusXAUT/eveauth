@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/morpheusxaut/eveauth/database"
@@ -182,7 +183,7 @@ func (controller *Controller) VerifyEmail(w http.ResponseWriter, r *http.Request
 }
 
 // SaveAPIKey saves the given API key ID and verification code to the database and updated the user-object in the data session
-func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request, apiKeyID int64, apivCode string) error {
+func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request, apiKeyID string, apivCode string) error {
 	dataSession, _ := controller.store.Get(r, "eveauthData")
 
 	user, ok := dataSession.Values["user"].(*models.User)
@@ -190,11 +191,15 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 		return fmt.Errorf("Failed to retrieve user from data session")
 	}
 
-	account := models.NewAccount(user.ID, apiKeyID, apivCode, 0, true)
+	keyID, err := strconv.ParseInt(apiKeyID, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	account := models.NewAccount(user.ID, keyID, apivCode, 0, true)
 
 	user.Accounts = append(user.Accounts, account)
 
-	var err error
 	user, err = controller.database.SaveUser(user)
 	if err != nil {
 		return err

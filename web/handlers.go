@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/morpheusxaut/eveauth/misc"
@@ -188,7 +187,7 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 		return
 	}
 
-	http.Redirect(w, r, "/settings/apikeys", http.StatusSeeOther)
+	http.Redirect(w, r, "/settings/accounts", http.StatusSeeOther)
 }
 
 // LoginVerifyGetHandler handles the verification of email addresses as produced by the registration system
@@ -244,7 +243,7 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	http.Redirect(w, r, "/settings/apikeys", http.StatusSeeOther)
+	http.Redirect(w, r, "/settings/accounts", http.StatusSeeOther)
 }
 
 // LoginResetGetHandler allows the user to reset their password
@@ -330,7 +329,7 @@ func (controller *Controller) SettingsGetHandler(w http.ResponseWriter, r *http.
 	controller.SendResponse(w, r, "settings", response)
 }
 
-// SettingsAccountsGetHandler allows the user to manage the EVE accounts linked to his auth-user
+// SettingsAccountsGetHandler displays the currently associated accounts and lets the user modify them
 func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
 	response["pageType"] = 4
@@ -352,61 +351,33 @@ func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, 
 		return
 	}
 
-	response["success"] = true
-	response["error"] = nil
-
-	controller.SendResponse(w, r, "settingsaccounts", response)
-}
-
-// SettingsAPIKeysGetHandler allows the user to manage the API keys associated with his account
-func (controller *Controller) SettingsAPIKeysGetHandler(w http.ResponseWriter, r *http.Request) {
-	response := make(map[string]interface{})
-	response["pageType"] = 4
-	response["pageTitle"] = "API Keys"
-
-	loggedIn := controller.Session.IsLoggedIn(w, r)
-
-	response["loggedIn"] = loggedIn
-
-	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/settings/apikeys")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
 	user, err := controller.Session.GetUser(r)
 	if err != nil {
 		response["success"] = false
 		response["error"] = fmt.Errorf("Failed to load user data, please try again!")
 
-		controller.SendResponse(w, r, "settingsapikeys", response)
+		controller.SendResponse(w, r, "settingsaccounts", response)
 	}
 
 	response["accounts"] = user.Accounts
 	response["success"] = true
 	response["error"] = nil
 
-	controller.SendResponse(w, r, "settingsapikeys", response)
+	controller.SendResponse(w, r, "settingsaccounts", response)
 }
 
-// SettingsAPIKeysPutHandler handles AJAX requests used to update the user's API key settings
-func (controller *Controller) SettingsAPIKeysPutHandler(w http.ResponseWriter, r *http.Request) {
+// SettingsAccountsPutHandler handles AJAX requests used to update the user's accounts settings
+func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
 	response["pageType"] = 4
-	response["pageTitle"] = "API Keys"
+	response["pageTitle"] = "Accounts"
 
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/settings/apikeys")
+		err := controller.Session.SetLoginRedirect(w, r, "/settings/accounts")
 		if err != nil {
 			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
 			controller.SendRawError(w, http.StatusInternalServerError, err)
@@ -446,25 +417,13 @@ func (controller *Controller) SettingsAPIKeysPutHandler(w http.ResponseWriter, r
 
 	switch strings.ToLower(command) {
 	case "apikeyadd":
-		keyID, err := strconv.ParseInt(apiKeyID, 10, 64)
-		if err != nil {
-			misc.Logger.Warnf("Failed to parse apiKeyID: [%v]", err)
-
-			response["success"] = false
-			response["error"] = "API Key ID was invalid, please try again!"
-
-			controller.SendJSONResponse(w, r, response)
-
-			return
-		}
-
-		err = controller.Session.SaveAPIKey(w, r, keyID, apivCode)
+		err = controller.Session.SaveAPIKey(w, r, apiKeyID, apivCode)
 		if err != nil {
 			misc.Logger.Warnf("Failed to save API key: [%v]", err)
 
 			response["success"] = false
 
-			if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%d' for key 'keyid'", keyID)) {
+			if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%s' for key 'keyid'", apiKeyID)) {
 				response["error"] = "An API key with this key ID already exists in database, please try again!"
 			} else {
 				response["error"] = "Failed to save API key, please try again!"
