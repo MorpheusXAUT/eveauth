@@ -11,26 +11,20 @@ import (
 type Configuration struct {
 	// DatabaseType represents the database type to be used as a backend
 	DatabaseType int
-	// DatabaseHost represents the hostname of the database backend
+	// DatabaseHost represents the hostname:port of the database backend
 	DatabaseHost string
-	// DatabasePort represents the port of the database backend
-	DatabasePort int
 	// DatabaseSchema represents the schema/collection of the database backend
 	DatabaseSchema string
 	// DatabaseUser represents the username used to authenticate with the database backend
 	DatabaseUser string
 	// DatabasePassword represents the password used to authenticate with the database backend
 	DatabasePassword string
-	// RedisHost represents the hostname of the Redis data store
+	// RedisHost represents the hostname:port of the Redis data store
 	RedisHost string
-	// RedisPort represents the port of the Redis data store
-	RedisPort int
 	// RedisPassword represents the password used to authenticate with the Redis data store
 	RedisPassword string
-	// SMTPHost represents the hostname/IP of the SMTP server used for sending mails
+	// SMTPHost represents the hostname:port of the SMTP server used for sending mails
 	SMTPHost string
-	// SMTPPort represents the port of the SMTP server used for sending mails
-	SMTPPort int
 	// SMTPUser represents the username used to authenticate with the SMTP server
 	SMTPUser string
 	// SMTPPassword represents the password used to authenticate with the SMTP server
@@ -41,10 +35,8 @@ type Configuration struct {
 	DebugLevel int
 	// DebugTemplates toggles the reloading of all templates for every request
 	DebugTemplates bool
-	// HTTPHost represents the hostname/IP the application should listen to for requests
+	// HTTPHost represents the hostname:port the application should listen to for requests
 	HTTPHost string
-	// HTTPPort represents the port the application should listen to for requests
-	HTTPPort int
 }
 
 // LoadConfig creates a Configuration by either using commandline flags or a configuration file, returning an error if the parsing failed

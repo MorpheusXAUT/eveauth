@@ -3,7 +3,6 @@ package mysql
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/morpheusxaut/eveauth/misc"
@@ -14,17 +13,9 @@ import (
 )
 
 func createMySQLConnection() *DatabaseConnection {
-	databaseHost := "localhost"
+	databaseHost := "localhost:3306"
 	if len(os.Getenv("DATABASE_HOST")) > 0 {
 		databaseHost = os.Getenv("DATABASE_HOST")
-	}
-
-	databasePort := 3306
-	if len(os.Getenv("DATABASE_PORT")) > 0 {
-		port, err := strconv.ParseInt(os.Getenv("DATABASE_PORT"), 10, 64)
-		if err == nil {
-			databasePort = int(port)
-		}
 	}
 
 	databaseSchema := "eveauth"
@@ -45,13 +36,11 @@ func createMySQLConnection() *DatabaseConnection {
 	config := &misc.Configuration{
 		DatabaseType:     1,
 		DatabaseHost:     databaseHost,
-		DatabasePort:     databasePort,
 		DatabaseSchema:   databaseSchema,
 		DatabaseUser:     databaseUser,
 		DatabasePassword: databasePassword,
 		DebugLevel:       1,
-		HTTPHost:         "localhost",
-		HTTPPort:         5000,
+		HTTPHost:         "localhost:5000",
 	}
 
 	db := &DatabaseConnection{
@@ -79,14 +68,12 @@ func TestDatabaseConnectionInvalidConnect(t *testing.T) {
 	Convey("Connecting to a MySQL database with an invalid configuration", t, func() {
 		config := &misc.Configuration{
 			DatabaseType:     1,
-			DatabaseHost:     "does.not.exist",
-			DatabasePort:     123456,
+			DatabaseHost:     "does.not.exist:123456",
 			DatabaseSchema:   "nonexistent",
 			DatabaseUser:     "nonexistent",
 			DatabasePassword: "nonexistent",
 			DebugLevel:       1,
-			HTTPHost:         "localhost",
-			HTTPPort:         5000,
+			HTTPHost:         "localhost:5000",
 		}
 
 		db := &DatabaseConnection{

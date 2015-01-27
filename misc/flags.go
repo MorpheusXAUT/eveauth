@@ -8,8 +8,7 @@ import (
 var (
 	debugLevelFlag     = flag.Int("debug", 3, "Sets the debug level (0-9), lower number displays more messages")
 	debugTemplatesFlag = flag.Bool("templates", false, "Enables reloading of HTML templates on every request to help development")
-	httpHostFlag       = flag.String("host", "0.0.0.0", "Hostname for the webserver to bind to")
-	httpPortFlag       = flag.Int("port", 5000, "Port for the webserver to bind to")
+	httpHostFlag       = flag.String("http", "0.0.0.0:5000", "Hostname:port for the webserver to bind to")
 	configFileFlag     = flag.String("config", "config.cfg", "Path to the config file to parse")
 )
 
@@ -21,11 +20,8 @@ func ParseCommandlineFlags(config *Configuration) *Configuration {
 	if *debugTemplatesFlag != false {
 		config.DebugTemplates = *debugTemplatesFlag
 	}
-	if !strings.EqualFold(*httpHostFlag, "0.0.0.0") {
+	if !strings.EqualFold(*httpHostFlag, "0.0.0.0:5000") {
 		config.HTTPHost = *httpHostFlag
-	}
-	if *httpPortFlag != 5000 {
-		config.HTTPPort = *httpPortFlag
 	}
 
 	return config

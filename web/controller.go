@@ -2,9 +2,7 @@ package web
 
 import (
 	"fmt"
-	"net"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -76,10 +74,10 @@ func (controller *Controller) ServeHTTP(inner http.Handler, name string) http.Ha
 
 // HandleRequests starts the blocking call to handle web requests
 func (controller *Controller) HandleRequests() {
-	misc.Logger.Infof("Listening for HTTP requests on %q...", net.JoinHostPort(controller.Config.HTTPHost, strconv.Itoa(controller.Config.HTTPPort)))
+	misc.Logger.Infof("Listening for HTTP requests on %q...", controller.Config.HTTPHost)
 
 	http.Handle("/", controller.router)
-	err := http.ListenAndServe(net.JoinHostPort(controller.Config.HTTPHost, strconv.Itoa(controller.Config.HTTPPort)), nil)
+	err := http.ListenAndServe(controller.Config.HTTPHost, nil)
 
 	misc.Logger.Criticalf("Received error while listening for HTTP requests: [%v]", err)
 }

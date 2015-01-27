@@ -2,8 +2,6 @@ package mysql
 
 import (
 	"fmt"
-	"net"
-	"strconv"
 
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/models"
@@ -23,7 +21,7 @@ type DatabaseConnection struct {
 
 // Connect tries to establish a connection to the MySQL backend, returning an error if the attempt failed
 func (c *DatabaseConnection) Connect() error {
-	conn, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", c.Config.DatabaseUser, c.Config.DatabasePassword, net.JoinHostPort(c.Config.DatabaseHost, strconv.Itoa(c.Config.DatabasePort)), c.Config.DatabaseSchema))
+	conn, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", c.Config.DatabaseUser, c.Config.DatabasePassword, c.Config.DatabaseHost, c.Config.DatabaseSchema))
 	if err != nil {
 		return err
 	}

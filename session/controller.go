@@ -3,9 +3,7 @@ package session
 import (
 	"encoding/gob"
 	"fmt"
-	"net"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/morpheusxaut/eveauth/database"
@@ -32,7 +30,7 @@ func SetupSessionController(conf *misc.Configuration, db database.Connection) (*
 		database: db,
 	}
 
-	store, err := redistore.NewRediStore(10, "tcp", net.JoinHostPort(controller.config.RedisHost, strconv.Itoa(controller.config.RedisPort)), controller.config.RedisPassword, securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
+	store, err := redistore.NewRediStore(10, "tcp", controller.config.RedisHost, controller.config.RedisPassword, securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
 	if err != nil {
 		return nil, err
 	}
