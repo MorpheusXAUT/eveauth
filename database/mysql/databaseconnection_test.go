@@ -12,54 +12,67 @@ import (
 	"gopkg.in/guregu/null.v2/zero"
 )
 
-func createMySQLConnection() *DatabaseConnection {
-	databaseHost := "localhost:3306"
-	if len(os.Getenv("DATABASE_HOST")) > 0 {
-		databaseHost = os.Getenv("DATABASE_HOST")
+var (
+	database *DatabaseConnection = nil
+)
+
+func createMySQLConnection() (*DatabaseConnection, error) {
+	if database == nil {
+		databaseHost := "localhost:3306"
+		if len(os.Getenv("DATABASE_HOST")) > 0 {
+			databaseHost = os.Getenv("DATABASE_HOST")
+		}
+
+		databaseSchema := "eveauth"
+		if len(os.Getenv("DATABASE_SCHEMA")) > 0 {
+			databaseSchema = os.Getenv("DATABASE_SCHEMA")
+		}
+
+		databaseUser := "eveauth"
+		if len(os.Getenv("DATABASE_USER")) > 0 {
+			databaseUser = os.Getenv("DATABASE_USER")
+		}
+
+		databasePassword := "eveauth"
+		if len(os.Getenv("DATABASE_PASSWORD")) > 0 {
+			databasePassword = os.Getenv("DATABASE_PASSWORD")
+		}
+
+		config := &misc.Configuration{
+			DatabaseType:     1,
+			DatabaseHost:     databaseHost,
+			DatabaseSchema:   databaseSchema,
+			DatabaseUser:     databaseUser,
+			DatabasePassword: databasePassword,
+			DebugLevel:       1,
+			HTTPHost:         "localhost:5000",
+		}
+
+		db := &DatabaseConnection{
+			Config: config,
+		}
+
+		err := db.Connect()
+		if err != nil {
+			return nil, err
+		}
+
+		database = db
 	}
 
-	databaseSchema := "eveauth"
-	if len(os.Getenv("DATABASE_SCHEMA")) > 0 {
-		databaseSchema = os.Getenv("DATABASE_SCHEMA")
-	}
-
-	databaseUser := "eveauth"
-	if len(os.Getenv("DATABASE_USER")) > 0 {
-		databaseUser = os.Getenv("DATABASE_USER")
-	}
-
-	databasePassword := "eveauth"
-	if len(os.Getenv("DATABASE_PASSWORD")) > 0 {
-		databasePassword = os.Getenv("DATABASE_PASSWORD")
-	}
-
-	config := &misc.Configuration{
-		DatabaseType:     1,
-		DatabaseHost:     databaseHost,
-		DatabaseSchema:   databaseSchema,
-		DatabaseUser:     databaseUser,
-		DatabasePassword: databasePassword,
-		DebugLevel:       1,
-		HTTPHost:         "localhost:5000",
-	}
-
-	db := &DatabaseConnection{
-		Config: config,
-	}
-
-	return db
+	return database, nil
 }
 
 func TestDatabaseConnectionConnect(t *testing.T) {
 	Convey("Connecting to a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
 		})
 	})
 }
@@ -92,39 +105,39 @@ func TestDatabaseConnectionInvalidConnect(t *testing.T) {
 
 func TestDatabaseConnectionRawQuery(t *testing.T) {
 	Convey("Performing a raw query at a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		Convey("Performing a raw query of the users table", func() {
+			result, err := db.RawQuery("SELECT * FROM users;")
 
 			Convey("The returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("Performing a raw query of the users table", func() {
-				result, err := db.RawQuery("SELECT * FROM users;")
+			Convey("The returned map should not be nil", func() {
+				So(result, ShouldNotBeNil)
+			})
 
-				Convey("The returned error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
+			Convey("The returned map should have 4 entries", func() {
+				So(len(result), ShouldBeGreaterThan, 0)
+				So(len(result), ShouldEqual, 4)
+			})
 
-				Convey("The returned map should not be nil", func() {
-					So(result, ShouldNotBeNil)
-				})
-
-				Convey("The returned map should have 4 entries", func() {
-					So(len(result), ShouldBeGreaterThan, 0)
-					So(len(result), ShouldEqual, 4)
-				})
-
-				Convey("Iterating over the result map", func() {
-					for key, value := range result {
-						Convey(fmt.Sprintf("The raw data table for key %v should have 6 entries", key), func() {
-							So(len(value), ShouldBeGreaterThan, 0)
-							So(len(value), ShouldEqual, 6)
-						})
-					}
-				})
+			Convey("Iterating over the result map", func() {
+				for key, value := range result {
+					Convey(fmt.Sprintf("The raw data table for key %v should have 6 entries", key), func() {
+						So(len(value), ShouldBeGreaterThan, 0)
+						So(len(value), ShouldEqual, 6)
+					})
+				}
 			})
 		})
 	})
@@ -132,25 +145,25 @@ func TestDatabaseConnectionRawQuery(t *testing.T) {
 
 func TestDatabaseConnectionRawInvalidQuery(t *testing.T) {
 	Convey("Performing a raw invalid query at a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		Convey("Performing a raw invalid query of the users table", func() {
+			result, err := db.RawQuery("SELECT nonexistent FROM users;")
+
+			Convey("The returned error should not be nil", func() {
+				So(err, ShouldNotBeNil)
 			})
 
-			Convey("Performing a raw invalid query of the users table", func() {
-				result, err := db.RawQuery("SELECT nonexistent FROM users;")
-
-				Convey("The returned error should not be nil", func() {
-					So(err, ShouldNotBeNil)
-				})
-
-				Convey("The returned map should be nil", func() {
-					So(result, ShouldBeNil)
-				})
+			Convey("The returned map should be nil", func() {
+				So(result, ShouldBeNil)
 			})
 		})
 	})
@@ -158,36 +171,36 @@ func TestDatabaseConnectionRawInvalidQuery(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllAccounts(t *testing.T) {
 	Convey("Loading all accounts from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		accounts, err := db.LoadAllAccounts()
+
+		Convey("Loading all accounts should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(accounts, ShouldNotBeNil)
 			})
 
-			accounts, err := db.LoadAllAccounts()
+			Convey("The length of the returned slice should be 6", func() {
+				So(len(accounts), ShouldBeGreaterThan, 0)
+				So(len(accounts), ShouldEqual, 6)
+			})
 
-			Convey("Loading all accounts should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(accounts, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 6", func() {
-					So(len(accounts), ShouldBeGreaterThan, 0)
-					So(len(accounts), ShouldEqual, 6)
-				})
-
-				Convey("The returned accounts should match the test data set", func() {
-					for index, account := range accounts {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(account, ShouldResemble, testAccounts[index+1])
-						})
-					}
-				})
+			Convey("The returned accounts should match the test data set", func() {
+				for index, account := range accounts {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(account, ShouldResemble, testAccounts[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -195,36 +208,36 @@ func TestDatabaseConnectionLoadAllAccounts(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllCorporations(t *testing.T) {
 	Convey("Loading all corporations from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		corporations, err := db.LoadAllCorporations()
+
+		Convey("Loading all corporations should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(corporations, ShouldNotBeNil)
 			})
 
-			corporations, err := db.LoadAllCorporations()
+			Convey("The length of the returned slice should be 2", func() {
+				So(len(corporations), ShouldBeGreaterThan, 0)
+				So(len(corporations), ShouldEqual, 2)
+			})
 
-			Convey("Loading all corporations should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(corporations, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 2", func() {
-					So(len(corporations), ShouldBeGreaterThan, 0)
-					So(len(corporations), ShouldEqual, 2)
-				})
-
-				Convey("The returned corporations should match the test data set", func() {
-					for index, corporation := range corporations {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(corporation, ShouldResemble, testCorporations[index+1])
-						})
-					}
-				})
+			Convey("The returned corporations should match the test data set", func() {
+				for index, corporation := range corporations {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(corporation, ShouldResemble, testCorporations[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -232,36 +245,36 @@ func TestDatabaseConnectionLoadAllCorporations(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllCharacters(t *testing.T) {
 	Convey("Loading all characters from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		characters, err := db.LoadAllCharacters()
+
+		Convey("Loading all characters should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(characters, ShouldNotBeNil)
 			})
 
-			characters, err := db.LoadAllCharacters()
+			Convey("The length of the returned slice should be 6", func() {
+				So(len(characters), ShouldBeGreaterThan, 0)
+				So(len(characters), ShouldEqual, 6)
+			})
 
-			Convey("Loading all characters should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(characters, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 6", func() {
-					So(len(characters), ShouldBeGreaterThan, 0)
-					So(len(characters), ShouldEqual, 6)
-				})
-
-				Convey("The returned characters should match the test data set", func() {
-					for index, character := range characters {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(character, ShouldResemble, testCharacters[index+1])
-						})
-					}
-				})
+			Convey("The returned characters should match the test data set", func() {
+				for index, character := range characters {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(character, ShouldResemble, testCharacters[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -269,36 +282,36 @@ func TestDatabaseConnectionLoadAllCharacters(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllRoles(t *testing.T) {
 	Convey("Loading all roles from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		roles, err := db.LoadAllRoles()
+
+		Convey("Loading all roles should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(roles, ShouldNotBeNil)
 			})
 
-			roles, err := db.LoadAllRoles()
+			Convey("The length of the returned slice should be 4", func() {
+				So(len(roles), ShouldBeGreaterThan, 0)
+				So(len(roles), ShouldEqual, 4)
+			})
 
-			Convey("Loading all roles should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(roles, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 4", func() {
-					So(len(roles), ShouldBeGreaterThan, 0)
-					So(len(roles), ShouldEqual, 4)
-				})
-
-				Convey("The returned roles should match the test data set", func() {
-					for index, role := range roles {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(role, ShouldResemble, testRoles[index+1])
-						})
-					}
-				})
+			Convey("The returned roles should match the test data set", func() {
+				for index, role := range roles {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(role, ShouldResemble, testRoles[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -306,36 +319,36 @@ func TestDatabaseConnectionLoadAllRoles(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 	Convey("Loading all group roles from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		groupRoles, err := db.LoadAllGroupRoles()
+
+		Convey("Loading all group roles should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(groupRoles, ShouldNotBeNil)
 			})
 
-			groupRoles, err := db.LoadAllGroupRoles()
+			Convey("The length of the returned slice should be 4", func() {
+				So(len(groupRoles), ShouldBeGreaterThan, 0)
+				So(len(groupRoles), ShouldEqual, 4)
+			})
 
-			Convey("Loading all group roles should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(groupRoles, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 4", func() {
-					So(len(groupRoles), ShouldBeGreaterThan, 0)
-					So(len(groupRoles), ShouldEqual, 4)
-				})
-
-				Convey("The returned group roles should match the test data set", func() {
-					for index, groupRole := range groupRoles {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(groupRole, ShouldResemble, testGroupRoles[index+1])
-						})
-					}
-				})
+			Convey("The returned group roles should match the test data set", func() {
+				for index, groupRole := range groupRoles {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(groupRole, ShouldResemble, testGroupRoles[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -343,36 +356,36 @@ func TestDatabaseConnectionLoadAllGroupRoles(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllUserRoles(t *testing.T) {
 	Convey("Loading all user roles from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		userRoles, err := db.LoadAllUserRoles()
+
+		Convey("Loading all user roles should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(userRoles, ShouldNotBeNil)
 			})
 
-			userRoles, err := db.LoadAllUserRoles()
+			Convey("The length of the returned slice should be 2", func() {
+				So(len(userRoles), ShouldBeGreaterThan, 0)
+				So(len(userRoles), ShouldEqual, 2)
+			})
 
-			Convey("Loading all user roles should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(userRoles, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 2", func() {
-					So(len(userRoles), ShouldBeGreaterThan, 0)
-					So(len(userRoles), ShouldEqual, 2)
-				})
-
-				Convey("The returned user roles should match the test data set", func() {
-					for index, userRole := range userRoles {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(userRole, ShouldResemble, testUserRoles[index+1])
-						})
-					}
-				})
+			Convey("The returned user roles should match the test data set", func() {
+				for index, userRole := range userRoles {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(userRole, ShouldResemble, testUserRoles[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -380,36 +393,36 @@ func TestDatabaseConnectionLoadAllUserRoles(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllGroups(t *testing.T) {
 	Convey("Loading all groups from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		groups, err := db.LoadAllGroups()
+
+		Convey("Loading all groups should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(groups, ShouldNotBeNil)
 			})
 
-			groups, err := db.LoadAllGroups()
+			Convey("The length of the returned slice should be 2", func() {
+				So(len(groups), ShouldBeGreaterThan, 0)
+				So(len(groups), ShouldEqual, 2)
+			})
 
-			Convey("Loading all groups should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(groups, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 2", func() {
-					So(len(groups), ShouldBeGreaterThan, 0)
-					So(len(groups), ShouldEqual, 2)
-				})
-
-				Convey("The returned groups should match the test data set", func() {
-					for index, group := range groups {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(group, ShouldResemble, testGroups[index+1])
-						})
-					}
-				})
+			Convey("The returned groups should match the test data set", func() {
+				for index, group := range groups {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(group, ShouldResemble, testGroups[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -417,36 +430,36 @@ func TestDatabaseConnectionLoadAllGroups(t *testing.T) {
 
 func TestDatabaseConnectionLoadAllUsers(t *testing.T) {
 	Convey("Loading all users from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		users, err := db.LoadAllUsers()
+
+		Convey("Loading all users should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(users, ShouldNotBeNil)
 			})
 
-			users, err := db.LoadAllUsers()
+			Convey("The length of the returned slice should be 4", func() {
+				So(len(users), ShouldBeGreaterThan, 0)
+				So(len(users), ShouldEqual, 4)
+			})
 
-			Convey("Loading all users should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The returned slice should not be nil", func() {
-					So(users, ShouldNotBeNil)
-				})
-
-				Convey("The length of the returned slice should be 4", func() {
-					So(len(users), ShouldBeGreaterThan, 0)
-					So(len(users), ShouldEqual, 4)
-				})
-
-				Convey("The returned users should match the test data set", func() {
-					for index, user := range users {
-						Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
-							So(user, ShouldResemble, testUsers[index+1])
-						})
-					}
-				})
+			Convey("The returned users should match the test data set", func() {
+				for index, user := range users {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(user, ShouldResemble, testUsers[index+1])
+					})
+				}
 			})
 		})
 	})
@@ -454,28 +467,28 @@ func TestDatabaseConnectionLoadAllUsers(t *testing.T) {
 
 func TestDatabaseConnectionLoadAccount(t *testing.T) {
 	Convey("Loading account #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		account, err := db.LoadAccount(1)
+
+		Convey("Loading account #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(account, ShouldNotBeNil)
 			})
 
-			account, err := db.LoadAccount(1)
-
-			Convey("Loading account #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(account, ShouldNotBeNil)
-				})
-
-				Convey("The returned account should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(account, ShouldResemble, testAccounts[1])
-					})
+			Convey("The returned account should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(account, ShouldResemble, testAccounts[1])
 				})
 			})
 		})
@@ -484,28 +497,28 @@ func TestDatabaseConnectionLoadAccount(t *testing.T) {
 
 func TestDatabaseConnectionLoadCorporation(t *testing.T) {
 	Convey("Loading corporation #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		corporation, err := db.LoadCorporation(1)
+
+		Convey("Loading corporation #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(corporation, ShouldNotBeNil)
 			})
 
-			corporation, err := db.LoadCorporation(1)
-
-			Convey("Loading corporation #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(corporation, ShouldNotBeNil)
-				})
-
-				Convey("The returned corporation should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(corporation, ShouldResemble, testCorporations[1])
-					})
+			Convey("The returned corporation should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(corporation, ShouldResemble, testCorporations[1])
 				})
 			})
 		})
@@ -514,28 +527,28 @@ func TestDatabaseConnectionLoadCorporation(t *testing.T) {
 
 func TestDatabaseConnectionLoadCharacter(t *testing.T) {
 	Convey("Loading character #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		character, err := db.LoadCharacter(1)
+
+		Convey("Loading character #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(character, ShouldNotBeNil)
 			})
 
-			character, err := db.LoadCharacter(1)
-
-			Convey("Loading character #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(character, ShouldNotBeNil)
-				})
-
-				Convey("The returned character should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(character, ShouldResemble, testCharacters[1])
-					})
+			Convey("The returned character should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(character, ShouldResemble, testCharacters[1])
 				})
 			})
 		})
@@ -544,28 +557,28 @@ func TestDatabaseConnectionLoadCharacter(t *testing.T) {
 
 func TestDatabaseConnectionLoadRole(t *testing.T) {
 	Convey("Loading role #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		role, err := db.LoadRole(1)
+
+		Convey("Loading role #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(role, ShouldNotBeNil)
 			})
 
-			role, err := db.LoadRole(1)
-
-			Convey("Loading role #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(role, ShouldNotBeNil)
-				})
-
-				Convey("The returned role should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(role, ShouldResemble, testRoles[1])
-					})
+			Convey("The returned role should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(role, ShouldResemble, testRoles[1])
 				})
 			})
 		})
@@ -574,28 +587,28 @@ func TestDatabaseConnectionLoadRole(t *testing.T) {
 
 func TestDatabaseConnectionLoadGroupRole(t *testing.T) {
 	Convey("Loading group role #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		groupRole, err := db.LoadGroupRole(1)
+
+		Convey("Loading group role #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(groupRole, ShouldNotBeNil)
 			})
 
-			groupRole, err := db.LoadGroupRole(1)
-
-			Convey("Loading group role #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(groupRole, ShouldNotBeNil)
-				})
-
-				Convey("The returned group role should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(groupRole, ShouldResemble, testGroupRoles[1])
-					})
+			Convey("The returned group role should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(groupRole, ShouldResemble, testGroupRoles[1])
 				})
 			})
 		})
@@ -604,28 +617,28 @@ func TestDatabaseConnectionLoadGroupRole(t *testing.T) {
 
 func TestDatabaseConnectionLoadUserRole(t *testing.T) {
 	Convey("Loading user role #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		userRole, err := db.LoadUserRole(1)
+
+		Convey("Loading user role #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(userRole, ShouldNotBeNil)
 			})
 
-			userRole, err := db.LoadUserRole(1)
-
-			Convey("Loading user role #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(userRole, ShouldNotBeNil)
-				})
-
-				Convey("The returned user role should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(userRole, ShouldResemble, testUserRoles[1])
-					})
+			Convey("The returned user role should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(userRole, ShouldResemble, testUserRoles[1])
 				})
 			})
 		})
@@ -634,28 +647,28 @@ func TestDatabaseConnectionLoadUserRole(t *testing.T) {
 
 func TestDatabaseConnectionLoadGroup(t *testing.T) {
 	Convey("Loading group #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		group, err := db.LoadGroup(1)
+
+		Convey("Loading group #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(group, ShouldNotBeNil)
 			})
 
-			group, err := db.LoadGroup(1)
-
-			Convey("Loading group #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(group, ShouldNotBeNil)
-				})
-
-				Convey("The returned group should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(group, ShouldResemble, testGroups[1])
-					})
+			Convey("The returned group should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(group, ShouldResemble, testGroups[1])
 				})
 			})
 		})
@@ -664,28 +677,28 @@ func TestDatabaseConnectionLoadGroup(t *testing.T) {
 
 func TestDatabaseConnectionLoadUser(t *testing.T) {
 	Convey("Loading user #1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		user, err := db.LoadUser(1)
+
+		Convey("Loading user #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(user, ShouldNotBeNil)
 			})
 
-			user, err := db.LoadUser(1)
-
-			Convey("Loading user #1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(user, ShouldNotBeNil)
-				})
-
-				Convey("The returned user should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(user, ShouldResemble, testUsers[1])
-					})
+			Convey("The returned user should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(user, ShouldResemble, testUsers[1])
 				})
 			})
 		})
@@ -694,28 +707,28 @@ func TestDatabaseConnectionLoadUser(t *testing.T) {
 
 func TestDatabaseConnectionLoadUserFromUsername(t *testing.T) {
 	Convey("Loading user with name test1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		user, err := db.LoadUserFromUsername("test1")
+
+		Convey("Loading user with name test1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(user, ShouldNotBeNil)
 			})
 
-			user, err := db.LoadUserFromUsername("test1")
-
-			Convey("Loading user with name test1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should not be nil", func() {
-					So(user, ShouldNotBeNil)
-				})
-
-				Convey("The returned user should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(user, ShouldResemble, testUsers[1])
-					})
+			Convey("The returned user should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(user, ShouldResemble, testUsers[1])
 				})
 			})
 		})
@@ -724,29 +737,29 @@ func TestDatabaseConnectionLoadUserFromUsername(t *testing.T) {
 
 func TestDatabaseConnectionLoadPasswordForUser(t *testing.T) {
 	Convey("Loading password for user test1 from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		password, err := db.LoadPasswordForUser("test1")
+
+		Convey("Loading password for user test1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should have length 60", func() {
+				So(len(password), ShouldNotEqual, 0)
+				So(len(password), ShouldEqual, 60)
 			})
 
-			password, err := db.LoadPasswordForUser("test1")
-
-			Convey("Loading password for user test1 should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The result should have length 60", func() {
-					So(len(password), ShouldNotEqual, 0)
-					So(len(password), ShouldEqual, 60)
-				})
-
-				Convey("The returned password hash should match the test data set", func() {
-					Convey("Verifying entry", func() {
-						So(password, ShouldEqual, testUsers[1].Password)
-					})
+			Convey("The returned password hash should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(password, ShouldEqual, testUsers[1].Password)
 				})
 			})
 		})
@@ -755,33 +768,33 @@ func TestDatabaseConnectionLoadPasswordForUser(t *testing.T) {
 
 func TestDatabaseConnectionQueryUserIDExists(t *testing.T) {
 	Convey("Querying whether a user ID exists in a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		exists, err := db.QueryUserIDExists(1)
+
+		Convey("Querying whether user ID #1 exists should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The queried user ID should exist", func() {
+				So(exists, ShouldBeTrue)
 			})
+		})
 
-			exists, err := db.QueryUserIDExists(1)
+		exists, err = db.QueryUserIDExists(-1)
 
-			Convey("Querying whether user ID #1 exists should return no error", func() {
-				So(err, ShouldBeNil)
+		Convey("Querying whether user ID #-1 exists should return no error", func() {
+			So(err, ShouldBeNil)
 
-				Convey("The queried user ID should exist", func() {
-					So(exists, ShouldBeTrue)
-				})
-			})
-
-			exists, err = db.QueryUserIDExists(-1)
-
-			Convey("Querying whether user ID #-1 exists should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The queried user ID should not exist", func() {
-					So(exists, ShouldBeFalse)
-				})
+			Convey("The queried user ID should not exist", func() {
+				So(exists, ShouldBeFalse)
 			})
 		})
 	})
@@ -789,53 +802,53 @@ func TestDatabaseConnectionQueryUserIDExists(t *testing.T) {
 
 func TestDatabaseConnectionQueryUserNameEmailExists(t *testing.T) {
 	Convey("Querying whether a username or email exists in a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		exists, err := db.QueryUserNameEmailExists("test1", "test1@example.com")
+
+		Convey("Querying whether username test1 or email test1@example.com exists should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The queried username or email should exist", func() {
+				So(exists, ShouldBeTrue)
 			})
+		})
 
-			exists, err := db.QueryUserNameEmailExists("test1", "test1@example.com")
+		exists, err = db.QueryUserNameEmailExists("test1", "does.not@exist.com")
 
-			Convey("Querying whether username test1 or email test1@example.com exists should return no error", func() {
-				So(err, ShouldBeNil)
+		Convey("Querying whether username test1 or email does.not@exist.com exists should return no error", func() {
+			So(err, ShouldBeNil)
 
-				Convey("The queried username or email should exist", func() {
-					So(exists, ShouldBeTrue)
-				})
+			Convey("The queried username or email should exist", func() {
+				So(exists, ShouldBeTrue)
 			})
+		})
 
-			exists, err = db.QueryUserNameEmailExists("test1", "does.not@exist.com")
+		exists, err = db.QueryUserNameEmailExists("does.not.exist", "test1@example.com")
 
-			Convey("Querying whether username test1 or email does.not@exist.com exists should return no error", func() {
-				So(err, ShouldBeNil)
+		Convey("Querying whether username does.not.exist or email test1@example.com exists should return no error", func() {
+			So(err, ShouldBeNil)
 
-				Convey("The queried username or email should exist", func() {
-					So(exists, ShouldBeTrue)
-				})
+			Convey("The queried username or email should exist", func() {
+				So(exists, ShouldBeTrue)
 			})
+		})
 
-			exists, err = db.QueryUserNameEmailExists("does.not.exist", "test1@example.com")
+		exists, err = db.QueryUserNameEmailExists("does.not.exist", "does.not@exist.com")
 
-			Convey("Querying whether username does.not.exist or email test1@example.com exists should return no error", func() {
-				So(err, ShouldBeNil)
+		Convey("Querying whether username does.not.exist or email does.not@exist.com exists should return no error", func() {
+			So(err, ShouldBeNil)
 
-				Convey("The queried username or email should exist", func() {
-					So(exists, ShouldBeTrue)
-				})
-			})
-
-			exists, err = db.QueryUserNameEmailExists("does.not.exist", "does.not@exist.com")
-
-			Convey("Querying whether username does.not.exist or email does.not@exist.com exists should return no error", func() {
-				So(err, ShouldBeNil)
-
-				Convey("The queried username or email should not exist", func() {
-					So(exists, ShouldBeFalse)
-				})
+			Convey("The queried username or email should not exist", func() {
+				So(exists, ShouldBeFalse)
 			})
 		})
 	})
@@ -843,23 +856,23 @@ func TestDatabaseConnectionQueryUserNameEmailExists(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidAccount(t *testing.T) {
 	Convey("Loading invalid account from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			account, err := db.LoadAccount(-1)
+		account, err := db.LoadAccount(-1)
 
-			Convey("Loading an invalid account should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an invalid account should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(account, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(account, ShouldBeNil)
 			})
 		})
 	})
@@ -867,23 +880,23 @@ func TestDatabaseConnectionLoadInvalidAccount(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidCorporation(t *testing.T) {
 	Convey("Loading invalid corporation from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			corporation, err := db.LoadCorporation(-1)
+		corporation, err := db.LoadCorporation(-1)
 
-			Convey("Loading an invalid corporation should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an invalid corporation should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(corporation, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(corporation, ShouldBeNil)
 			})
 		})
 	})
@@ -891,23 +904,23 @@ func TestDatabaseConnectionLoadInvalidCorporation(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidCharacter(t *testing.T) {
 	Convey("Loading invalid character from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			character, err := db.LoadCharacter(-1)
+		character, err := db.LoadCharacter(-1)
 
-			Convey("Loading an invalid character should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an invalid character should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(character, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(character, ShouldBeNil)
 			})
 		})
 	})
@@ -915,23 +928,23 @@ func TestDatabaseConnectionLoadInvalidCharacter(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidRole(t *testing.T) {
 	Convey("Loading invalid role from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			role, err := db.LoadRole(-1)
+		role, err := db.LoadRole(-1)
 
-			Convey("Loading an role should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an role should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(role, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(role, ShouldBeNil)
 			})
 		})
 	})
@@ -939,23 +952,23 @@ func TestDatabaseConnectionLoadInvalidRole(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidGroupRole(t *testing.T) {
 	Convey("Loading invalid group role from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			groupRole, err := db.LoadGroupRole(-1)
+		groupRole, err := db.LoadGroupRole(-1)
 
-			Convey("Loading an invalid group role should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an invalid group role should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(groupRole, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(groupRole, ShouldBeNil)
 			})
 		})
 	})
@@ -963,23 +976,23 @@ func TestDatabaseConnectionLoadInvalidGroupRole(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidUserRole(t *testing.T) {
 	Convey("Loading invalid user role from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			userRole, err := db.LoadUserRole(-1)
+		userRole, err := db.LoadUserRole(-1)
 
-			Convey("Loading an invalid user role should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an invalid user role should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(userRole, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(userRole, ShouldBeNil)
 			})
 		})
 	})
@@ -987,23 +1000,23 @@ func TestDatabaseConnectionLoadInvalidUserRole(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidGroup(t *testing.T) {
 	Convey("Loading invalid group from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			group, err := db.LoadGroup(-1)
+		group, err := db.LoadGroup(-1)
 
-			Convey("Loading an invalid group should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an invalid group should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(group, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(group, ShouldBeNil)
 			})
 		})
 	})
@@ -1011,23 +1024,23 @@ func TestDatabaseConnectionLoadInvalidGroup(t *testing.T) {
 
 func TestDatabaseConnectionLoadInvalidUser(t *testing.T) {
 	Convey("Loading invalid user from a MySQL database", t, func() {
-		db := createMySQLConnection()
+		db, err := createMySQLConnection()
 
-		Convey("Connecting to the database", func() {
-			err := db.Connect()
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
 
-			Convey("The returned error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
 
-			user, err := db.LoadUser(-1)
+		user, err := db.LoadUser(-1)
 
-			Convey("Loading an invalid user should return an error", func() {
-				So(err, ShouldNotBeNil)
+		Convey("Loading an invalid user should return an error", func() {
+			So(err, ShouldNotBeNil)
 
-				Convey("The result should be nil", func() {
-					So(user, ShouldBeNil)
-				})
+			Convey("The result should be nil", func() {
+				So(user, ShouldBeNil)
 			})
 		})
 	})
