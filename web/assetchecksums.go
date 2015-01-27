@@ -20,12 +20,12 @@ func SetupAssetChecksums() (*AssetChecksums, error) {
 		Checksums: make(map[string]string),
 	}
 
-	err := filepath.Walk("web/assets/css", checksums.CalculateFileChecksum)
+	err := filepath.Walk("app/assets/css", checksums.CalculateFileChecksum)
 	if err != nil {
 		return nil, err
 	}
 
-	err = filepath.Walk("web/assets/js", checksums.CalculateFileChecksum)
+	err = filepath.Walk("app/assets/js", checksums.CalculateFileChecksum)
 	if err != nil {
 		return nil, err
 	}

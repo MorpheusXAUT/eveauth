@@ -41,7 +41,7 @@ func SetupController(config *misc.Configuration, db database.Connection, session
 		controller.router.Methods(route.Methods...).Path(route.Pattern).Name(route.Name).Handler(controller.ServeHTTP(route.HandlerFunc, route.Name))
 	}
 
-	controller.router.PathPrefix("/").Handler(http.FileServer(http.Dir("./web/assets")))
+	controller.router.PathPrefix("/").Handler(http.FileServer(http.Dir("app/assets")))
 
 	return controller
 }

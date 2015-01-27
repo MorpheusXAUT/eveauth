@@ -14,14 +14,14 @@ type Templates struct {
 func SetupTemplates() *Templates {
 	templates := &Templates{}
 
-	templates.template = template.Must(template.New("").Funcs(templates.TemplateFunctions(nil)).ParseGlob("web/templates/*"))
+	templates.template = template.Must(template.New("").Funcs(templates.TemplateFunctions(nil)).ParseGlob("app/templates/*"))
 
 	return templates
 }
 
 // ReloadTemplates re-reads the HTTP templates from disk and refreshes the output
 func (templates *Templates) ReloadTemplates() {
-	templates.template = template.Must(template.New("").Funcs(templates.TemplateFunctions(nil)).ParseGlob("web/templates/*"))
+	templates.template = template.Must(template.New("").Funcs(templates.TemplateFunctions(nil)).ParseGlob("app/templates/*"))
 }
 
 // ExecuteTemplates performs all replacement in the HTTP templates and sends the response to the client

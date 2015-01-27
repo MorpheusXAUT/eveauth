@@ -423,7 +423,7 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 
 			response["success"] = false
 
-			if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%s' for key 'keyid'", apiKeyID)) {
+			if strings.Contains(err.Error(), "Duplicate entry") {
 				response["error"] = "An API key with this key ID already exists in database, please try again!"
 			} else {
 				response["error"] = "Failed to save API key, please try again!"
