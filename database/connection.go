@@ -73,6 +73,18 @@ type Connection interface {
 
 	// SaveAccount saves an account to the database, returning the updated model or an error if the query failed
 	SaveAccount(account *models.Account) (*models.Account, error)
+	// SaveCorporation saves a corporation to the database, returning the updated model or an error if the query failed
+	SaveCorporation(corporation *models.Corporation) (*models.Corporation, error)
+	// SaveCharacter saves a character to the database, returning the updated model or an error if the query failed
+	SaveCharacter(character *models.Character) (*models.Character, error)
+	// SaveRole saves a role to the database, returning the updated model or an error if the query failed
+	SaveRole(role *models.Role) (*models.Role, error)
+	// SaveGroupRole saves a group role to the database, returning the updated model or an error if the query failed
+	SaveGroupRole(groupRole *models.GroupRole) (*models.GroupRole, error)
+	// SaveUserRole saves a user role to the database, returning the updated model or an error if the query failed
+	SaveUserRole(userRole *models.UserRole) (*models.UserRole, error)
+	// SaveGroup saves a group to the database, returning the updated model or an error if the query failed
+	SaveGroup(group *models.Group) (*models.Group, error)
 	// SaveUser saves a user to the database, returning the updated model or an error if the query failed
 	SaveUser(user *models.User) (*models.User, error)
 }

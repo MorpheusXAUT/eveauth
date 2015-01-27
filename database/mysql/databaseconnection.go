@@ -589,7 +589,7 @@ func (c *DatabaseConnection) LoadPasswordForUser(username string) (string, error
 
 // QueryUserIDExists checks whether a user with the given user ID exists in the database, returning an error if the query failed
 func (c *DatabaseConnection) QueryUserIDExists(userID int64) (bool, error) {
-	row := c.conn.QueryRowx("SELECT COUNT(userid) AS count FROM users WHERE id=?", userID)
+	row := c.conn.QueryRowx("SELECT COUNT(id) AS count FROM users WHERE id=?", userID)
 
 	var count int
 
@@ -637,6 +637,36 @@ func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Accou
 	}
 
 	return account, nil
+}
+
+// SaveCorporation saves a corporation to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveCorporation(corporation *models.Corporation) (*models.Corporation, error) {
+	return nil, nil
+}
+
+// SaveCharacter saves a character to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveCharacter(character *models.Character) (*models.Character, error) {
+	return nil, nil
+}
+
+// SaveRole saves a role to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveRole(role *models.Role) (*models.Role, error) {
+	return nil, nil
+}
+
+// SaveGroupRole saves a group role to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveGroupRole(groupRole *models.GroupRole) (*models.GroupRole, error) {
+	return nil, nil
+}
+
+// SaveUserRole saves a user role to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveUserRole(userRole *models.UserRole) (*models.UserRole, error) {
+	return nil, nil
+}
+
+// SaveGroup saves a group to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveGroup(group *models.Group) (*models.Group, error) {
+	return nil, nil
 }
 
 // SaveUser saves a user to the MySQL database, returning the updated model or an error if the query failed

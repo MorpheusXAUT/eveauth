@@ -692,6 +692,155 @@ func TestDatabaseConnectionLoadUser(t *testing.T) {
 	})
 }
 
+func TestDatabaseConnectionLoadUserFromUsername(t *testing.T) {
+	Convey("Loading user with name test1 from a MySQL database", t, func() {
+		db := createMySQLConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			user, err := db.LoadUserFromUsername("test1")
+
+			Convey("Loading user with name test1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should not be nil", func() {
+					So(user, ShouldNotBeNil)
+				})
+
+				Convey("The returned user should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(user, ShouldResemble, testUsers[1])
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestDatabaseConnectionLoadPasswordForUser(t *testing.T) {
+	Convey("Loading password for user test1 from a MySQL database", t, func() {
+		db := createMySQLConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			password, err := db.LoadPasswordForUser("test1")
+
+			Convey("Loading password for user test1 should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The result should have length 60", func() {
+					So(len(password), ShouldNotEqual, 0)
+					So(len(password), ShouldEqual, 60)
+				})
+
+				Convey("The returned password hash should match the test data set", func() {
+					Convey("Verifying entry", func() {
+						So(password, ShouldEqual, testUsers[1].Password)
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestDatabaseConnectionQueryUserIDExists(t *testing.T) {
+	Convey("Querying whether a user ID exists in a MySQL database", t, func() {
+		db := createMySQLConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			exists, err := db.QueryUserIDExists(1)
+
+			Convey("Querying whether user ID #1 exists should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The queried user ID should exist", func() {
+					So(exists, ShouldBeTrue)
+				})
+			})
+
+			exists, err = db.QueryUserIDExists(-1)
+
+			Convey("Querying whether user ID #-1 exists should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The queried user ID should not exist", func() {
+					So(exists, ShouldBeFalse)
+				})
+			})
+		})
+	})
+}
+
+func TestDatabaseConnectionQueryUserNameEmailExists(t *testing.T) {
+	Convey("Querying whether a username or email exists in a MySQL database", t, func() {
+		db := createMySQLConnection()
+
+		Convey("Connecting to the database", func() {
+			err := db.Connect()
+
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			exists, err := db.QueryUserNameEmailExists("test1", "test1@example.com")
+
+			Convey("Querying whether username test1 or email test1@example.com exists should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The queried username or email should exist", func() {
+					So(exists, ShouldBeTrue)
+				})
+			})
+
+			exists, err = db.QueryUserNameEmailExists("test1", "does.not@exist.com")
+
+			Convey("Querying whether username test1 or email does.not@exist.com exists should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The queried username or email should exist", func() {
+					So(exists, ShouldBeTrue)
+				})
+			})
+
+			exists, err = db.QueryUserNameEmailExists("does.not.exist", "test1@example.com")
+
+			Convey("Querying whether username does.not.exist or email test1@example.com exists should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The queried username or email should exist", func() {
+					So(exists, ShouldBeTrue)
+				})
+			})
+
+			exists, err = db.QueryUserNameEmailExists("does.not.exist", "does.not@exist.com")
+
+			Convey("Querying whether username does.not.exist or email does.not@exist.com exists should return no error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("The queried username or email should not exist", func() {
+					So(exists, ShouldBeFalse)
+				})
+			})
+		})
+	})
+}
+
 func TestDatabaseConnectionLoadInvalidAccount(t *testing.T) {
 	Convey("Loading invalid account from a MySQL database", t, func() {
 		db := createMySQLConnection()
