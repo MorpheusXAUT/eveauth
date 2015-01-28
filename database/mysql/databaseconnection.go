@@ -280,6 +280,18 @@ func (c *DatabaseConnection) LoadCorporation(corporationID int64) (*models.Corpo
 	return corporation, nil
 }
 
+// LoadCorporationFromEVECorporationID retrieves the corporation with the given EVE Online corporation ID from the database, returning an error if the query failed
+func (c *DatabaseConnection) LoadCorporationFromEVECorporationID(eveCorporationID int64) (*models.Corporation, error) {
+	corporation := &models.Corporation{}
+
+	err := c.conn.Get(corporation, "SELECT id, name, ticker, evecorporationid, apikeyid, apivcode, active FROM corporations WHERE evecorporationid=?", eveCorporationID)
+	if err != nil {
+		return nil, err
+	}
+
+	return corporation, nil
+}
+
 // LoadCharacter retrieves the character with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character, error) {
 	character := &models.Character{}
@@ -921,11 +933,31 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 func (c *DatabaseConnection) SaveAllGroupsForUser(userID int64, groups []*models.Group) ([]*models.Group, error) {
 	for _, group := range groups {
 		// TODO actual implementation for removing someone from a group
-		resp, err := c.conn.Exec("INSERT INTO usergroups(userid, groupid, active) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE userid=?, groupid=?, active=?", userID, group.ID, true, userID, group.ID, true)
+		_, err := c.conn.Exec("INSERT INTO usergroups(userid, groupid, active) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE userid=?, groupid=?, active=?", userID, group.ID, true, userID, group.ID, true)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return groups, nil
+}
+
+// RemoveUserFromGroup removes a user from the given group, updates the MySQL database and returns the updated model
+func (c *DatabaseConnection) RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error) {
+	_, err := c.conn.Exec("DELETE FROM usergroups WHERE userid=? AND groupid=?", user.ID, groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	var groups []*models.Group
+
+	for _, group := range user.Groups {
+		if group.ID != groupID {
+			groups = append(groups, group)
+		}
+	}
+
+	user.Groups = groups
+
+	return user, nil
 }

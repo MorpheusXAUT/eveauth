@@ -37,6 +37,8 @@ type Connection interface {
 	LoadAccount(accountID int64) (*models.Account, error)
 	// LoadCorporation retrieves the corporation with the given ID from the database, returning an error if the query failed
 	LoadCorporation(corporationID int64) (*models.Corporation, error)
+	// LoadCorporationFromEVECorporationID retrieves the corporation with the given EVE Online corporation ID from the database, returning an error if the query failed
+	LoadCorporationFromEVECorporationID(eveCorporationID int64) (*models.Corporation, error)
 	// LoadCharacter retrieves the character with the given ID from the database, returning an error if the query failed
 	LoadCharacter(characterID int64) (*models.Character, error)
 	// LoadRole retrieves the role with the given ID from the database, returning an error if the query failed
@@ -87,6 +89,9 @@ type Connection interface {
 	SaveGroup(group *models.Group) (*models.Group, error)
 	// SaveUser saves a user to the database, returning the updated model or an error if the query failed
 	SaveUser(user *models.User) (*models.User, error)
+
+	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
+	RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error)
 }
 
 // SetupDatabase parses the database type set in the configuration and returns an appropriate database implementation or an error if the type is unknown
