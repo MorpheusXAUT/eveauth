@@ -919,6 +919,13 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 
 // SaveAllGroupsForUser saves all group memberships for the user
 func (c *DatabaseConnection) SaveAllGroupsForUser(userID int64, groups []*models.Group) ([]*models.Group, error) {
-	// TODO implement
+	for _, group := range groups {
+		// TODO actual implementation for removing someone from a group
+		resp, err := c.conn.Exec("INSERT INTO usergroups(userid, groupid, active) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE userid=?, groupid=?, active=?", userID, group.ID, true, userID, group.ID, true)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return groups, nil
 }
