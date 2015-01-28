@@ -198,6 +198,47 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 
 	account := models.NewAccount(user.ID, keyID, apivCode, 0, true)
 
+	apiClient := misc.CreateAPIClient(account)
+
+	apiInfo, err := apiClient.Info()
+	if err != nil {
+		return err
+	}
+
+	accessMask, err := strconv.ParseInt(apiInfo.AccessMask, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	account.APIAccessMask = int(accessMask)
+
+	accountCharacters, err := apiClient.AccountCharacters()
+	if err != nil {
+		return nil
+	}
+
+	for _, accountChar := range accountCharacters {
+		corporationID, err := strconv.ParseInt(accountChar.CorporationID, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		accountCharID, err := strconv.ParseInt(accountChar.ID, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		// TODO handle non-existent corporation gracefully by fetching and creating it
+		corporation, err := controller.database.LoadCorporationFromEVECorporationID(corporationID)
+		if err != nil {
+			return err
+		}
+
+		character := models.NewCharacter(account.ID, corporation.ID, accountChar.Name, accountCharID, true)
+
+		account.Characters = append(account.Characters, character)
+	}
+
 	user.Accounts = append(user.Accounts, account)
 
 	user, err = controller.database.SaveUser(user)
