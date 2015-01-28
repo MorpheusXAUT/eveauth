@@ -618,6 +618,15 @@ func (c *DatabaseConnection) QueryUserNameEmailExists(username string, email str
 // SaveAccount saves an account to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Account, error) {
 	if account.ID > 0 {
+		for _, character := range account.Characters {
+			char, err := c.SaveCharacter(character)
+			if err != nil {
+				return nil, err
+			}
+
+			character = char
+		}
+
 		_, err := c.conn.Exec("UPDATE accounts SET userid=?, apikeyid=?, apivcode=?, apiaccessmask=?, active=? WHERE id=?", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.Active, account.ID)
 		if err != nil {
 			return nil, err
@@ -634,6 +643,17 @@ func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Accou
 		}
 
 		account.ID = lastInsertedID
+
+		for _, character := range account.Characters {
+			character.AccountID = account.ID
+
+			char, err := c.SaveCharacter(character)
+			if err != nil {
+				return nil, err
+			}
+
+			character = char
+		}
 	}
 
 	return account, nil
@@ -641,47 +661,215 @@ func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Accou
 
 // SaveCorporation saves a corporation to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveCorporation(corporation *models.Corporation) (*models.Corporation, error) {
-	return nil, nil
+	if corporation.ID > 0 {
+		_, err := c.conn.Exec("UPDATE corporations SET name=?, ticker=?, evecorporationid=?, apikeyid=?, apivcode=?, active=? WHERE id=?", corporation.Name, corporation.Ticker, corporation.EVECorporationID, corporation.APIKeyID, corporation.APIvCode, corporation.Active, corporation.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO corporations(name, ticker, evecorporationid, apikeyid, apivcode, active) VALUES(?, ?, ?, ?, ?, ?)", corporation.Name, corporation.Ticker, corporation.EVECorporationID, corporation.APIKeyID, corporation.APIvCode, corporation.Active)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		corporation.ID = lastInsertedID
+	}
+
+	return corporation, nil
 }
 
 // SaveCharacter saves a character to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveCharacter(character *models.Character) (*models.Character, error) {
-	return nil, nil
+	if character.ID > 0 {
+		_, err := c.conn.Exec("UPDATE characters SET accountid=?, corporationid=?, name=?, evecharacterid=?, active=? WHERE id=?", character.AccountID, character.CorporationID, character.Name, character.EVECharacterID, character.Active, character.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO characters(accountid, corporationid, name, evecharacterid, active) VALUES(?, ?, ?, ?, ?)", character.AccountID, character.CorporationID, character.Name, character.EVECharacterID, character.Active)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		character.ID = lastInsertedID
+	}
+
+	return character, nil
 }
 
 // SaveRole saves a role to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveRole(role *models.Role) (*models.Role, error) {
-	return nil, nil
+	if role.ID > 0 {
+		_, err := c.conn.Exec("UPDATE roles SET name=?, active=? WHERE id=?", role.Name, role.Active, role.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO roles(name, active) VALUES(?, ?)", role.Name, role.Active)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		role.ID = lastInsertedID
+	}
+
+	return role, nil
 }
 
 // SaveGroupRole saves a group role to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveGroupRole(groupRole *models.GroupRole) (*models.GroupRole, error) {
-	return nil, nil
+	role, err := c.SaveRole(groupRole.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	groupRole.Role = role
+
+	if groupRole.ID > 0 {
+		_, err = c.conn.Exec("UPDATE grouproles SET groupid=?, roleid=?, autoadded=?, granted=? WHERE id=?", groupRole.GroupID, groupRole.Role.ID, groupRole.AutoAdded, groupRole.Granted, groupRole.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO grouproles(groupid, roleid, autoadded, granted) VALUES(?, ?, ?, ?)", groupRole.GroupID, groupRole.Role.ID, groupRole.AutoAdded, groupRole.Granted)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		groupRole.ID = lastInsertedID
+	}
+
+	return groupRole, nil
 }
 
 // SaveUserRole saves a user role to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveUserRole(userRole *models.UserRole) (*models.UserRole, error) {
-	return nil, nil
+	role, err := c.SaveRole(userRole.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	userRole.Role = role
+
+	if userRole.ID > 0 {
+		_, err = c.conn.Exec("UPDATE userroles SET userid=?, roleid=?, autoadded=?, granted=? WHERE id=?", userRole.UserID, userRole.Role.ID, userRole.AutoAdded, userRole.Granted, userRole.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO userroles(userid, roleid, autoadded, granted) VALUES(?, ?, ?, ?)", userRole.UserID, userRole.Role.ID, userRole.AutoAdded, userRole.Granted)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		userRole.ID = lastInsertedID
+	}
+
+	return userRole, nil
 }
 
 // SaveGroup saves a group to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveGroup(group *models.Group) (*models.Group, error) {
-	return nil, nil
+	if group.ID > 0 {
+		for _, groupRole := range group.GroupRoles {
+			role, err := c.SaveGroupRole(groupRole)
+			if err != nil {
+				return nil, err
+			}
+
+			groupRole = role
+		}
+
+		_, err := c.conn.Exec("UPDATE groups SET name=?, active=? WHERE id=?", group.Name, group.Active, group.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO groups(name, active) VALUES(?, ?)", group.Name, group.Active)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		group.ID = lastInsertedID
+
+		for _, groupRole := range group.GroupRoles {
+			groupRole.GroupID = group.ID
+
+			role, err := c.SaveGroupRole(groupRole)
+			if err != nil {
+				return nil, err
+			}
+
+			groupRole = role
+		}
+	}
+
+	return group, nil
 }
 
 // SaveUser saves a user to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 	if user.ID > 0 {
-		_, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.Active, user.ID)
-		if err != nil {
-			return nil, err
-		}
-
 		for _, account := range user.Accounts {
-			account, err = c.SaveAccount(account)
+			acc, err := c.SaveAccount(account)
 			if err != nil {
 				return nil, err
 			}
+
+			account = acc
+		}
+
+		for _, userRole := range user.UserRoles {
+			role, err := c.SaveUserRole(userRole)
+			if err != nil {
+				return nil, err
+			}
+
+			userRole = role
+		}
+
+		for _, group := range user.Groups {
+			gr, err := c.SaveGroup(group)
+			if err != nil {
+				return nil, err
+			}
+
+			group = gr
+		}
+
+		_, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.Active, user.ID)
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		resp, err := c.conn.Exec("INSERT INTO users(username, password, email, active) VALUES(?, ?, ?, ?)", user.Username, user.Password, user.Email, user.Active)
@@ -695,7 +883,42 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 		}
 
 		user.ID = lastInsertedID
+
+		for _, account := range user.Accounts {
+			account.UserID = user.ID
+
+			acc, err := c.SaveAccount(account)
+			if err != nil {
+				return nil, err
+			}
+
+			account = acc
+		}
+
+		for _, userRole := range user.UserRoles {
+			userRole.UserID = user.ID
+
+			role, err := c.SaveUserRole(userRole)
+			if err != nil {
+				return nil, err
+			}
+
+			userRole = role
+		}
+
+		groups, err := c.SaveAllGroupsForUser(user.ID, user.Groups)
+		if err != nil {
+			return nil, err
+		}
+
+		user.Groups = groups
 	}
 
 	return user, nil
+}
+
+// SaveAllGroupsForUser saves all group memberships for the user
+func (c *DatabaseConnection) SaveAllGroupsForUser(userID int64, groups []*models.Group) ([]*models.Group, error) {
+	// TODO implement
+	return groups, nil
 }

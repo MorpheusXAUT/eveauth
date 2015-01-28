@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	database *DatabaseConnection = nil
+	database *DatabaseConnection
 )
 
 func createMySQLConnection() (*DatabaseConnection, error) {
