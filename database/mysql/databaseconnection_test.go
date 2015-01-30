@@ -465,6 +465,43 @@ func TestDatabaseConnectionLoadAllUsers(t *testing.T) {
 	})
 }
 
+func TestDatabaseConnectionLoadAllApplications(t *testing.T) {
+	Convey("Loading all applications from a MySQL database", t, func() {
+		db, err := createMySQLConnection()
+
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		applications, err := db.LoadAllApplications()
+
+		Convey("Loading all applications should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The returned slice should not be nil", func() {
+				So(applications, ShouldNotBeNil)
+			})
+
+			Convey("The length of the returned slice should be 2", func() {
+				So(len(applications), ShouldBeGreaterThan, 0)
+				So(len(applications), ShouldEqual, 2)
+			})
+
+			Convey("The returned applications should match the test data set", func() {
+				for index, application := range applications {
+					Convey(fmt.Sprintf("Verifying entry #%d", index), func() {
+						So(application, ShouldResemble, testApplications[index+1])
+					})
+				}
+			})
+		})
+	})
+}
+
 func TestDatabaseConnectionLoadAccount(t *testing.T) {
 	Convey("Loading account #1 from a MySQL database", t, func() {
 		db, err := createMySQLConnection()
@@ -759,6 +796,36 @@ func TestDatabaseConnectionLoadUserFromUsername(t *testing.T) {
 			Convey("The returned user should match the test data set", func() {
 				Convey("Verifying entry", func() {
 					So(user, ShouldResemble, testUsers[1])
+				})
+			})
+		})
+	})
+}
+
+func TestDatabaseConnectionLoadApplication(t *testing.T) {
+	Convey("Loading application #1 from a MySQL database", t, func() {
+		db, err := createMySQLConnection()
+
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		application, err := db.LoadApplication(1)
+
+		Convey("Loading application #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(application, ShouldNotBeNil)
+			})
+
+			Convey("The returned application should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(application, ShouldResemble, testApplications[1])
 				})
 			})
 		})
@@ -1079,66 +1146,91 @@ func TestDatabaseConnectionLoadInvalidUser(t *testing.T) {
 var (
 	testAccounts = map[int]*models.Account{
 		1: &models.Account{
-			ID:            1,
-			UserID:        1,
-			APIKeyID:      1,
-			APIvCode:      "a",
-			APIAccessMask: 0,
-			Active:        true,
+			ID:             1,
+			UserID:         1,
+			APIKeyID:       1,
+			APIvCode:       "a",
+			APIAccessMask:  0,
+			DefaultAccount: true,
+			Active:         true,
 			Characters: []*models.Character{
 				testCharacters[1],
 			},
 		},
 		2: &models.Account{
-			ID:            2,
-			UserID:        2,
-			APIKeyID:      2,
-			APIvCode:      "b",
-			APIAccessMask: 0,
-			Active:        false,
+			ID:             2,
+			UserID:         2,
+			APIKeyID:       2,
+			APIvCode:       "b",
+			APIAccessMask:  0,
+			DefaultAccount: true,
+			Active:         false,
 			Characters: []*models.Character{
 				testCharacters[2],
 			},
 		},
 		3: &models.Account{
-			ID:            3,
-			UserID:        3,
-			APIKeyID:      3,
-			APIvCode:      "c",
-			APIAccessMask: 0,
-			Active:        true,
+			ID:             3,
+			UserID:         3,
+			APIKeyID:       3,
+			APIvCode:       "c",
+			APIAccessMask:  0,
+			DefaultAccount: true,
+			Active:         true,
 			Characters: []*models.Character{
 				testCharacters[3],
 				testCharacters[4],
 			},
 		},
 		4: &models.Account{
-			ID:            4,
-			UserID:        3,
-			APIKeyID:      4,
-			APIvCode:      "d",
-			APIAccessMask: 268435455,
-			Active:        true,
+			ID:             4,
+			UserID:         3,
+			APIKeyID:       4,
+			APIvCode:       "d",
+			APIAccessMask:  268435455,
+			DefaultAccount: false,
+			Active:         true,
 			Characters: []*models.Character{
 				testCharacters[5],
 				testCharacters[6],
 			},
 		},
 		5: &models.Account{
-			ID:            5,
-			UserID:        4,
-			APIKeyID:      5,
-			APIvCode:      "e",
-			APIAccessMask: 268435455,
-			Active:        false,
+			ID:             5,
+			UserID:         4,
+			APIKeyID:       5,
+			APIvCode:       "e",
+			APIAccessMask:  268435455,
+			DefaultAccount: false,
+			Active:         false,
 		},
 		6: &models.Account{
-			ID:            6,
-			UserID:        4,
-			APIKeyID:      6,
-			APIvCode:      "f",
-			APIAccessMask: 268435455,
-			Active:        false,
+			ID:             6,
+			UserID:         4,
+			APIKeyID:       6,
+			APIvCode:       "f",
+			APIAccessMask:  268435455,
+			DefaultAccount: true,
+			Active:         false,
+		},
+	}
+
+	testApplications = map[int]*models.Application{
+		1: &models.Application{
+			ID:         1,
+			Name:       "Testapp",
+			Maintainer: "Testmaintainer",
+			Secret:     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			Callback:   "http://localhost/callback",
+			Active:     true,
+		},
+		2: &models.Application{
+			ID:         2,
+			Name:       "Apptest",
+			Maintainer: "Testmaintainer",
+			Secret:     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+			Callback:   "http://example.com/callback",
+			Active:     false,
 		},
 	}
 
@@ -1165,52 +1257,58 @@ var (
 
 	testCharacters = map[int]*models.Character{
 		1: &models.Character{
-			ID:             1,
-			AccountID:      1,
-			CorporationID:  1,
-			Name:           "Test Character",
-			EVECharacterID: 1,
-			Active:         true,
+			ID:               1,
+			AccountID:        1,
+			CorporationID:    1,
+			Name:             "Test Character",
+			EVECharacterID:   1,
+			DefaultCharacter: true,
+			Active:           true,
 		},
 		2: &models.Character{
-			ID:             2,
-			AccountID:      2,
-			CorporationID:  2,
-			Name:           "Please Ignore",
-			EVECharacterID: 2,
-			Active:         true,
+			ID:               2,
+			AccountID:        2,
+			CorporationID:    2,
+			Name:             "Please Ignore",
+			EVECharacterID:   2,
+			DefaultCharacter: true,
+			Active:           true,
 		},
 		3: &models.Character{
-			ID:             3,
-			AccountID:      3,
-			CorporationID:  1,
-			Name:           "Herp",
-			EVECharacterID: 3,
-			Active:         true,
+			ID:               3,
+			AccountID:        3,
+			CorporationID:    1,
+			Name:             "Herp",
+			EVECharacterID:   3,
+			DefaultCharacter: true,
+			Active:           true,
 		},
 		4: &models.Character{
-			ID:             4,
-			AccountID:      3,
-			CorporationID:  1,
-			Name:           "Derp",
-			EVECharacterID: 4,
-			Active:         true,
+			ID:               4,
+			AccountID:        3,
+			CorporationID:    1,
+			Name:             "Derp",
+			EVECharacterID:   4,
+			DefaultCharacter: false,
+			Active:           true,
 		},
 		5: &models.Character{
-			ID:             5,
-			AccountID:      4,
-			CorporationID:  2,
-			Name:           "Spai",
-			EVECharacterID: 5,
-			Active:         false,
+			ID:               5,
+			AccountID:        4,
+			CorporationID:    2,
+			Name:             "Spai",
+			EVECharacterID:   5,
+			DefaultCharacter: false,
+			Active:           false,
 		},
 		6: &models.Character{
-			ID:             6,
-			AccountID:      4,
-			CorporationID:  2,
-			Name:           "NoSpai",
-			EVECharacterID: 6,
-			Active:         false,
+			ID:               6,
+			AccountID:        4,
+			CorporationID:    2,
+			Name:             "NoSpai",
+			EVECharacterID:   6,
+			DefaultCharacter: true,
+			Active:           false,
 		},
 	}
 

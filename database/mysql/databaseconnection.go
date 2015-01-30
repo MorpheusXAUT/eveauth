@@ -249,6 +249,18 @@ func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	return users, nil
 }
 
+// LoadAllApplications retrieves all applications from the database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAllApplications() ([]*models.Application, error) {
+	var applications []*models.Application
+
+	err := c.conn.Select(&applications, "SELECT id, name, maintainer, secret, callback, active FROM applications")
+	if err != nil {
+		return nil, err
+	}
+
+	return applications, nil
+}
+
 // LoadAccount retrieves the account with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAccount(accountID int64) (*models.Account, error) {
 	account := &models.Account{}

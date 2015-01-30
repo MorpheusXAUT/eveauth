@@ -32,6 +32,8 @@ type Connection interface {
 	LoadAllGroups() ([]*models.Group, error)
 	// LoadAllUsers retrieves all users (and their associates groups and user roles) from the database, returning an error if the query failed
 	LoadAllUsers() ([]*models.User, error)
+	// LoadAllApplications retrieves all applications from the database, returning an error if the query failed
+	LoadAllApplications() ([]*models.Application, error)
 
 	// LoadAccount retrieves the account with the given ID from the database, returning an error if the query failed
 	LoadAccount(accountID int64) (*models.Account, error)
