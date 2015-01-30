@@ -284,7 +284,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/authorize")
+		err := controller.Session.SetLoginRedirect(w, r, r.URL.String())
 		if err != nil {
 			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
 			controller.SendRawError(w, http.StatusInternalServerError, err)
@@ -292,6 +292,57 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		}
 
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "authorize", response)
+
+		return
+	}
+
+	app := r.FormValue("app")
+	callback := r.FormValue("callback")
+	auth := r.FormValue("auth")
+
+	if len(app) == 0 || len(callback) == 0 || len(auth) == 0 {
+		misc.Logger.Warnf("Received empty app, callback or auth")
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Empty app, callback or auth, please try again!")
+
+		controller.SendResponse(w, r, "authorize", response)
+
+		return
+	}
+
+	err = controller.Session.VerifyApplication(app, callback, auth)
+	if err != nil {
+		misc.Logger.Warnf("Failed to verify app authentication: [%v]", err)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to authenticate app, please try again!")
+
+		controller.SendResponse(w, r, "authorize", response)
+
+		return
+	}
+
+	_, err = controller.Session.EncodeUserPermissions(r)
+	if err != nil {
+		misc.Logger.Warnf("Failed to encode user permissions: [%v]", err)
+
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to encode user permissions, please try again!")
+
+		controller.SendResponse(w, r, "authorize", response)
+
 		return
 	}
 

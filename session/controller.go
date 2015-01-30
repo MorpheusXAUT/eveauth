@@ -115,7 +115,9 @@ func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Reques
 
 	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password))
 
-	logErr := controller.database.LogAuthenticationAttempt(username, r.RemoteAddr, r.UserAgent(), (err == nil))
+	loginAttempt := models.NewLoginAttempt(username, r.RemoteAddr, r.UserAgent(), (err == nil))
+
+	logErr := controller.database.SaveAuthenticationAttempt(loginAttempt)
 	if logErr != nil {
 		misc.Logger.Errorf("Failed to log authentication attempt: [%v]", logErr)
 	}
@@ -267,4 +269,30 @@ func (controller *Controller) GetUser(r *http.Request) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+// VerifyApplication verifies the application to be authorized to perform requests to the auth backend
+func (controller *Controller) VerifyApplication(appID string, callback string, auth string) error {
+	applicationID, err := strconv.ParseInt(appID, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	application, err := controller.database.LoadApplication(applicationID)
+	if err != nil {
+		return err
+	}
+
+	verified := misc.VerifyMessageHMACSHA256(fmt.Sprintf("%d:%s", application.ID, application.Callback), auth, application.Secret)
+
+	if !verified {
+		return fmt.Errorf("Failed to verify HMAC")
+	}
+
+	return nil
+}
+
+// EncodeUserPermissions encodes the user's current permissions in a JSON struct and returns the encrypted payload
+func (controller *Controller) EncodeUserPermissions(r *http.Request) (string, error) {
+	return "", nil
 }

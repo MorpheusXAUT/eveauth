@@ -59,7 +59,7 @@ func EncryptAESCFB(message string, key string) (string, error) {
 	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
-// DecryptAESCFG decrypts a given (encrypted) string using AES-CFG and the given 32 bytes key
+// DecryptAESCFB decrypts a given (encrypted) string using AES-CFB and the given 32 bytes key
 func DecryptAESCFB(encrypted string, key string) (string, error) {
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
