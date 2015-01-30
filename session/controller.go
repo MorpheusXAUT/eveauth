@@ -2,6 +2,7 @@ package session
 
 import (
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -272,27 +273,46 @@ func (controller *Controller) GetUser(r *http.Request) (*models.User, error) {
 }
 
 // VerifyApplication verifies the application to be authorized to perform requests to the auth backend
-func (controller *Controller) VerifyApplication(appID string, callback string, auth string) error {
+func (controller *Controller) VerifyApplication(appID string, callback string, auth string) (*models.Application, error) {
 	applicationID, err := strconv.ParseInt(appID, 10, 64)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	application, err := controller.database.LoadApplication(applicationID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	verified := misc.VerifyMessageHMACSHA256(fmt.Sprintf("%d:%s", application.ID, application.Callback), auth, application.Secret)
 
 	if !verified {
-		return fmt.Errorf("Failed to verify HMAC")
+		return nil, fmt.Errorf("Failed to verify HMAC")
 	}
 
-	return nil
+	return application, nil
 }
 
 // EncodeUserPermissions encodes the user's current permissions in a JSON struct and returns the encrypted payload
-func (controller *Controller) EncodeUserPermissions(r *http.Request) (string, error) {
-	return "", nil
+func (controller *Controller) EncodeUserPermissions(r *http.Request, application *models.Application) (string, error) {
+	dataSession, _ := controller.store.Get(r, "eveauthData")
+
+	user, ok := dataSession.Values["user"].(*models.User)
+	if !ok {
+		return "", fmt.Errorf("Failed to retrieve user from data session")
+	}
+
+	authUser := user.ToAuthUser()
+
+	payload, err := json.Marshal(authUser)
+	if err != nil {
+		return "", err
+	}
+
+	encryptedPayload, err := misc.EncryptAESCFB(string(payload), application.Secret)
+	if err != nil {
+		return "", err
+	}
+
+	return encryptedPayload, nil
 }

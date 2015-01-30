@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/morpheusxaut/eveauth/misc"
@@ -322,7 +323,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	err = controller.Session.VerifyApplication(app, callback, auth)
+	application, err := controller.Session.VerifyApplication(app, callback, auth)
 	if err != nil {
 		misc.Logger.Warnf("Failed to verify app authentication: [%v]", err)
 
@@ -334,7 +335,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	_, err = controller.Session.EncodeUserPermissions(r)
+	encryptedPayload, err := controller.Session.EncodeUserPermissions(r, application)
 	if err != nil {
 		misc.Logger.Warnf("Failed to encode user permissions: [%v]", err)
 
@@ -346,10 +347,24 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	response["success"] = true
-	response["error"] = nil
+	callbackURL, err := url.Parse(callback)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse callback URL: [%v]", err)
 
-	controller.SendResponse(w, r, "authorize", response)
+		response["success"] = false
+		response["error"] = fmt.Errorf("Failed to parse callback URL, please try again!")
+
+		controller.SendResponse(w, r, "authorize", response)
+
+		return
+	}
+
+	callbackPayload := url.Values{}
+	callbackPayload.Add("permissions", encryptedPayload)
+
+	callbackURL.RawQuery = callbackPayload.Encode()
+
+	http.Redirect(w, r, callbackURL.String(), http.StatusSeeOther)
 }
 
 // SettingsGetHandler provides the user with some basic settings for his account
