@@ -53,6 +53,8 @@ type Connection interface {
 	LoadUser(userID int64) (*models.User, error)
 	// LoadUserFromUsername retrieves the user (and its associated groups and user roles) with the given username from the database, returning an error if the query failed
 	LoadUserFromUsername(username string) (*models.User, error)
+	// LoadApplication retrieves the application with the given application ID from the database, returning an error if the query failed
+	LoadApplication(applicationID int64) (*models.Application, error)
 
 	// LoadAllAccountsForUser retrieves all accounts associated with the given user from the database, returning an error if the query failed
 	LoadAllAccountsForUser(userID int64) ([]*models.Account, error)

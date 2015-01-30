@@ -453,6 +453,18 @@ func (c *DatabaseConnection) LoadUserFromUsername(username string) (*models.User
 	return user, nil
 }
 
+// LoadApplication retrieves the application with the given application ID from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadApplication(applicationID int64) (*models.Application, error) {
+	application := &models.Application{}
+
+	err := c.conn.Get(application, "SELECT id, name, maintainer, secret, callback, active FROM applications WHERE id=?", applicationID)
+	if err != nil {
+		return nil, err
+	}
+
+	return application, nil
+}
+
 // LoadAllAccountsForUser retrieves all accounts associated with the given user from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAllAccountsForUser(userID int64) ([]*models.Account, error) {
 	var accounts []*models.Account
