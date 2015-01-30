@@ -24,6 +24,18 @@ type User struct {
 	Groups []*Group `json:"groups,omitempty"`
 }
 
+// AuthUser represents a user used by the authorization handler to pass required information to apps
+type AuthUser struct {
+	// ID represents the database ID of the User
+	ID int64 `json:"id"`
+	// Username represents the username of the User
+	Username string `json:"username"`
+	// Roles contains the names of all the rules the User has been granted
+	Roles []string `json:"roles,omitempty"`
+	// Characters contains all AuthCharacters for the User
+	Characters []*AuthCharacter `json:"characters,omitempty"`
+}
+
 // NewUser creates a new user with the given information
 func NewUser(username string, password string, email string, active bool) *User {
 	user := &User{
@@ -40,9 +52,51 @@ func NewUser(username string, password string, email string, active bool) *User 
 	return user
 }
 
+// ToAuthUser converts the given iser to an AuthUser, exporting only the information required by third-party apps
+func (user *User) ToAuthUser() *AuthUser {
+	authUser := &AuthUser{
+		ID:         user.ID,
+		Username:   user.Username,
+		Roles:      make([]string, 0),
+		Characters: make([]*AuthCharacter, 0),
+	}
+
+	for _, userRole := range user.UserRoles {
+		if userRole.Granted {
+			authUser.Roles = append(authUser.Roles, userRole.Role.Name)
+		}
+	}
+
+	for _, group := range user.Groups {
+		for _, groupRole := range group.GroupRoles {
+			if groupRole.Granted {
+				authUser.Roles = append(authUser.Roles, groupRole.Role.Name)
+			}
+		}
+	}
+
+	for _, account := range user.Accounts {
+		for _, character := range account.Characters {
+			authUser.Characters = append(authUser.Characters, character.ToAuthCharacter())
+		}
+	}
+
+	return authUser
+}
+
 // String represents a JSON encoded representation of the user
 func (user *User) String() string {
 	jsonContent, err := json.Marshal(user)
+	if err != nil {
+		return ""
+	}
+
+	return string(jsonContent)
+}
+
+// String represents a JSON encoded representation of the auth user
+func (authUser *AuthUser) String() string {
+	jsonContent, err := json.Marshal(authUser)
 	if err != nil {
 		return ""
 	}
