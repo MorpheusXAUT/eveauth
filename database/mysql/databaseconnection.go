@@ -932,7 +932,6 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 // SaveAllGroupsForUser saves all group memberships for the user
 func (c *DatabaseConnection) SaveAllGroupsForUser(userID int64, groups []*models.Group) ([]*models.Group, error) {
 	for _, group := range groups {
-		// TODO actual implementation for removing someone from a group
 		_, err := c.conn.Exec("INSERT INTO usergroups(userid, groupid, active) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE userid=?, groupid=?, active=?", userID, group.ID, true, userID, group.ID, true)
 		if err != nil {
 			return nil, err
@@ -940,6 +939,16 @@ func (c *DatabaseConnection) SaveAllGroupsForUser(userID int64, groups []*models
 	}
 
 	return groups, nil
+}
+
+// LogAuthenticationAttempt logs the username, remote address and user agent for each an authentication attempt to the MySQL database
+func (c *DatabaseConnection) LogAuthenticationAttempt(username string, remoteAddr string, userAgent string, successful bool) error {
+	_, err := c.conn.Exec("INSERT INTO loginattempts(username, remoteaddr, useragent, successful) VALUES(?, ?, ?, ?)", username, remoteAddr, userAgent, successful)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // RemoveUserFromGroup removes a user from the given group, updates the MySQL database and returns the updated model

@@ -114,6 +114,12 @@ func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Reques
 	storedPassword, err := controller.database.LoadPasswordForUser(username)
 
 	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password))
+
+	logErr := controller.database.LogAuthenticationAttempt(username, r.RemoteAddr, r.UserAgent(), (err == nil))
+	if logErr != nil {
+		misc.Logger.Errorf("Failed to log authentication attempt: [%v]", logErr)
+	}
+
 	if err != nil {
 		return err
 	}

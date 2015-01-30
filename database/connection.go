@@ -90,6 +90,8 @@ type Connection interface {
 	// SaveUser saves a user to the database, returning the updated model or an error if the query failed
 	SaveUser(user *models.User) (*models.User, error)
 
+	// LogAuthenticationAttempt logs the username, remote address and user agent for each an authentication attempt to the database
+	LogAuthenticationAttempt(username string, remoteAddr string, userAgent string, successful bool) error
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
 	RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error)
 }

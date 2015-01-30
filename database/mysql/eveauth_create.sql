@@ -3,12 +3,12 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
--- Dumping database structure for eveauth
-CREATE DATABASE IF NOT EXISTS `eveauth` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `eveauth`;
+-- Dumping database structure for eveauth_dev
+CREATE DATABASE IF NOT EXISTS `eveauth_dev` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `eveauth_dev`;
 
 
--- Dumping structure for table eveauth.accounts
+-- Dumping structure for table eveauth_dev.accounts
 CREATE TABLE IF NOT EXISTS `accounts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.characters
+-- Dumping structure for table eveauth_dev.characters
 CREATE TABLE IF NOT EXISTS `characters` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `accountid` int(11) NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `characters` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.corporations
+-- Dumping structure for table eveauth_dev.corporations
 CREATE TABLE IF NOT EXISTS `corporations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS `corporations` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.grouproles
+-- Dumping structure for table eveauth_dev.grouproles
 CREATE TABLE IF NOT EXISTS `grouproles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupid` int(11) NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `grouproles` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.groups
+-- Dumping structure for table eveauth_dev.groups
 CREATE TABLE IF NOT EXISTS `groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -94,7 +94,21 @@ CREATE TABLE IF NOT EXISTS `groups` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.roles
+-- Dumping structure for table eveauth_dev.loginattempts
+CREATE TABLE IF NOT EXISTS `loginattempts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(64) NOT NULL,
+  `remoteaddr` varchar(64) NOT NULL,
+  `useragent` varchar(256) NOT NULL,
+  `successful` tinyint(1) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Data exporting was unselected.
+
+
+-- Dumping structure for table eveauth_dev.roles
 CREATE TABLE IF NOT EXISTS `roles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -106,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.usergroups
+-- Dumping structure for table eveauth_dev.usergroups
 CREATE TABLE IF NOT EXISTS `usergroups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
@@ -123,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `usergroups` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.userroles
+-- Dumping structure for table eveauth_dev.userroles
 CREATE TABLE IF NOT EXISTS `userroles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
@@ -141,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `userroles` (
 -- Data exporting was unselected.
 
 
--- Dumping structure for table eveauth.users
+-- Dumping structure for table eveauth_dev.users
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
