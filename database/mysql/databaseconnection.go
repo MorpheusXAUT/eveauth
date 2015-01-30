@@ -68,7 +68,7 @@ func (c *DatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[str
 func (c *DatabaseConnection) LoadAllAccounts() ([]*models.Account, error) {
 	var accounts []*models.Account
 
-	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts")
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active FROM accounts")
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (c *DatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error
 func (c *DatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
 	var characters []*models.Character
 
-	err := c.conn.Select(&characters, "SELECT id, accountid, corporationid, name, evecharacterid, active FROM characters")
+	err := c.conn.Select(&characters, "SELECT id, accountid, corporationid, name, evecharacterid, defaultcharacter, active FROM characters")
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 func (c *DatabaseConnection) LoadAccount(accountID int64) (*models.Account, error) {
 	account := &models.Account{}
 
-	err := c.conn.Get(account, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts WHERE id=?", accountID)
+	err := c.conn.Get(account, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active FROM accounts WHERE id=?", accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +296,7 @@ func (c *DatabaseConnection) LoadCorporationFromEVECorporationID(eveCorporationI
 func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character, error) {
 	character := &models.Character{}
 
-	err := c.conn.Get(character, "SELECT id, accountid, corporationid, name, evecharacterid, active FROM characters WHERE id=?", characterID)
+	err := c.conn.Get(character, "SELECT id, accountid, corporationid, name, evecharacterid, defaultcharacter, active FROM characters WHERE id=?", characterID)
 	if err != nil {
 		return nil, err
 	}
@@ -469,7 +469,7 @@ func (c *DatabaseConnection) LoadApplication(applicationID int64) (*models.Appli
 func (c *DatabaseConnection) LoadAllAccountsForUser(userID int64) ([]*models.Account, error) {
 	var accounts []*models.Account
 
-	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts WHERE userid=?", userID)
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active FROM accounts WHERE userid=?", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -490,7 +490,7 @@ func (c *DatabaseConnection) LoadAllAccountsForUser(userID int64) ([]*models.Acc
 func (c *DatabaseConnection) LoadAllCharactersForAccount(accountID int64) ([]*models.Character, error) {
 	var characters []*models.Character
 
-	err := c.conn.Select(&characters, "SELECT id, accountid, corporationid, name, evecharacterid, active FROM characters WHERE accountid=?", accountID)
+	err := c.conn.Select(&characters, "SELECT id, accountid, corporationid, name, evecharacterid, defaultcharacter, active FROM characters WHERE accountid=?", accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -651,12 +651,12 @@ func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Accou
 			character = char
 		}
 
-		_, err := c.conn.Exec("UPDATE accounts SET userid=?, apikeyid=?, apivcode=?, apiaccessmask=?, active=? WHERE id=?", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.Active, account.ID)
+		_, err := c.conn.Exec("UPDATE accounts SET userid=?, apikeyid=?, apivcode=?, apiaccessmask=?, defaultaccount=?, active=? WHERE id=?", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.DefaultAccount, account.Active, account.ID)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		resp, err := c.conn.Exec("INSERT INTO accounts(userid, apikeyid, apivcode, apiaccessmask, active) VALUES(?, ?, ?, ?, ?)", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.Active)
+		resp, err := c.conn.Exec("INSERT INTO accounts(userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active) VALUES(?, ?, ?, ?, ?, ?)", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.DefaultAccount, account.Active)
 		if err != nil {
 			return nil, err
 		}
@@ -710,12 +710,12 @@ func (c *DatabaseConnection) SaveCorporation(corporation *models.Corporation) (*
 // SaveCharacter saves a character to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveCharacter(character *models.Character) (*models.Character, error) {
 	if character.ID > 0 {
-		_, err := c.conn.Exec("UPDATE characters SET accountid=?, corporationid=?, name=?, evecharacterid=?, active=? WHERE id=?", character.AccountID, character.CorporationID, character.Name, character.EVECharacterID, character.Active, character.ID)
+		_, err := c.conn.Exec("UPDATE characters SET accountid=?, corporationid=?, name=?, evecharacterid=?, defaultcharacter=?, active=? WHERE id=?", character.AccountID, character.CorporationID, character.Name, character.EVECharacterID, character.DefaultCharacter, character.Active, character.ID)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		resp, err := c.conn.Exec("INSERT INTO characters(accountid, corporationid, name, evecharacterid, active) VALUES(?, ?, ?, ?, ?)", character.AccountID, character.CorporationID, character.Name, character.EVECharacterID, character.Active)
+		resp, err := c.conn.Exec("INSERT INTO characters(accountid, corporationid, name, evecharacterid, defaultcharacter, active) VALUES(?, ?, ?, ?, ?, ?)", character.AccountID, character.CorporationID, character.Name, character.EVECharacterID, character.DefaultCharacter, character.Active)
 		if err != nil {
 			return nil, err
 		}

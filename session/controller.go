@@ -205,7 +205,7 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 		return err
 	}
 
-	account := models.NewAccount(user.ID, keyID, apivCode, 0, true)
+	account := models.NewAccount(user.ID, keyID, apivCode, 0, false, true)
 
 	apiClient := misc.CreateAPIClient(account)
 
@@ -243,7 +243,7 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 			return err
 		}
 
-		character := models.NewCharacter(account.ID, corporation.ID, accountChar.Name, accountCharID, true)
+		character := models.NewCharacter(account.ID, corporation.ID, accountChar.Name, accountCharID, false, true)
 
 		account.Characters = append(account.Characters, character)
 	}

@@ -16,6 +16,8 @@ type Character struct {
 	Name string `json:"name"`
 	// EVECharacterID represents the ingame character ID of the Character
 	EVECharacterID int64 `json:"eveCharacterID"`
+	// DefaultCharacter indicates whether the character is selected as default for the account
+	DefaultCharacter bool `json:"defaultCharacter"`
 	// Active indicates whether the Character is set as active
 	Active bool `json:"active"`
 }
@@ -30,17 +32,20 @@ type AuthCharacter struct {
 	Name string `json:"name"`
 	// EVECharacterID represents the ingame character ID of the Character
 	EVECharacterID int64 `json:"eveCharacterID"`
+	// DefaultCharacter indicates whether the character is selected as default for the account
+	DefaultCharacter bool `json:"defaultCharacter"`
 }
 
 // NewCharacter creates a new character with the given information
-func NewCharacter(accountID int64, corporationID int64, name string, eveCharacterID int64, active bool) *Character {
+func NewCharacter(accountID int64, corporationID int64, name string, eveCharacterID int64, defaultCharacter bool, active bool) *Character {
 	character := &Character{
-		ID:             -1,
-		AccountID:      accountID,
-		CorporationID:  corporationID,
-		Name:           name,
-		EVECharacterID: eveCharacterID,
-		Active:         active,
+		ID:               -1,
+		AccountID:        accountID,
+		CorporationID:    corporationID,
+		Name:             name,
+		EVECharacterID:   eveCharacterID,
+		DefaultCharacter: defaultCharacter,
+		Active:           active,
 	}
 
 	return character
@@ -49,10 +54,11 @@ func NewCharacter(accountID int64, corporationID int64, name string, eveCharacte
 // ToAuthCharacter converts the given character to an AuthCharacter, exporting only the information required by third-party apps
 func (character *Character) ToAuthCharacter() *AuthCharacter {
 	authCharacter := &AuthCharacter{
-		ID:             character.ID,
-		CorporationID:  character.CorporationID,
-		Name:           character.Name,
-		EVECharacterID: character.EVECharacterID,
+		ID:               character.ID,
+		CorporationID:    character.CorporationID,
+		Name:             character.Name,
+		EVECharacterID:   character.EVECharacterID,
+		DefaultCharacter: character.DefaultCharacter,
 	}
 
 	return authCharacter
