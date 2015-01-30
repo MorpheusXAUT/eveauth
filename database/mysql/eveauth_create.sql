@@ -25,6 +25,22 @@ CREATE TABLE IF NOT EXISTS `accounts` (
 -- Data exporting was unselected.
 
 
+-- Dumping structure for table eveauth.applications
+CREATE TABLE IF NOT EXISTS `applications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  `maintainer` varchar(64) NOT NULL,
+  `secret` varchar(64) NOT NULL,
+  `callback` varchar(128) NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `secret` (`secret`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table eveauth.characters
 CREATE TABLE IF NOT EXISTS `characters` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
