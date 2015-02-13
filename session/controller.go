@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/morpheusxaut/eveauth/database"
+	"github.com/morpheusxaut/eveauth/mail"
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/models"
 
@@ -22,14 +23,16 @@ import (
 type Controller struct {
 	config   *misc.Configuration
 	database database.Connection
+	mail     *mail.Controller
 	store    *redistore.RediStore
 }
 
 // SetupSessionController prepares the controller's session store and sets a default session lifespan
-func SetupSessionController(conf *misc.Configuration, db database.Connection) (*Controller, error) {
+func SetupSessionController(conf *misc.Configuration, db database.Connection, mailer *mail.Controller) (*Controller, error) {
 	controller := &Controller{
 		config:   conf,
 		database: db,
+		mail:     mailer,
 	}
 
 	store, err := redistore.NewRediStoreWithDB(10, "tcp", controller.config.RedisHost, controller.config.RedisPassword, "0", securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
@@ -173,6 +176,10 @@ func (controller *Controller) CreateNewUser(w http.ResponseWriter, r *http.Reque
 func (controller *Controller) SendEmailVerification(username string, email string) error {
 	verification := misc.GenerateRandomString(32)
 
+	err := controller.mail.SendEmailVerification(username, email, verification)
+	if err != nil {
+		return err
+	}
 	// TODO actual implementation, skipped for now
 	misc.Logger.Tracef("Sending email verification for user %q to email %q using verification code %q", username, email, verification)
 

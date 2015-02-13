@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"github.com/morpheusxaut/eveauth/database"
+	"github.com/morpheusxaut/eveauth/mail"
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/session"
 	"github.com/morpheusxaut/eveauth/web"
@@ -36,7 +37,9 @@ func main() {
 		os.Exit(2)
 	}
 
-	sessionController, err := session.SetupSessionController(config, db)
+	mailer := mail.SetupMailController(config, db)
+
+	sessionController, err := session.SetupSessionController(config, db, mailer)
 	if err != nil {
 		misc.Logger.Criticalf("Failed to set up session controller: [%v]", err)
 		os.Exit(2)
