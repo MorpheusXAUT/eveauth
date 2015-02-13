@@ -14,8 +14,8 @@ import (
 
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"github.com/morpheusxaut/redistore"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/boj/redistore.v1"
 )
 
 // Controller provides functionality to handle sessions and cached values as well as retrieval of data
@@ -32,7 +32,7 @@ func SetupSessionController(conf *misc.Configuration, db database.Connection) (*
 		database: db,
 	}
 
-	store, err := redistore.NewRediStore(10, "tcp", controller.config.RedisHost, controller.config.RedisPassword, securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
+	store, err := redistore.NewRediStoreWithDB(10, "tcp", controller.config.RedisHost, controller.config.RedisPassword, "0", securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
 	if err != nil {
 		return nil, err
 	}
