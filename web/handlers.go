@@ -247,6 +247,44 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 	http.Redirect(w, r, "/settings/accounts", http.StatusSeeOther)
 }
 
+// LoginVerifyResendGetHandler allows the user to request re-sending the verification code to his email address
+func (controller *Controller) LoginVerifyResendGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Resend email verification"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	response["loggedIn"] = loggedIn
+	response["success"] = true
+	response["error"] = nil
+
+	controller.SendResponse(w, r, "loginverifyresend", response)
+}
+
+// LoginVerifyResendPostHandler resends the activiation email as requested by the user
+func (controller *Controller) LoginVerifyResendPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Resend email verification"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	response["loggedIn"] = loggedIn
+
+	// TODO resend email verification
+}
+
 // LoginResetGetHandler allows the user to reset their password
 func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
