@@ -25,6 +25,8 @@ type Configuration struct {
 	RedisPassword string
 	// SMTPHost represents the hostname:port of the SMTP server used for sending mails
 	SMTPHost string
+	// SMTPStartTLS indicates whether the SMTP connection should use the StartTLS command to secure communications
+	SMTPStartTLS bool
 	// SMTPUser represents the username used to authenticate with the SMTP server
 	SMTPUser string
 	// SMTPPassword represents the password used to authenticate with the SMTP server
@@ -37,6 +39,8 @@ type Configuration struct {
 	DebugTemplates bool
 	// HTTPHost represents the hostname:port the application should listen to for requests
 	HTTPHost string
+	// HTTPPublicURL represents the public URL the eveauth app is reachable at
+	HTTPPublicURL string
 }
 
 // LoadConfig creates a Configuration by either using commandline flags or a configuration file, returning an error if the parsing failed
