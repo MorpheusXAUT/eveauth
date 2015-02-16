@@ -3,6 +3,16 @@ function displayError(error) {
 	$('html, body').animate({ scrollTop: '0px' });
 }
 
+function displayInfo(info) {
+	$('div.col-md').prepend('<div class="alert alert-info alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><strong>Just FYI!</strong> '+error+'</div>');
+	$('html, body').animate({ scrollTop: '0px' });
+}
+
+function displaySuccess(success) {
+	$('div.col-md').prepend('<div class="alert alert-success alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><strong>Yay!</strong> '+error+'</div>');
+	$('html, body').animate({ scrollTop: '0px' });
+}
+
 function displayAjaxError(jqXHR, textStatus, errorThrown) {
 	switch (textStatus) {
 		case null:
