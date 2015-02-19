@@ -32,11 +32,11 @@ func (templates *Templates) ExecuteTemplates(w http.ResponseWriter, r *http.Requ
 // TemplateFunctions prepares a map of functions to be used within templates
 func (templates *Templates) TemplateFunctions(r *http.Request) template.FuncMap {
 	return template.FuncMap{
-		"IsErrorNil": func(e interface{}) bool { return templates.IsErrorNil(e) },
+		"IsResultNil": func(r interface{}) bool { return templates.IsResultNil(r) },
 	}
 }
 
-// IsErrorNil checks whether the given error/interface is nil
-func (templates *Templates) IsErrorNil(e interface{}) bool {
-	return (e == nil)
+// IsResultNil checks whether the given result/interface is nil
+func (templates *Templates) IsResultNil(r interface{}) bool {
+	return (r == nil)
 }

@@ -18,8 +18,8 @@ func (controller *Controller) IndexGetHandler(w http.ResponseWriter, r *http.Req
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	response["loggedIn"] = loggedIn
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "index", response)
 }
@@ -39,8 +39,8 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "login", response)
 }
@@ -64,8 +64,8 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
 
 		controller.SendResponse(w, r, "login", response)
 
@@ -78,8 +78,8 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 	if len(username) == 0 || len(password) == 0 {
 		misc.Logger.Warnf("Received empty username or password")
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Empty username or password, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty username or password, please try again!")
 
 		controller.SendResponse(w, r, "login", response)
 
@@ -90,8 +90,8 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		misc.Logger.Warnf("Failed to authenticate user: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Invalid username or password, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Invalid username or password, please try again!")
 
 		controller.SendResponse(w, r, "login", response)
 
@@ -116,8 +116,8 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "loginregister", response)
 }
@@ -141,8 +141,8 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
 
 		controller.SendResponse(w, r, "loginregister", response)
 
@@ -156,8 +156,8 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	if len(username) == 0 || len(email) == 0 || len(password) == 0 {
 		misc.Logger.Warnf("Received empty username, email or password")
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Empty username, email or password, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty username, email or password, please try again!")
 
 		controller.SendResponse(w, r, "loginregister", response)
 
@@ -168,8 +168,8 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	if err != nil {
 		misc.Logger.Warnf("Failed to create new user: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to create new user, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to create new user, please try again!")
 
 		controller.SendResponse(w, r, "loginregister", response)
 
@@ -180,8 +180,8 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	if err != nil {
 		misc.Logger.Warnf("Failed to send email verification: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to send email verification, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to send email verification, please try again!")
 
 		controller.SendResponse(w, r, "loginregister", response)
 
@@ -210,8 +210,8 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
 
 		controller.SendResponse(w, r, "loginregister", response)
 
@@ -224,8 +224,8 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 	if len(email) == 0 || len(verification) == 0 {
 		misc.Logger.Warnf("Received empty email or verification code")
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Empty email or verification code, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty email or verification code, please try again!")
 
 		controller.SendResponse(w, r, "loginregister", response)
 
@@ -236,8 +236,8 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 	if err != nil {
 		misc.Logger.Warnf("Failed to verify email: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to verify email, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to verify email, please try again!")
 
 		controller.SendResponse(w, r, "loginregister", response)
 
@@ -261,8 +261,8 @@ func (controller *Controller) LoginVerifyResendGetHandler(w http.ResponseWriter,
 	}
 
 	response["loggedIn"] = loggedIn
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "loginverifyresend", response)
 }
@@ -299,8 +299,8 @@ func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *htt
 	}
 
 	response["loggedIn"] = loggedIn
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "loginreset", response)
 }
@@ -338,8 +338,8 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
 
 		controller.SendResponse(w, r, "authorize", response)
 
@@ -353,8 +353,8 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	if len(app) == 0 || len(callback) == 0 || len(auth) == 0 {
 		misc.Logger.Warnf("Received empty app, callback or auth")
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Empty app, callback or auth, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty app, callback or auth, please try again!")
 
 		controller.SendResponse(w, r, "authorize", response)
 
@@ -365,8 +365,8 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	if err != nil {
 		misc.Logger.Warnf("Failed to verify app authentication: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to authenticate app, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to authenticate app, please try again!")
 
 		controller.SendResponse(w, r, "authorize", response)
 
@@ -377,8 +377,8 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	if err != nil {
 		misc.Logger.Warnf("Failed to encode user permissions: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to encode user permissions, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to encode user permissions, please try again!")
 
 		controller.SendResponse(w, r, "authorize", response)
 
@@ -389,8 +389,8 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse callback URL: [%v]", err)
 
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to parse callback URL, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse callback URL, please try again!")
 
 		controller.SendResponse(w, r, "authorize", response)
 
@@ -427,8 +427,8 @@ func (controller *Controller) SettingsGetHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "settings", response)
 }
@@ -457,15 +457,15 @@ func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, 
 
 	user, err := controller.Session.GetUser(r)
 	if err != nil {
-		response["success"] = false
-		response["error"] = fmt.Errorf("Failed to load user data, please try again!")
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to load user data, please try again!")
 
 		controller.SendResponse(w, r, "settingsaccounts", response)
 	}
 
 	response["accounts"] = user.Accounts
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "settingsaccounts", response)
 }
@@ -496,8 +496,8 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
 
-		response["success"] = false
-		response["error"] = "Failed to parse form, please try again!"
+		response["status"] = 1
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
 
@@ -511,8 +511,8 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 	if len(command) == 0 || len(apiKeyID) == 0 || len(apivCode) == 0 {
 		misc.Logger.Warnf("Received empty command, apiKeyID or apivCode")
 
-		response["success"] = false
-		response["error"] = "Empty API Key ID or vCode, please try again!"
+		response["status"] = 1
+		response["result"] = "Empty API Key ID or vCode, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
 
@@ -525,12 +525,12 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 		if err != nil {
 			misc.Logger.Warnf("Failed to save API key: [%v]", err)
 
-			response["success"] = false
+			response["status"] = 1
 
 			if strings.Contains(err.Error(), "Duplicate entry") {
-				response["error"] = "An API key with this key ID already exists in database, please try again!"
+				response["result"] = "An API key with this key ID already exists in database, please try again!"
 			} else {
-				response["error"] = "Failed to save API key, please try again!"
+				response["result"] = "Failed to save API key, please try again!"
 			}
 
 			controller.SendJSONResponse(w, r, response)
@@ -539,8 +539,8 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 		}
 	}
 
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendJSONResponse(w, r, response)
 }
@@ -567,8 +567,8 @@ func (controller *Controller) SettingsCharactersGetHandler(w http.ResponseWriter
 		return
 	}
 
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "settingscharacters", response)
 }
@@ -582,8 +582,8 @@ func (controller *Controller) LegalGetHandler(w http.ResponseWriter, r *http.Req
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	response["loggedIn"] = loggedIn
-	response["success"] = true
-	response["error"] = nil
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "legal", response)
 }
