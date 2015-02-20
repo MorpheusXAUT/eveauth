@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/morpheusxaut/eveauth/database"
@@ -85,6 +86,15 @@ func (controller *Controller) IsLoggedIn(w http.ResponseWriter, r *http.Request)
 		return false
 	}
 
+	verifiedEmail, ok := loginSession.Values["verifiedEmail"].(bool)
+	if !ok {
+		return false
+	}
+
+	if !verifiedEmail {
+		return false
+	}
+
 	return true
 }
 
@@ -141,6 +151,7 @@ func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Reques
 	loginSession.Values["username"] = user.Username
 	loginSession.Values["userID"] = user.ID
 	loginSession.Values["timestamp"] = time.Now().Unix()
+	loginSession.Values["verifiedEmail"] = user.VerifiedEmail
 
 	dataSession.Values["user"] = user
 
@@ -154,46 +165,59 @@ func (controller *Controller) CreateNewUser(w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	user := models.NewUser(username, string(hashedPassword), email, true)
+	user := models.NewUser(username, string(hashedPassword), email, false, true)
 
-	user, err = controller.database.SaveUser(user)
-	if err != nil {
-		return err
-	}
+	user, err = controller.SetUser(w, r, user)
 
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
-	dataSession, _ := controller.store.Get(r, "eveauthData")
 
 	loginSession.Values["username"] = user.Username
 	loginSession.Values["userID"] = user.ID
-
-	dataSession.Values["user"] = user
+	loginSession.Values["verifiedEmail"] = user.VerifiedEmail
 
 	return sessions.Save(r, w)
 }
 
 // SendEmailVerification sends an email with a verification link to the given address, currently not implemented
-func (controller *Controller) SendEmailVerification(username string, email string) error {
+func (controller *Controller) SendEmailVerification(w http.ResponseWriter, r *http.Request, username string, email string) error {
 	verification := misc.GenerateRandomString(32)
 
 	err := controller.mail.SendEmailVerification(username, email, verification)
 	if err != nil {
 		return err
 	}
-	// TODO actual implementation, skipped for now
-	misc.Logger.Tracef("Sending email verification for user %q to email %q using verification code %q", username, email, verification)
 
-	return nil
+	loginSession, _ := controller.store.Get(r, "eveauthLogin")
+
+	loginSession.Values["emailVerification"] = verification
+
+	return sessions.Save(r, w)
 }
 
 // VerifyEmail checks the given code and verifies the presented email address is correct, currently not implemented
 func (controller *Controller) VerifyEmail(w http.ResponseWriter, r *http.Request, email string, verification string) error {
-	// TODO actual implementation, skipped for now
-	misc.Logger.Tracef("Verifying email %q using verification code %q", email, verification)
-
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
+	emailVerification, ok := loginSession.Values["emailVerification"].(string)
+	if !ok {
+		return fmt.Errorf("Failed to retrieve verification code from login session")
+	}
+
+	if !strings.EqualFold(emailVerification, verification) {
+		return fmt.Errorf("Failed to verify email address")
+	}
+
+	user, err := controller.GetUser(r)
+	if err != nil {
+		return err
+	}
+
+	user.VerifiedEmail = true
+
+	user, err = controller.SetUser(w, r, user)
+
 	loginSession.Values["timestamp"] = time.Now().Unix()
+	loginSession.Values["verifiedEmail"] = user.VerifiedEmail
 
 	return sessions.Save(r, w)
 }
@@ -277,6 +301,20 @@ func (controller *Controller) GetUser(r *http.Request) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+// SetUser saves the given user object to the database and updates the data session reference
+func (controller *Controller) SetUser(w http.ResponseWriter, r *http.Request, user *models.User) (*models.User, error) {
+	user, err := controller.database.SaveUser(user)
+	if err != nil {
+		return nil, err
+	}
+
+	dataSession, _ := controller.store.Get(r, "eveauthData")
+
+	dataSession.Values["user"] = user
+
+	return user, sessions.Save(r, w)
 }
 
 // VerifyApplication verifies the application to be authorized to perform requests to the auth backend

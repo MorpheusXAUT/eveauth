@@ -176,7 +176,7 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 		return
 	}
 
-	err = controller.Session.SendEmailVerification(username, email)
+	err = controller.Session.SendEmailVerification(w, r, username, email)
 	if err != nil {
 		misc.Logger.Warnf("Failed to send email verification: [%v]", err)
 
@@ -188,7 +188,10 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 		return
 	}
 
-	http.Redirect(w, r, "/settings/accounts", http.StatusSeeOther)
+	response["status"] = 2
+	response["result"] = "Verification email sent! Please use the provided link to verify your account!"
+
+	controller.SendResponse(w, r, "login", response)
 }
 
 // LoginVerifyGetHandler handles the verification of email addresses as produced by the registration system
