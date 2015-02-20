@@ -220,7 +220,7 @@ func (c *DatabaseConnection) LoadAllGroups() ([]*models.Group, error) {
 func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 	var users []*models.User
 
-	err := c.conn.Select(&users, "SELECT id, username, password, email, active FROM users")
+	err := c.conn.Select(&users, "SELECT id, username, password, email, verifiedemail, active FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +407,7 @@ func (c *DatabaseConnection) LoadGroup(groupID int64) (*models.Group, error) {
 func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 	user := &models.User{}
 
-	err := c.conn.Get(user, "SELECT id, username, password, email, active FROM users WHERE id=?", userID)
+	err := c.conn.Get(user, "SELECT id, username, password, email, verifiedemail, active FROM users WHERE id=?", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -438,7 +438,7 @@ func (c *DatabaseConnection) LoadUser(userID int64) (*models.User, error) {
 func (c *DatabaseConnection) LoadUserFromUsername(username string) (*models.User, error) {
 	user := &models.User{}
 
-	err := c.conn.Get(user, "SELECT id, username, password, email, active FROM users WHERE username LIKE ?", username)
+	err := c.conn.Get(user, "SELECT id, username, password, email, verifiedemail, active FROM users WHERE username LIKE ?", username)
 	if err != nil {
 		return nil, err
 	}
@@ -903,12 +903,12 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 			group = gr
 		}
 
-		_, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.Active, user.ID)
+		_, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, verifiedemail=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.VerifiedEmail, user.Active, user.ID)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		resp, err := c.conn.Exec("INSERT INTO users(username, password, email, active) VALUES(?, ?, ?, ?)", user.Username, user.Password, user.Email, user.Active)
+		resp, err := c.conn.Exec("INSERT INTO users(username, password, email, verifiedemail, active) VALUES(?, ?, ?, ?, ?)", user.Username, user.Password, user.Email, user.VerifiedEmail, user.Active)
 		if err != nil {
 			return nil, err
 		}

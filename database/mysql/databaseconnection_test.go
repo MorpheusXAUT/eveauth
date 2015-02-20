@@ -1406,11 +1406,12 @@ var (
 
 	testUsers = map[int]*models.User{
 		1: &models.User{
-			ID:       1,
-			Username: "test1",
-			Password: "$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe",
-			Email:    "test1@example.com",
-			Active:   true,
+			ID:            1,
+			Username:      "test1",
+			Password:      "$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe",
+			Email:         "test1@example.com",
+			VerifiedEmail: true,
+			Active:        true,
 			Accounts: []*models.Account{
 				testAccounts[1],
 			},
@@ -1422,11 +1423,12 @@ var (
 			},
 		},
 		2: &models.User{
-			ID:       2,
-			Username: "test2",
-			Password: "$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK",
-			Email:    "test2@example.com",
-			Active:   false,
+			ID:            2,
+			Username:      "test2",
+			Password:      "$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK",
+			Email:         "test2@example.com",
+			VerifiedEmail: false,
+			Active:        false,
 			Accounts: []*models.Account{
 				testAccounts[2],
 			},
@@ -1434,11 +1436,12 @@ var (
 			Groups:    []*models.Group{},
 		},
 		3: &models.User{
-			ID:       3,
-			Username: "test3",
-			Password: "$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q",
-			Email:    "test3@example.com",
-			Active:   true,
+			ID:            3,
+			Username:      "test3",
+			Password:      "$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q",
+			Email:         "test3@example.com",
+			VerifiedEmail: false,
+			Active:        true,
 			Accounts: []*models.Account{
 				testAccounts[3],
 				testAccounts[4],
@@ -1452,11 +1455,12 @@ var (
 			},
 		},
 		4: &models.User{
-			ID:       4,
-			Username: "test4",
-			Password: "$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy",
-			Email:    "test4@example.com",
-			Active:   false,
+			ID:            4,
+			Username:      "test4",
+			Password:      "$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy",
+			Email:         "test4@example.com",
+			VerifiedEmail: true,
+			Active:        false,
 			Accounts: []*models.Account{
 				testAccounts[5],
 				testAccounts[6],

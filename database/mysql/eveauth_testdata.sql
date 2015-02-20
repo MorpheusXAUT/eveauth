@@ -2,9 +2,6 @@
 /*!40101 SET NAMES utf8mb4 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-
-USE `eveauth`;
-
 -- Dumping data for table eveauth.accounts: ~6 rows (approximately)
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
 INSERT INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `apiaccessmask`, `defaultaccount`, `active`) VALUES
@@ -16,14 +13,14 @@ INSERT INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `apiaccessmask`,
 	(6, 4, 6, 'f', 268435455, 1, 0);
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 
--- Dumping data for table eveauth.applications: ~0 rows (approximately)
+-- Dumping data for table eveauth.applications: ~2 rows (approximately)
 /*!40000 ALTER TABLE `applications` DISABLE KEYS */;
 INSERT INTO `applications` (`id`, `name`, `maintainer`, `secret`, `callback`, `active`) VALUES
 	(1, 'Testapp', 'Testmaintainer', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'http://localhost/callback', 1),
 	(2, 'Apptest', 'Testmaintainer', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'http://example.com/callback', 0);
 /*!40000 ALTER TABLE `applications` ENABLE KEYS */;
 
--- Dumping data for table eveauth.characters: ~5 rows (approximately)
+-- Dumping data for table eveauth.characters: ~6 rows (approximately)
 /*!40000 ALTER TABLE `characters` DISABLE KEYS */;
 INSERT INTO `characters` (`id`, `accountid`, `corporationid`, `name`, `evecharacterid`, `defaultcharacter`, `active`) VALUES
 	(1, 1, 1, 'Test Character', 1, 1, 1),
@@ -70,7 +67,7 @@ INSERT INTO `roles` (`id`, `name`, `active`) VALUES
 	(4, 'logistics.write', 1);
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 
--- Dumping data for table eveauth.usergroups: ~0 rows (approximately)
+-- Dumping data for table eveauth.usergroups: ~6 rows (approximately)
 /*!40000 ALTER TABLE `usergroups` DISABLE KEYS */;
 INSERT INTO `usergroups` (`id`, `userid`, `groupid`, `active`) VALUES
 	(1, 1, 1, 1),
@@ -81,20 +78,20 @@ INSERT INTO `usergroups` (`id`, `userid`, `groupid`, `active`) VALUES
 	(6, 4, 2, 0);
 /*!40000 ALTER TABLE `usergroups` ENABLE KEYS */;
 
--- Dumping data for table eveauth.userroles: ~0 rows (approximately)
+-- Dumping data for table eveauth.userroles: ~2 rows (approximately)
 /*!40000 ALTER TABLE `userroles` DISABLE KEYS */;
 INSERT INTO `userroles` (`id`, `userid`, `roleid`, `autoadded`, `granted`) VALUES
 	(1, 1, 1, 0, 0),
 	(2, 3, 2, 1, 1);
 /*!40000 ALTER TABLE `userroles` ENABLE KEYS */;
 
--- Dumping data for table eveauth.users: ~0 rows (approximately)
+-- Dumping data for table eveauth.users: ~4 rows (approximately)
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` (`id`, `username`, `password`, `email`, `emailverification`, `active`) VALUES
-	(1, 'test1', '$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe', 'test1@example.com', NULL, 1),
-	(2, 'test2', '$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK', 'test2@example.com', NULL, 0),
-	(3, 'test3', '$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q', 'test3@example.com', NULL, 1),
-	(4, 'test4', '$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy', 'test4@example.com', NULL, 0);
+INSERT INTO `users` (`id`, `username`, `password`, `email`, `verifiedemail`, `active`) VALUES
+	(1, 'test1', '$2a$10$veif8VUZt7lShFhJKD0wGeY1YjCwIuWjYL0vQzlTqu8wNaYQMqzbe', 'test1@example.com', 1, 1),
+	(2, 'test2', '$2a$10$95z.WXfIreLKJ9px.3KgpOq4aXTG3DF7/5ehGYzUWALhpN6MMq/aK', 'test2@example.com', 0, 0),
+	(3, 'test3', '$2a$10$7Yxm2scdTVpEJpvZAT7tbOFA.G9JfyxtiHbr989iocX6U37C3/j4q', 'test3@example.com', 0, 1),
+	(4, 'test4', '$2a$10$WOWTgqaqLKbkb1uhYbtLnOuuYX4kXBC61GVAke7RkjiODoBpgGGzy', 'test4@example.com', 1, 0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

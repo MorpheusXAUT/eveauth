@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `username` varchar(32) NOT NULL,
   `password` varchar(60) NOT NULL,
   `email` varchar(128) NOT NULL,
-  `emailverification` varchar(32) DEFAULT NULL,
+  `verifiedemail` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
