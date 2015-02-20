@@ -14,6 +14,8 @@ type User struct {
 	Password string `json:"-"`
 	// Email represents the email address of the User
 	Email string `json:"email"`
+	// VerifiedEmail indicates whether the user has verified their email address
+	VerifiedEmail bool `json:"verifiedEmail"`
 	// Active indicates whether the User is set as active
 	Active bool `json:"active"`
 	// Accounts contains all accounts associated with the User
@@ -37,16 +39,17 @@ type AuthUser struct {
 }
 
 // NewUser creates a new user with the given information
-func NewUser(username string, password string, email string, active bool) *User {
+func NewUser(username string, password string, email string, verified bool, active bool) *User {
 	user := &User{
-		ID:        -1,
-		Username:  username,
-		Password:  password,
-		Email:     email,
-		Active:    active,
-		Accounts:  make([]*Account, 0),
-		UserRoles: make([]*UserRole, 0),
-		Groups:    make([]*Group, 0),
+		ID:            -1,
+		Username:      username,
+		Password:      password,
+		Email:         email,
+		VerifiedEmail: verified,
+		Active:        active,
+		Accounts:      make([]*Account, 0),
+		UserRoles:     make([]*UserRole, 0),
+		Groups:        make([]*Group, 0),
 	}
 
 	return user
