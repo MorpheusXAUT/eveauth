@@ -1,0 +1,54 @@
+{{ define "emailverification" }}
+<html>
+	<head>
+		<style>
+			@import url("https://fonts.googleapis.com/css?family=Lato:400,700,400italic");
+
+			html {
+				position: relative;
+				min-height: 100%;
+			}
+
+			body {
+				font-family: font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+				font-size: 15px;
+				line-height: 1.42857143;
+				color: #ffffff;
+				background-color: #222222;
+				padding: 10px 15px 0;
+				margin-bottom: 10px;
+			}
+
+			h1 {
+				font-weight: 400;
+				line-height: 1.1;
+				color: inherit;
+				font-size: 39px;
+			}
+
+			a {
+				color: #0ce3ac;
+  				text-decoration: none;
+			}
+
+			a:hover {
+				text-decoration: underline;
+			}
+
+			b.highlight {
+				color: #0ce3ac;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>eveauth</h1>
+		<div>
+			Welcome to eveauth, <b class="highlight">{{ .username }}</b>!<br />
+			Thank you for signing up for our <i>EVE Online</i> authentication services. Please click the following link to verify your email address and finish the activation of your account:<br />
+			<a href="{{ .verificationLink }}">Activate eveauth account</a><br /><br />
+			Regards,<br />
+			eveauth Postbot
+		</div>
+	</body>
+</html>
+{{ end }}
