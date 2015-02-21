@@ -285,7 +285,48 @@ func (controller *Controller) LoginVerifyResendPostHandler(w http.ResponseWriter
 
 	response["loggedIn"] = loggedIn
 
-	// TODO resend email verification
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "loginregister", response)
+
+		return
+	}
+
+	username := r.FormValue("username")
+	email := r.FormValue("email")
+
+	if len(username) == 0 && len(email) == 0 {
+		misc.Logger.Warnf("Received empty username or email")
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty username or email, please try again!")
+
+		controller.SendResponse(w, r, "loginverifyresend", response)
+
+		return
+	}
+
+	err = controller.Session.ResendEmailVerification(w, r, username, email)
+	if err != nil {
+		misc.Logger.Warnf("Failed to resend email verification: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to resend email verification, please try again!")
+
+		controller.SendResponse(w, r, "loginverifyresend", response)
+
+		return
+	}
+
+	response["status"] = 2
+	response["result"] = "Verification email resent! Please use the provided link to verify your account!"
+
+	controller.SendResponse(w, r, "login", response)
 }
 
 // LoginResetGetHandler allows the user to reset their password

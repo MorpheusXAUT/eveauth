@@ -183,11 +183,37 @@ func (controller *Controller) CreateNewUser(w http.ResponseWriter, r *http.Reque
 	return sessions.Save(r, w)
 }
 
-// SendEmailVerification sends an email with a verification link to the given address, currently not implemented
+// SendEmailVerification sends an email with a verification link to the given address
 func (controller *Controller) SendEmailVerification(w http.ResponseWriter, r *http.Request, username string, email string) error {
 	verification := misc.GenerateRandomString(32)
 
 	err := controller.mail.SendEmailVerification(username, email, verification)
+	if err != nil {
+		return err
+	}
+
+	loginSession, _ := controller.store.Get(r, "eveauthLogin")
+
+	loginSession.Values["emailVerification"] = verification
+
+	return sessions.Save(r, w)
+}
+
+// ResendEmailVerification resends an email with a verification link to the given address
+func (controller *Controller) ResendEmailVerification(w http.ResponseWriter, r *http.Request, username string, email string) error {
+	user, err := controller.database.LoadUserFromUsername(username)
+	if err != nil {
+		return err
+	}
+
+	user, err = controller.SetUser(w, r, user)
+	if err != nil {
+		return err
+	}
+
+	verification := misc.GenerateRandomString(32)
+
+	err = controller.mail.SendEmailVerification(user.Username, email, verification)
 	if err != nil {
 		return err
 	}
