@@ -145,15 +145,17 @@ func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
+	user, err = controller.SetUser(w, r, user)
+	if err != nil {
+		return err
+	}
+
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
-	dataSession, _ := controller.store.Get(r, "eveauthData")
 
 	loginSession.Values["username"] = user.Username
 	loginSession.Values["userID"] = user.ID
 	loginSession.Values["timestamp"] = time.Now().Unix()
 	loginSession.Values["verifiedEmail"] = user.VerifiedEmail
-
-	dataSession.Values["user"] = user
 
 	return sessions.Save(r, w)
 }
@@ -168,6 +170,9 @@ func (controller *Controller) CreateNewUser(w http.ResponseWriter, r *http.Reque
 	user := models.NewUser(username, string(hashedPassword), email, false, true)
 
 	user, err = controller.SetUser(w, r, user)
+	if err != nil {
+		return err
+	}
 
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
