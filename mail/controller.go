@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"html/template"
 	"net"
 	"net/smtp"
 	"net/url"
@@ -31,8 +32,20 @@ func SetupMailController(conf *misc.Configuration, db database.Connection) *Cont
 
 // SendEmailVerification prepares a verification email and sends it to the user's given email address
 func (controller *Controller) SendEmailVerification(username string, email string, verification string) error {
-	// TODO Add implementation for parsing template and storing verification code
-	return fmt.Errorf("Not implemented")
+	templates := template.Must(template.New("").ParseFiles("app/templates/emailverification.html"))
+
+	data := make(map[string]interface{})
+	data["username"] = username
+	data["verificationLink"] = fmt.Sprintf("%s/login/verify?email=%s&verification=%s", controller.config.HTTPPublicURL, email, verification)
+
+	var buf bytes.Buffer
+
+	err := templates.ExecuteTemplate(&buf, "emailverification", data)
+	if err != nil {
+		return err
+	}
+
+	return controller.SendEmail(email, "eveauth - Email Verification", buf.String(), fmt.Sprintf("Please use the following link to verify your email address: %s/login/verify?email=%s&verification=%s", controller.config.HTTPPublicURL, email, verification))
 }
 
 // SendEmail properly formats an email with the given data and sends it via a SMTP client
