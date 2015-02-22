@@ -333,7 +333,7 @@ func (controller *Controller) LoginVerifyResendPostHandler(w http.ResponseWriter
 func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
 	response["pageType"] = 2
-	response["pageTitle"] = "Reset"
+	response["pageTitle"] = "Reset Password"
 
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
@@ -347,6 +347,177 @@ func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *htt
 	response["result"] = nil
 
 	controller.SendResponse(w, r, "loginreset", response)
+}
+
+// LoginResetPostHandler allows the user to reset their password
+func (controller *Controller) LoginResetPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Reset Password"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	response["loggedIn"] = loggedIn
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	username := r.FormValue("username")
+	email := r.FormValue("email")
+
+	if len(username) == 0 && len(email) == 0 {
+		misc.Logger.Warnf("Received empty username or email")
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty username or email, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	err = controller.Session.SendPasswordReset(w, r, username, email)
+	if err != nil {
+		misc.Logger.Warnf("Failed to send password reset: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to send password reset, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	response["status"] = 2
+	response["result"] = "Password reset mail sent! Please use the provided link to change your password!"
+
+	controller.SendResponse(w, r, "loginreset", response)
+}
+
+// LoginResetVerifyGetHandler provides the user with a form to reset their password
+func (controller *Controller) LoginResetVerifyGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Reset Password"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	response["loggedIn"] = loggedIn
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	email := r.FormValue("email")
+	username := r.FormValue("username")
+	verification := r.FormValue("verification")
+
+	if len(email) == 0 || len(username) == 0 || len(verification) == 0 {
+		misc.Logger.Warnf("Received empty email, username or verification code")
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty email, username or verification code, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	response["status"] = 0
+	response["result"] = nil
+	response["email"] = email
+	response["username"] = username
+	response["verification"] = verification
+
+	controller.SendResponse(w, r, "loginresetverify", response)
+}
+
+// LoginResetVerifyPostHandler updates the user's password as per choice
+func (controller *Controller) LoginResetVerifyPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 2
+	response["pageTitle"] = "Reset Password"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	if loggedIn {
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	response["loggedIn"] = loggedIn
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	email := r.FormValue("email")
+	username := r.FormValue("username")
+	verification := r.FormValue("verification")
+	password := r.FormValue("password")
+
+	if len(email) == 0 || len(username) == 0 || len(verification) == 0 || len(password) == 0 {
+		misc.Logger.Warnf("Received empty email, username, verification, old or password")
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Empty email, username, verification, old or password, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	err = controller.Session.VerifyPasswordReset(w, r, email, username, verification, password)
+	if err != nil {
+		misc.Logger.Warnf("Failed to verify password reset: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to reset password, please try again!")
+
+		controller.SendResponse(w, r, "loginreset", response)
+
+		return
+	}
+
+	response["status"] = 2
+	response["result"] = "Successfully changed password!"
+
+	controller.SendResponse(w, r, "login", response)
 }
 
 // LogoutGetHandler destroys the user's current session and thus logs him out

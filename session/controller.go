@@ -253,6 +253,67 @@ func (controller *Controller) VerifyEmail(w http.ResponseWriter, r *http.Request
 	return sessions.Save(r, w)
 }
 
+// SendPasswordReset sends an email with a verification link to reset a user's password to the given address
+func (controller *Controller) SendPasswordReset(w http.ResponseWriter, r *http.Request, username string, email string) error {
+	user, err := controller.database.LoadUserFromUsername(username)
+	if err != nil {
+		return err
+	}
+
+	if !strings.EqualFold(email, user.Email) {
+		return fmt.Errorf("Email addresses do not match")
+	}
+
+	verification := misc.GenerateRandomString(32)
+
+	err = controller.mail.SendPasswordReset(username, email, verification)
+	if err != nil {
+		return err
+	}
+
+	loginSession, _ := controller.store.Get(r, "eveauthLogin")
+
+	loginSession.Values["passwordReset"] = verification
+
+	return sessions.Save(r, w)
+}
+
+func (controller *Controller) VerifyPasswordReset(w http.ResponseWriter, r *http.Request, email string, username string, verification string, password string) error {
+	user, err := controller.database.LoadUserFromUsername(username)
+	if err != nil {
+		return err
+	}
+
+	if !strings.EqualFold(email, user.Email) {
+		return fmt.Errorf("Email addresses do not match")
+	}
+
+	loginSession, _ := controller.store.Get(r, "eveauthLogin")
+
+	passwordReset, ok := loginSession.Values["passwordReset"].(string)
+	if !ok {
+		return fmt.Errorf("Failed to retrieve password reset code from login session")
+	}
+
+	if !strings.EqualFold(passwordReset, verification) {
+		return fmt.Errorf("Failed to verify password reset code")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(hashedPassword)
+
+	user, err = controller.SetUser(w, r, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // SaveAPIKey saves the given API key ID and verification code to the database and updated the user-object in the data session
 func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request, apiKeyID string, apivCode string) error {
 	dataSession, _ := controller.store.Get(r, "eveauthData")

@@ -36,7 +36,7 @@ func (controller *Controller) SendEmailVerification(username string, email strin
 
 	data := make(map[string]interface{})
 	data["username"] = username
-	data["verificationLink"] = fmt.Sprintf("%s/login/verify?email=%s&verification=%s", controller.config.HTTPPublicURL, email, verification)
+	data["verificationLink"] = fmt.Sprintf("%s/login/verify?email=%s&username=%s&verification=%s", controller.config.HTTPPublicURL, email, username, verification)
 
 	var buf bytes.Buffer
 
@@ -45,7 +45,25 @@ func (controller *Controller) SendEmailVerification(username string, email strin
 		return err
 	}
 
-	return controller.SendEmail(email, "eveauth - Email Verification", buf.String(), fmt.Sprintf("Please use the following link to verify your email address: %s/login/verify?email=%s&verification=%s", controller.config.HTTPPublicURL, email, verification))
+	return controller.SendEmail(email, "eveauth - Email Verification", buf.String(), fmt.Sprintf("Please use the following link to verify your email address: %s/login/verify?email=%s&username=%s&verification=%s", controller.config.HTTPPublicURL, email, username, verification))
+}
+
+// SendPasswordReset sends a verification email with a password reset link to the user's given email address
+func (controller *Controller) SendPasswordReset(username string, email string, verification string) error {
+	templates := template.Must(template.New("").ParseFiles("app/templates/passwordreset.html"))
+
+	data := make(map[string]interface{})
+	data["username"] = username
+	data["verificationLink"] = fmt.Sprintf("%s/login/reset/verify?email=%s&username=%s&verification=%s", controller.config.HTTPPublicURL, email, username, verification)
+
+	var buf bytes.Buffer
+
+	err := templates.ExecuteTemplate(&buf, "passwordreset", data)
+	if err != nil {
+		return err
+	}
+
+	return controller.SendEmail(email, "eveauth - Password reset", buf.String(), fmt.Sprintf("Please use the following link to reset your password: %s/login/reset/verify?email=%s&username=%s&verification=%s", controller.config.HTTPPublicURL, email, username, verification))
 }
 
 // SendEmail properly formats an email with the given data and sends it via a SMTP client
