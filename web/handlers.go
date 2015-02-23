@@ -556,7 +556,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
 
-		controller.SendResponse(w, r, "authorize", response)
+		controller.SendResponse(w, r, "index", response)
 
 		return
 	}
@@ -571,7 +571,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Empty app, callback or auth, please try again!")
 
-		controller.SendResponse(w, r, "authorize", response)
+		controller.SendResponse(w, r, "index", response)
 
 		return
 	}
@@ -583,7 +583,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Failed to authenticate app, please try again!")
 
-		controller.SendResponse(w, r, "authorize", response)
+		controller.SendResponse(w, r, "index", response)
 
 		return
 	}
@@ -595,7 +595,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Failed to encode user permissions, please try again!")
 
-		controller.SendResponse(w, r, "authorize", response)
+		controller.SendResponse(w, r, "index", response)
 
 		return
 	}
@@ -607,7 +607,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Failed to parse callback URL, please try again!")
 
-		controller.SendResponse(w, r, "authorize", response)
+		controller.SendResponse(w, r, "index", response)
 
 		return
 	}
