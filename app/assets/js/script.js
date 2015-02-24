@@ -4,13 +4,39 @@ function displayError(error) {
 }
 
 function displayInfo(info) {
-	$('div.col-md').prepend('<div class="alert alert-info alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><strong>Just FYI!</strong> '+error+'</div>');
+	$('div.col-md').prepend('<div class="alert alert-info alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><strong>Just FYI!</strong> '+info+'</div>');
 	$('html, body').animate({ scrollTop: '0px' });
 }
 
 function displaySuccess(success) {
-	$('div.col-md').prepend('<div class="alert alert-success alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><strong>Yay!</strong> '+error+'</div>');
+	$('div.col-md').prepend('<div class="alert alert-success alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button><strong>Yay!</strong> '+success+'</div>');
 	$('html, body').animate({ scrollTop: '0px' });
+}
+
+function displayResponse(response) {
+	if (response.status === 0) {
+		location.reload(true);
+	} else if (response.status === 1) {
+		if (response.result !== null) {
+			displayError(response.result);
+		} else {
+			displayError("Something went wrong!");
+		}
+	} else if (response.status === 2) {
+		if (response.result !== null) {
+			displaySuccess(response.result);
+		} else {
+			displaySuccess("Operation completed successfully!");
+		}
+	} else if (response.status === 3) {
+		if (response.result !== null) {
+			displayInfo(response.result);
+		} else {
+			displayInfo("Something something info...");
+		}
+	} else {
+		displayError(response);
+	}
 }
 
 function displayAjaxError(jqXHR, textStatus, errorThrown) {
