@@ -35,7 +35,7 @@
 						<td>{{ $account.APIKeyID }}</td>
 						<td>{{ $account.APIvCode }}</td>
 						<td>{{ $account.APIAccessMask }}</td>
-						<td><a class="btn btn-danger api-key-delete">Delete</a></td>
+						<td><a class="btn btn-danger api-key-delete" apiKeyID="{{ $account.APIKeyID }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>

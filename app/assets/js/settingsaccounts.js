@@ -6,14 +6,21 @@ $(document).ready(function(e) {
 			data: $('#apiKeyAdd').serialize(),
 			dataType: "json",
 			error: displayAjaxError,
-			success: function(response) {
-				console.log(response)
-				if (response.success === true && response.error === null) {
-					location.reload(true);
-				} else {
-					displayError(response.error);
-				}
-			},
+			success: displayResponse,
+			timeout: 10000,
+			type: "PUT",
+			url: "/settings/accounts"
+		});
+	});
+
+	$('a.api-key-delete').click(function() {
+		$.ajax({
+			accepts: "application/json",
+			cache: false,
+			data: "command=apiKeyDelete&apiKeyID="+$(this).attr('apiKeyID'),
+			dataType: "json",
+			error: displayAjaxError,
+			success: displayResponse,
 			timeout: 10000,
 			type: "PUT",
 			url: "/settings/accounts"
