@@ -721,13 +721,12 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 
 	command := r.FormValue("command")
 	apiKeyID := r.FormValue("apiKeyID")
-	apivCode := r.FormValue("apivCode")
 
-	if len(command) == 0 || len(apiKeyID) == 0 || len(apivCode) == 0 {
-		misc.Logger.Warnf("Received empty command, apiKeyID or apivCode")
+	if len(command) == 0 || len(apiKeyID) == 0 {
+		misc.Logger.Warnf("Received empty command or apiKeyID")
 
 		response["status"] = 1
-		response["result"] = "Empty API Key ID or vCode, please try again!"
+		response["result"] = "Empty API Key ID, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
 
@@ -736,6 +735,18 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 
 	switch strings.ToLower(command) {
 	case "apikeyadd":
+		apivCode := r.FormValue("apivCode")
+		if len(apivCode) == 0 {
+			misc.Logger.Warnf("Received empty apivCode")
+
+			response["status"] = 1
+			response["result"] = "Empty API vCode, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+
+			return
+		}
+
 		err = controller.Session.SaveAPIKey(w, r, apiKeyID, apivCode)
 		if err != nil {
 			misc.Logger.Warnf("Failed to save API key: [%v]", err)
@@ -747,6 +758,18 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 			} else {
 				response["result"] = "Failed to save API key, please try again!"
 			}
+
+			controller.SendJSONResponse(w, r, response)
+
+			return
+		}
+	case "apikeydelete":
+		err = controller.Session.DeleteAPIKey(w, r, apiKeyID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to delete API key: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to delete API key, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
 

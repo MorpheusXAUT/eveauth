@@ -383,6 +383,32 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 	return sessions.Save(r, w)
 }
 
+func (controller *Controller) DeleteAPIKey(w http.ResponseWriter, r *http.Request, apiKeyID string) error {
+	dataSession, _ := controller.store.Get(r, "eveauthData")
+
+	user, ok := dataSession.Values["user"].(*models.User)
+	if !ok {
+		return fmt.Errorf("Failed to retrieve user from data session")
+	}
+
+	keyID, err := strconv.ParseInt(apiKeyID, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	user, err = controller.database.RemoveAPIKeyFromUser(user, keyID)
+	if err != nil {
+		return err
+	}
+
+	user, err = controller.SetUser(w, r, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetUser returns the user-object stored in the data session
 func (controller *Controller) GetUser(r *http.Request) (*models.User, error) {
 	dataSession, _ := controller.store.Get(r, "eveauthData")

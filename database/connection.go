@@ -98,6 +98,7 @@ type Connection interface {
 
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
 	RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error)
+	RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error)
 }
 
 // SetupDatabase parses the database type set in the configuration and returns an appropriate database implementation or an error if the type is unknown

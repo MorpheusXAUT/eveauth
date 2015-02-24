@@ -994,3 +994,27 @@ func (c *DatabaseConnection) RemoveUserFromGroup(user *models.User, groupID int6
 
 	return user, nil
 }
+
+func (c *DatabaseConnection) RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error) {
+	for index, account := range user.Accounts {
+		if account.APIKeyID == apiKeyID {
+			for _, character := range account.Characters {
+				_, err := c.conn.Exec("DELETE FROM characters WHERE id=? AND accountid=?", character.ID, account.ID)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			_, err := c.conn.Exec("DELETE FROM accounts WHERE id=? AND apikeyid=?", account.ID, apiKeyID)
+			if err != nil {
+				return nil, err
+			}
+
+			user.Accounts[index], user.Accounts[len(user.Accounts)-1], user.Accounts = user.Accounts[len(user.Accounts)-1], nil, user.Accounts[:len(user.Accounts)-1]
+
+			break
+		}
+	}
+
+	return user, nil
+}
