@@ -225,7 +225,7 @@ func (controller *Controller) ResendEmailVerification(w http.ResponseWriter, r *
 	return sessions.Save(r, w)
 }
 
-// VerifyEmail checks the given code and verifies the presented email address is correct, currently not implemented
+// VerifyEmail checks the given code and verifies the presented email address is correct
 func (controller *Controller) VerifyEmail(w http.ResponseWriter, r *http.Request, email string, verification string) error {
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
@@ -278,6 +278,7 @@ func (controller *Controller) SendPasswordReset(w http.ResponseWriter, r *http.R
 	return sessions.Save(r, w)
 }
 
+// VerifyPasswordReset checks the given code and changes the user's password if the request is valid
 func (controller *Controller) VerifyPasswordReset(w http.ResponseWriter, r *http.Request, email string, username string, verification string, password string) error {
 	user, err := controller.database.LoadUserFromUsername(username)
 	if err != nil {
@@ -383,6 +384,7 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 	return sessions.Save(r, w)
 }
 
+// DeleteAPIKey removes the given API key from the user and database
 func (controller *Controller) DeleteAPIKey(w http.ResponseWriter, r *http.Request, apiKeyID string) error {
 	dataSession, _ := controller.store.Get(r, "eveauthData")
 
@@ -433,6 +435,64 @@ func (controller *Controller) SetUser(w http.ResponseWriter, r *http.Request, us
 	dataSession.Values["user"] = user
 
 	return user, sessions.Save(r, w)
+}
+
+// GetUserAccounts returns the accounts associated with the current user
+func (controller *Controller) GetUserAccounts(r *http.Request) ([]*models.Account, error) {
+	user, err := controller.GetUser(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return user.Accounts, nil
+}
+
+// GetUserCharacters returns the characters associated with all accounts of the current user
+func (controller *Controller) GetUserCharacters(r *http.Request) ([]*models.Character, error) {
+	user, err := controller.GetUser(r)
+	if err != nil {
+		return nil, err
+	}
+
+	var characters []*models.Character
+
+	for _, account := range user.Accounts {
+		characters = append(characters, account.Characters...)
+	}
+
+	return characters, err
+}
+
+// SetDefaultCharacter sets the default character for the current user
+func (controller *Controller) SetDefaultCharacter(w http.ResponseWriter, r *http.Request, characterID string) error {
+	charID, err := strconv.ParseInt(characterID, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	user, err := controller.GetUser(r)
+	if err != nil {
+		return err
+	}
+
+	for _, account := range user.Accounts {
+		for _, character := range account.Characters {
+			if character.DefaultCharacter {
+				character.DefaultCharacter = false
+			}
+
+			if character.ID == charID {
+				character.DefaultCharacter = true
+			}
+		}
+	}
+
+	_, err = controller.SetUser(w, r, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // VerifyApplication verifies the application to be authorized to perform requests to the auth backend

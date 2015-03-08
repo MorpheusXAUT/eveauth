@@ -670,15 +670,17 @@ func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, 
 		return
 	}
 
-	user, err := controller.Session.GetUser(r)
+	accounts, err := controller.Session.GetUserAccounts(r)
 	if err != nil {
+		misc.Logger.Warnf("Failed to get user accounts: [%v]", err)
+
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Failed to load user data, please try again!")
 
 		controller.SendResponse(w, r, "settingsaccounts", response)
 	}
 
-	response["accounts"] = user.Accounts
+	response["accounts"] = accounts
 	response["status"] = 0
 	response["result"] = nil
 
@@ -805,10 +807,90 @@ func (controller *Controller) SettingsCharactersGetHandler(w http.ResponseWriter
 		return
 	}
 
+	characters, err := controller.Session.GetUserCharacters(r)
+	if err != nil {
+		misc.Logger.Warnf("Failed to get user characters: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to load user data, please try again!")
+
+		controller.SendResponse(w, r, "settingscharacters", response)
+	}
+
+	response["characters"] = characters
 	response["status"] = 0
 	response["result"] = nil
 
 	controller.SendResponse(w, r, "settingscharacters", response)
+}
+
+// SettingsCharactersPutHandler handles AJAX requests used to update the user's character settings
+func (controller *Controller) SettingsCharactersPutHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 4
+	response["pageTitle"] = "Characters"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/settings/characters")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse form, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+
+		return
+	}
+
+	command := r.FormValue("command")
+	characterID := r.FormValue("characterID")
+
+	if len(command) == 0 || len(characterID) == 0 {
+		misc.Logger.Warnf("Received empty command or characterID")
+
+		response["status"] = 1
+		response["result"] = "Empty character ID, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "charactersetdefault":
+		err = controller.Session.SetDefaultCharacter(w, r, characterID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to set default character: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to set default character, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+
+			return
+		}
+	}
+
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendJSONResponse(w, r, response)
 }
 
 // LegalGetHandler displays some legal information as well as copyright disclaimers and contact info

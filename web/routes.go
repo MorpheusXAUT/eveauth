@@ -128,6 +128,12 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.SettingsCharactersGetHandler,
 		},
 		Route{
+			Name:        "SettingsCharactersPut",
+			Methods:     []string{"PUT"},
+			Pattern:     "/settings/characters",
+			HandlerFunc: controller.SettingsCharactersPutHandler,
+		},
+		Route{
 			Name:        "LegalGet",
 			Methods:     []string{"GET"},
 			Pattern:     "/legal",

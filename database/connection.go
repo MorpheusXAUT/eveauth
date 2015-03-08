@@ -98,6 +98,7 @@ type Connection interface {
 
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
 	RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error)
+	// RemoveAPIKeyFromUser removes an API key from the given user, updates the database and returns the updated model
 	RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error)
 }
 

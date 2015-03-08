@@ -995,6 +995,7 @@ func (c *DatabaseConnection) RemoveUserFromGroup(user *models.User, groupID int6
 	return user, nil
 }
 
+// RemoveAPIKeyFromUser removes an API key from the given user, updates the MySQL database and returns the updated model
 func (c *DatabaseConnection) RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error) {
 	for index, account := range user.Accounts {
 		if account.APIKeyID == apiKeyID {
