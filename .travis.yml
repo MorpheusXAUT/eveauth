@@ -6,10 +6,8 @@ go:
 
 install:
   - go get -v ./...
-  - go get -u -f -v golang.org/x/crypto/bcrypt
-  - go get -u -f -v gopkg.in/boj/redistore.v1
-  - go get -u -f -v github.com/smartystreets/assertions
-  - go get -u -f -v github.com/smartystreets/goconvey
+  - go get -v github.com/smartystreets/assertions
+  - go get -v github.com/smartystreets/goconvey
 
 before_script:
   - echo "GRANT ALL PRIVILEGES ON *.* TO $DATABASE_USER@localhost IDENTIFIED BY '$DATABASE_PASSWORD';" | mysql --user=$MYSQL_USER --password=$MYSQL_PASSWORD
