@@ -6,13 +6,13 @@ USE `eveauth`;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 -- Dumping data for table eveauth.accounts: ~6 rows (approximately)
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `apiaccessmask`, `defaultaccount`, `active`) VALUES
-	(1, 1, 1, 'a', 0, 1, 1),
-	(2, 2, 2, 'b', 0, 1, 0),
-	(3, 3, 3, 'c', 0, 1, 1),
-	(4, 3, 4, 'd', 268435455, 0, 1),
-	(5, 4, 5, 'e', 268435455, 0, 0),
-	(6, 4, 6, 'f', 268435455, 1, 0);
+INSERT INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `apiaccessmask`, `active`) VALUES
+	(1, 1, 1, 'a', 0, 1),
+	(2, 2, 2, 'b', 0, 0),
+	(3, 3, 3, 'c', 0, 1),
+	(4, 3, 4, 'd', 268435455, 1),
+	(5, 4, 5, 'e', 268435455, 0),
+	(6, 4, 6, 'f', 268435455, 0);
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.applications: ~2 rows (approximately)

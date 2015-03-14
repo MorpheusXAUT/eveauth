@@ -68,7 +68,7 @@ func (c *DatabaseConnection) RawQuery(query string, v ...interface{}) ([]map[str
 func (c *DatabaseConnection) LoadAllAccounts() ([]*models.Account, error) {
 	var accounts []*models.Account
 
-	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active FROM accounts")
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts")
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +265,7 @@ func (c *DatabaseConnection) LoadAllApplications() ([]*models.Application, error
 func (c *DatabaseConnection) LoadAccount(accountID int64) (*models.Account, error) {
 	account := &models.Account{}
 
-	err := c.conn.Get(account, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active FROM accounts WHERE id=?", accountID)
+	err := c.conn.Get(account, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts WHERE id=?", accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -481,7 +481,7 @@ func (c *DatabaseConnection) LoadApplication(applicationID int64) (*models.Appli
 func (c *DatabaseConnection) LoadAllAccountsForUser(userID int64) ([]*models.Account, error) {
 	var accounts []*models.Account
 
-	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active FROM accounts WHERE userid=?", userID)
+	err := c.conn.Select(&accounts, "SELECT id, userid, apikeyid, apivcode, apiaccessmask, active FROM accounts WHERE userid=?", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -663,12 +663,12 @@ func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Accou
 			character = char
 		}
 
-		_, err := c.conn.Exec("UPDATE accounts SET userid=?, apikeyid=?, apivcode=?, apiaccessmask=?, defaultaccount=?, active=? WHERE id=?", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.DefaultAccount, account.Active, account.ID)
+		_, err := c.conn.Exec("UPDATE accounts SET userid=?, apikeyid=?, apivcode=?, apiaccessmask=?, active=? WHERE id=?", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.Active, account.ID)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		resp, err := c.conn.Exec("INSERT INTO accounts(userid, apikeyid, apivcode, apiaccessmask, defaultaccount, active) VALUES(?, ?, ?, ?, ?, ?)", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.DefaultAccount, account.Active)
+		resp, err := c.conn.Exec("INSERT INTO accounts(userid, apikeyid, apivcode, apiaccessmask, active) VALUES(?, ?, ?, ?, ?)", account.UserID, account.APIKeyID, account.APIvCode, account.APIAccessMask, account.Active)
 		if err != nil {
 			return nil, err
 		}

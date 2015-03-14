@@ -331,7 +331,7 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 		return err
 	}
 
-	account := models.NewAccount(user.ID, keyID, apivCode, 0, false, true)
+	account := models.NewAccount(user.ID, keyID, apivCode, 0, true)
 
 	apiClient := misc.CreateAPIClient(account)
 

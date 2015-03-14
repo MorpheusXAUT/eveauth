@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `apikeyid` int(11) NOT NULL,
   `apivcode` varchar(64) NOT NULL,
   `apiaccessmask` int(9) NOT NULL DEFAULT '0',
-  `defaultaccount` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `keyid` (`apikeyid`),

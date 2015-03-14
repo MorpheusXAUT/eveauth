@@ -16,8 +16,6 @@ type Account struct {
 	APIvCode string `json:"apivCode"`
 	// APIAccesMask represents the access mask the EVE Online API key is set to
 	APIAccessMask int64 `json:"apiAccessMask"`
-	// DefaultAccount indicates whether the account is selected as default for the user
-	DefaultAccount bool `json:"defaultAccount"`
 	// Active indicates whether the Account is set as active
 	Active bool `json:"active"`
 	// Characters stores all characters associated to this Account
@@ -25,16 +23,15 @@ type Account struct {
 }
 
 // NewAccount creates a new account with the given information
-func NewAccount(userID int64, apiKeyID int64, apivCode string, apiAccessMask int64, defaultAccount bool, active bool) *Account {
+func NewAccount(userID int64, apiKeyID int64, apivCode string, apiAccessMask int64, active bool) *Account {
 	account := &Account{
-		ID:             -1,
-		UserID:         userID,
-		APIKeyID:       apiKeyID,
-		APIvCode:       apivCode,
-		APIAccessMask:  apiAccessMask,
-		DefaultAccount: defaultAccount,
-		Active:         active,
-		Characters:     make([]*Character, 0),
+		ID:            -1,
+		UserID:        userID,
+		APIKeyID:      apiKeyID,
+		APIvCode:      apivCode,
+		APIAccessMask: apiAccessMask,
+		Active:        active,
+		Characters:    make([]*Character, 0),
 	}
 
 	return account
