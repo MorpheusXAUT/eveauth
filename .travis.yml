@@ -5,7 +5,7 @@ go:
   - tip
 
 install:
-  - go get -u -f -v ./...
+  - go get -v ./...
   - go get -u -f -v golang.org/x/crypto/bcrypt
   - go get -u -f -v gopkg.in/boj/redistore.v1
   - go get -u -f -v github.com/smartystreets/assertions
