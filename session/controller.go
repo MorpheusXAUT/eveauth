@@ -1,6 +1,7 @@
 package session
 
 import (
+	"database/sql"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
@@ -14,10 +15,11 @@ import (
 	"github.com/morpheusxaut/eveauth/misc"
 	"github.com/morpheusxaut/eveauth/models"
 
+	"github.com/boj/redistore"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
-	"github.com/morpheusxaut/redistore"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/guregu/null.v2/zero"
 )
 
 // Controller provides functionality to handle sessions and cached values as well as retrieval of data
@@ -338,12 +340,7 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 		return err
 	}
 
-	accessMask, err := strconv.ParseInt(apiInfo.AccessMask, 10, 64)
-	if err != nil {
-		return err
-	}
-
-	account.APIAccessMask = int(accessMask)
+	account.APIAccessMask = apiInfo.AccessMask
 
 	accountCharacters, err := apiClient.AccountCharacters()
 	if err != nil {
@@ -351,23 +348,26 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 	}
 
 	for _, accountChar := range accountCharacters {
-		corporationID, err := strconv.ParseInt(accountChar.CorporationID, 10, 64)
-		if err != nil {
+		corporation, err := controller.database.LoadCorporationFromEVECorporationID(accountChar.CorporationID)
+		if err == sql.ErrNoRows {
+			misc.Logger.Tracef("No corporation with ID %d found, fetching corporation sheet...", accountChar.CorporationID)
+
+			corporationSheet, err := apiClient.CorpCorporationSheet(accountChar.CorporationID)
+			if err != nil {
+				return err
+			}
+
+			corporation = models.NewCorporation(corporationSheet.Name, corporationSheet.Ticker, accountChar.CorporationID, zero.NewInt(0, false), zero.NewString("", false), true)
+
+			corporation, err = controller.database.SaveCorporation(corporation)
+			if err != nil {
+				return err
+			}
+		} else if err != nil {
 			return err
 		}
 
-		accountCharID, err := strconv.ParseInt(accountChar.ID, 10, 64)
-		if err != nil {
-			return err
-		}
-
-		// TODO handle non-existent corporation gracefully by fetching and creating it
-		corporation, err := controller.database.LoadCorporationFromEVECorporationID(corporationID)
-		if err != nil {
-			return err
-		}
-
-		character := models.NewCharacter(account.ID, corporation.ID, accountChar.Name, accountCharID, false, true)
+		character := models.NewCharacter(account.ID, corporation.ID, accountChar.Name, accountChar.ID, false, true)
 
 		account.Characters = append(account.Characters, character)
 	}
