@@ -38,7 +38,7 @@ func SetupSessionController(conf *misc.Configuration, db database.Connection, ma
 		mail:     mailer,
 	}
 
-	store, err := redistore.NewRediStoreWithDB(10, "tcp", controller.config.RedisHost, controller.config.RedisPassword, "0", securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
+	store, err := redistore.NewRediStoreWithDB(10, "tcp", controller.config.RedisHost, controller.config.RedisPassword, controller.config.RedisDB, securecookie.GenerateRandomKey(64), securecookie.GenerateRandomKey(32))
 	if err != nil {
 		return nil, err
 	}

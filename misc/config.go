@@ -23,6 +23,8 @@ type Configuration struct {
 	RedisHost string
 	// RedisPassword represents the password used to authenticate with the Redis data store
 	RedisPassword string
+	// RedisDB represents the database to select for the session store
+	RedisDB string
 	// SMTPHost represents the hostname:port of the SMTP server used for sending mails
 	SMTPHost string
 	// SMTPStartTLS indicates whether the SMTP connection should use the StartTLS command to secure communications
