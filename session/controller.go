@@ -437,6 +437,36 @@ func (controller *Controller) SetUser(w http.ResponseWriter, r *http.Request, us
 	return user, sessions.Save(r, w)
 }
 
+func (controller *Controller) UpdateUser(w http.ResponseWriter, r *http.Request, email string, oldPassword string, newPassword string) (*models.User, error) {
+	user, err := controller.GetUser(r)
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword))
+	if err != nil {
+		return nil, err
+	}
+
+	user.Email = email
+
+	if len(newPassword) > 0 {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+
+		user.Password = string(hashedPassword)
+	}
+
+	user, err = controller.SetUser(w, r, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 // GetUserAccounts returns the accounts associated with the current user
 func (controller *Controller) GetUserAccounts(r *http.Request) ([]*models.Account, error) {
 	user, err := controller.GetUser(r)

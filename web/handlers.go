@@ -642,10 +642,106 @@ func (controller *Controller) SettingsGetHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
+	user, err := controller.Session.GetUser(r)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load user: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to load user, please try again!")
+
+		controller.SendResponse(w, r, "settings", response)
+
+		return
+	}
+
+	response["user"] = user
 	response["status"] = 0
 	response["result"] = nil
 
 	controller.SendResponse(w, r, "settings", response)
+}
+
+// SettingsPutHandler handles AJAX requests used to update the user's settings
+func (controller *Controller) SettingsPutHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 4
+	response["pageTitle"] = "Settings"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/settings")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse form, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+
+		return
+	}
+
+	command := r.FormValue("command")
+	settingsEditOldPassword := r.FormValue("settingsEditOldPassword")
+	settingsEditEmail := r.FormValue("settingsEditEmail")
+	settingsEditNewPassword := r.FormValue("settingsEditNewPassword")
+	settingsEditNewPasswordConfirmation := r.FormValue("settingsEditNewPasswordConfirmation")
+
+	if len(command) == 0 || len(settingsEditOldPassword) == 0 || len(settingsEditEmail) == 0 {
+		misc.Logger.Warnf("Received empty command, old password or email address")
+
+		response["status"] = 1
+		response["result"] = "Empty old password or email address, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+
+		return
+	}
+
+	if len(settingsEditNewPassword) > 0 && !strings.EqualFold(settingsEditNewPassword, settingsEditNewPasswordConfirmation) {
+		misc.Logger.Warnf("New passwords didn't match, update cancelled")
+
+		response["status"] = 1
+		response["result"] = "New passwords didn't match, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "settingsedit":
+		_, err = controller.Session.UpdateUser(w, r, settingsEditEmail, settingsEditOldPassword, settingsEditNewPassword)
+		if err != nil {
+			misc.Logger.Warnf("Failed to edit settings: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to edit settings, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+
+			return
+		}
+	}
+
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendJSONResponse(w, r, response)
 }
 
 // SettingsAccountsGetHandler displays the currently associated accounts and lets the user modify them
