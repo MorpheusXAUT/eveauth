@@ -159,6 +159,8 @@ func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Reques
 	loginSession.Values["timestamp"] = time.Now().Unix()
 	loginSession.Values["verifiedEmail"] = user.VerifiedEmail
 
+	loginSession.Options.MaxAge = 604800
+
 	return sessions.Save(r, w)
 }
 
