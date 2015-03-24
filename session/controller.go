@@ -359,7 +359,7 @@ func (controller *Controller) SaveAPIKey(w http.ResponseWriter, r *http.Request,
 				return err
 			}
 
-			corporation = models.NewCorporation(corporationSheet.Name, corporationSheet.Ticker, accountChar.CorporationID, zero.NewInt(0, false), zero.NewString("", false), true)
+			corporation = models.NewCorporation(corporationSheet.Name, corporationSheet.Ticker, accountChar.CorporationID, corporationSheet.CEOID, zero.NewInt(0, false), zero.NewString("", false), true)
 
 			corporation, err = controller.database.SaveCorporation(corporation)
 			if err != nil {

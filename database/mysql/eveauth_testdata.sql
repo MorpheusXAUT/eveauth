@@ -35,9 +35,9 @@ INSERT INTO `characters` (`id`, `accountid`, `corporationid`, `name`, `evecharac
 
 -- Dumping data for table eveauth.corporations: ~2 rows (approximately)
 /*!40000 ALTER TABLE `corporations` DISABLE KEYS */;
-INSERT INTO `corporations` (`id`, `name`, `ticker`, `evecorporationid`, `apikeyid`, `apivcode`, `active`) VALUES
-	(1, 'Test Corp Please Ignore', 'TEST', 1, 1, 'a', 1),
-	(2, 'Corp Test Ignore Please', 'CORP', 2, NULL, NULL, 0);
+INSERT INTO `corporations` (`id`, `name`, `ticker`, `evecorporationid`, `ceoid`, `apikeyid`, `apivcode`, `active`) VALUES
+	(1, 'Test Corp Please Ignore', 'TEST', 1, 1, 1, 'a', 1),
+	(2, 'Corp Test Ignore Please', 'CORP', 2, 2, NULL, NULL, 0);
 /*!40000 ALTER TABLE `corporations` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.grouproles: ~4 rows (approximately)

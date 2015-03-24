@@ -89,7 +89,7 @@ func (c *DatabaseConnection) LoadAllAccounts() ([]*models.Account, error) {
 func (c *DatabaseConnection) LoadAllCorporations() ([]*models.Corporation, error) {
 	var corporations []*models.Corporation
 
-	err := c.conn.Select(&corporations, "SELECT id, name, ticker, evecorporationid, apikeyid, apivcode, active FROM corporations")
+	err := c.conn.Select(&corporations, "SELECT id, name, ticker, evecorporationid, ceoid, apikeyid, apivcode, active FROM corporations")
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +284,7 @@ func (c *DatabaseConnection) LoadAccount(accountID int64) (*models.Account, erro
 func (c *DatabaseConnection) LoadCorporation(corporationID int64) (*models.Corporation, error) {
 	corporation := &models.Corporation{}
 
-	err := c.conn.Get(corporation, "SELECT id, name, ticker, evecorporationid, apikeyid, apivcode, active FROM corporations WHERE id=?", corporationID)
+	err := c.conn.Get(corporation, "SELECT id, name, ticker, evecorporationid, ceoid, apikeyid, apivcode, active FROM corporations WHERE id=?", corporationID)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +296,7 @@ func (c *DatabaseConnection) LoadCorporation(corporationID int64) (*models.Corpo
 func (c *DatabaseConnection) LoadCorporationFromEVECorporationID(eveCorporationID int64) (*models.Corporation, error) {
 	corporation := &models.Corporation{}
 
-	err := c.conn.Get(corporation, "SELECT id, name, ticker, evecorporationid, apikeyid, apivcode, active FROM corporations WHERE evecorporationid=?", eveCorporationID)
+	err := c.conn.Get(corporation, "SELECT id, name, ticker, evecorporationid, ceoid, apikeyid, apivcode, active FROM corporations WHERE evecorporationid=?", eveCorporationID)
 	if err != nil {
 		return nil, err
 	}
@@ -698,12 +698,12 @@ func (c *DatabaseConnection) SaveAccount(account *models.Account) (*models.Accou
 // SaveCorporation saves a corporation to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveCorporation(corporation *models.Corporation) (*models.Corporation, error) {
 	if corporation.ID > 0 {
-		_, err := c.conn.Exec("UPDATE corporations SET name=?, ticker=?, evecorporationid=?, apikeyid=?, apivcode=?, active=? WHERE id=?", corporation.Name, corporation.Ticker, corporation.EVECorporationID, corporation.APIKeyID, corporation.APIvCode, corporation.Active, corporation.ID)
+		_, err := c.conn.Exec("UPDATE corporations SET name=?, ticker=?, evecorporationid=?, ceoid=?, apikeyid=?, apivcode=?, active=? WHERE id=?", corporation.Name, corporation.Ticker, corporation.EVECorporationID, corporation.CEOID, corporation.APIKeyID, corporation.APIvCode, corporation.Active, corporation.ID)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		resp, err := c.conn.Exec("INSERT INTO corporations(name, ticker, evecorporationid, apikeyid, apivcode, active) VALUES(?, ?, ?, ?, ?, ?)", corporation.Name, corporation.Ticker, corporation.EVECorporationID, corporation.APIKeyID, corporation.APIvCode, corporation.Active)
+		resp, err := c.conn.Exec("INSERT INTO corporations(name, ticker, evecorporationid, ceoid, apikeyid, apivcode, active) VALUES(?, ?, ?, ?, ?, ?, ?)", corporation.Name, corporation.Ticker, corporation.EVECorporationID, corporation.CEOID, corporation.APIKeyID, corporation.APIvCode, corporation.Active)
 		if err != nil {
 			return nil, err
 		}
