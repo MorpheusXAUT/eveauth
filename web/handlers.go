@@ -35,7 +35,7 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 	response["loggedIn"] = loggedIn
 
 	if loggedIn {
-		http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+		controller.SendRedirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 	response["loggedIn"] = loggedIn
 
 	if loggedIn {
-		http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+		controller.SendRedirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
 		return
 	}
 
@@ -98,7 +98,7 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	http.Redirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
+	controller.SendRedirect(w, r, controller.Session.GetLoginRedirect(r), http.StatusSeeOther)
 }
 
 // LoginRegisterGetHandler displays the registration page of the web app
@@ -112,7 +112,7 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 	response["loggedIn"] = loggedIn
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -133,7 +133,7 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	response["loggedIn"] = loggedIn
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -203,7 +203,7 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -247,7 +247,7 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	http.Redirect(w, r, "/settings/accounts", http.StatusSeeOther)
+	controller.SendRedirect(w, r, "/settings/accounts", http.StatusSeeOther)
 }
 
 // LoginVerifyResendGetHandler allows the user to request re-sending the verification code to his email address
@@ -259,7 +259,7 @@ func (controller *Controller) LoginVerifyResendGetHandler(w http.ResponseWriter,
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -279,7 +279,7 @@ func (controller *Controller) LoginVerifyResendPostHandler(w http.ResponseWriter
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -338,7 +338,7 @@ func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *htt
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -358,7 +358,7 @@ func (controller *Controller) LoginResetPostHandler(w http.ResponseWriter, r *ht
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -417,7 +417,7 @@ func (controller *Controller) LoginResetVerifyGetHandler(w http.ResponseWriter, 
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -468,7 +468,7 @@ func (controller *Controller) LoginResetVerifyPostHandler(w http.ResponseWriter,
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
 		return
 	}
 
@@ -524,7 +524,7 @@ func (controller *Controller) LoginResetVerifyPostHandler(w http.ResponseWriter,
 func (controller *Controller) LogoutGetHandler(w http.ResponseWriter, r *http.Request) {
 	controller.Session.DestroySession(w, r)
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 }
 
 // AuthorizeGetHandler provides an endpoint for applications to request authorization and query user permissions
@@ -545,7 +545,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -617,7 +617,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 
 	callbackURL.RawQuery = callbackPayload.Encode()
 
-	http.Redirect(w, r, callbackURL.String(), http.StatusSeeOther)
+	controller.SendRedirect(w, r, callbackURL.String(), http.StatusSeeOther)
 }
 
 // SettingsGetHandler provides the user with some basic settings for his account
@@ -638,7 +638,7 @@ func (controller *Controller) SettingsGetHandler(w http.ResponseWriter, r *http.
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -679,7 +679,7 @@ func (controller *Controller) SettingsPutHandler(w http.ResponseWriter, r *http.
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -762,7 +762,7 @@ func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, 
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -801,7 +801,7 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -899,7 +899,7 @@ func (controller *Controller) SettingsCharactersGetHandler(w http.ResponseWriter
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -938,7 +938,7 @@ func (controller *Controller) SettingsCharactersPutHandler(w http.ResponseWriter
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
