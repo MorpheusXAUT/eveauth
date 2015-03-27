@@ -564,7 +564,7 @@ func (controller *Controller) EncodeUserPermissions(r *http.Request, application
 		return "", err
 	}
 
-	encryptedPayload, err := misc.EncryptAESCFB(string(payload), application.Secret)
+	encryptedPayload, err := misc.EncryptAndAuthenticate(string(payload), application.Secret)
 	if err != nil {
 		return "", err
 	}

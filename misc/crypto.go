@@ -8,8 +8,95 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"io"
+	"fmt"
+	"strings"
 )
+
+var (
+	// ErrInvalidCipherText describes invalid ciphertext
+	ErrInvalidCipherText = errors.New("Invalid CipherText")
+)
+
+func createGCM(secret string) (cipher.AEAD, error) {
+	// Convert the key to bytes
+	key := []byte(secret)
+
+	// Create a new AES cipher with the key
+	blockCipher, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the GCM instance
+	gcm, err := cipher.NewGCM(blockCipher)
+	if err != nil {
+		return nil, err
+	}
+
+	return gcm, nil
+}
+
+// EncryptAndAuthenticate encrypts and authenticates a message using AES-GCM
+func EncryptAndAuthenticate(message, secret string) (string, error) {
+	// Create a GCM instance
+	gcm, err := createGCM(secret)
+	if err != nil {
+		return "", err
+	}
+
+	// Create a nonce from crypto random data
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return "", err
+	}
+
+	// Encrypt and authenticate
+	plainText := []byte(message)
+	cipherText := gcm.Seal(nil, nonce, plainText, nil)
+
+	// Encode and return
+	encodedCipherText := base64.URLEncoding.EncodeToString(cipherText)
+	encodedNonce := base64.URLEncoding.EncodeToString(nonce)
+
+	return fmt.Sprintf("%s~%s", encodedNonce, encodedCipherText), nil
+}
+
+// DecryptAndAuthenticate decrypts and authenticates a message using AES-GCM
+func DecryptAndAuthenticate(encodedCipherText, secret string) (string, error) {
+	// Decode the pieces
+	pieces := strings.SplitN(encodedCipherText, "~", 2)
+	if len(pieces) != 2 {
+		return "", ErrInvalidCipherText
+	}
+
+	nonceLen := base64.URLEncoding.DecodedLen(len(pieces[0]))
+	nonce := make([]byte, nonceLen)
+	_, err := base64.URLEncoding.Decode(nonce, []byte(pieces[0]))
+	if err != nil {
+		return "", err
+	}
+
+	cipherTextLen := base64.URLEncoding.DecodedLen(len(pieces[1]))
+	cipherText := make([]byte, cipherTextLen)
+	_, err = base64.URLEncoding.Decode(cipherText, []byte(pieces[1]))
+	if err != nil {
+		return "", err
+	}
+
+	// Create a GCM instance
+	gcm, err := createGCM(secret)
+	if err != nil {
+		return "", err
+	}
+
+	// Attempt to open the encrypted data
+	plainText, err := gcm.Open(nil, nonce, cipherText, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(plainText), nil
+}
 
 // CalculateMessageHMACSHA256 calculates the HMAC of a message using the SHA256 algorithm and the given secret
 func CalculateMessageHMACSHA256(message string, secret string) string {
@@ -33,58 +120,4 @@ func VerifyMessageHMACSHA256(message string, calculated string, secret string) b
 	}
 
 	return hmac.Equal(calculatedHMAC, expectedHMAC)
-}
-
-// EncryptAESCFB encrypts a given string using AES-CFB and the given 32 bytes key
-func EncryptAESCFB(message string, key string) (string, error) {
-	block, err := aes.NewCipher([]byte(key))
-	if err != nil {
-		return "", err
-	}
-
-	b := base64.URLEncoding.EncodeToString([]byte(message))
-
-	ciphertext := make([]byte, aes.BlockSize+len(b))
-
-	iv := ciphertext[:aes.BlockSize]
-
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return "", err
-	}
-
-	cfb := cipher.NewCFBEncrypter(block, iv)
-
-	cfb.XORKeyStream(ciphertext[aes.BlockSize:], []byte(b))
-
-	return base64.URLEncoding.EncodeToString(ciphertext), nil
-}
-
-// DecryptAESCFB decrypts a given (encrypted) string using AES-CFB and the given 32 bytes key
-func DecryptAESCFB(encrypted string, key string) (string, error) {
-	block, err := aes.NewCipher([]byte(key))
-	if err != nil {
-		return "", err
-	}
-
-	text, err := base64.URLEncoding.DecodeString(encrypted)
-	if err != nil {
-		return "", err
-	}
-
-	if len(text) < aes.BlockSize {
-		return "", errors.New("Ciphertext too short")
-	}
-
-	iv := text[:aes.BlockSize]
-	text = text[aes.BlockSize:]
-
-	cfb := cipher.NewCFBDecrypter(block, iv)
-
-	cfb.XORKeyStream(text, text)
-
-	data, err := base64.URLEncoding.DecodeString(string(text))
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
 }
