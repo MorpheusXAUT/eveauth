@@ -11,6 +11,9 @@ import (
 
 // SendResponse sends a response to the client by executing the templates and appending the asset checksum data
 func (controller *Controller) SendResponse(w http.ResponseWriter, r *http.Request, template string, response map[string]interface{}) {
+	csrfToken := controller.Session.GetCSRFToken(w, r)
+
+	response["csrfToken"] = csrfToken
 	response["assetChecksums"] = controller.Checksums
 
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -42,6 +45,10 @@ func (controller *Controller) SendRawError(w http.ResponseWriter, statusCode int
 
 // SendJSONResponse sends the given reponse data as a JSON encoded string to the client
 func (controller *Controller) SendJSONResponse(w http.ResponseWriter, r *http.Request, response map[string]interface{}) {
+	csrfToken := controller.Session.GetCSRFToken(w, r)
+
+	response["csrfToken"] = csrfToken
+
 	responseContent, err := json.Marshal(response)
 	if err != nil {
 		misc.Logger.Warnf("Failed to marshal JSON response: [%v]", err)

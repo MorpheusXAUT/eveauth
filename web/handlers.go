@@ -39,9 +39,6 @@ func (controller *Controller) LoginGetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["status"] = 0
 	response["result"] = nil
 
@@ -119,9 +116,6 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["status"] = 0
 	response["result"] = nil
 
@@ -269,9 +263,6 @@ func (controller *Controller) LoginVerifyResendGetHandler(w http.ResponseWriter,
 		return
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["loggedIn"] = loggedIn
 	response["status"] = 0
 	response["result"] = nil
@@ -351,9 +342,6 @@ func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["loggedIn"] = loggedIn
 	response["status"] = 0
 	response["result"] = nil
@@ -462,9 +450,6 @@ func (controller *Controller) LoginResetVerifyGetHandler(w http.ResponseWriter, 
 		return
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["status"] = 0
 	response["result"] = nil
 	response["email"] = email
@@ -669,9 +654,6 @@ func (controller *Controller) SettingsGetHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["user"] = user
 	response["status"] = 0
 	response["result"] = nil
@@ -794,9 +776,6 @@ func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, 
 		controller.SendResponse(w, r, "settingsaccounts", response)
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["accounts"] = accounts
 	response["status"] = 0
 	response["result"] = nil
@@ -934,9 +913,6 @@ func (controller *Controller) SettingsCharactersGetHandler(w http.ResponseWriter
 		controller.SendResponse(w, r, "settingscharacters", response)
 	}
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["characters"] = characters
 	response["status"] = 0
 	response["result"] = nil
@@ -1021,9 +997,6 @@ func (controller *Controller) LegalGetHandler(w http.ResponseWriter, r *http.Req
 
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
-	csrfToken := controller.Session.GetCSRFToken(w, r)
-
-	response["csrfToken"] = csrfToken
 	response["loggedIn"] = loggedIn
 	response["status"] = 0
 	response["result"] = nil
