@@ -17,7 +17,7 @@ $(document).ready(function(e) {
 		$.ajax({
 			accepts: "application/json",
 			cache: false,
-			data: "command=apiKeyDelete&apiKeyID="+$(this).attr('apiKeyID'),
+			data: "command=apiKeyDelete&apiKeyID="+$(this).attr('apiKeyID')+"&csrfToken="+$(this).attr('csrfToken'),
 			dataType: "json",
 			error: displayAjaxError,
 			success: displayResponse,

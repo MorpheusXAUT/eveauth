@@ -3,7 +3,7 @@ $(document).ready(function(e) {
 		$.ajax({
 			accepts: "application/json",
 			cache: false,
-			data: "command=characterSetDefault&characterID="+$(this).attr('characterID'),
+			data: "command=characterSetDefault&characterID="+$(this).attr('characterID')+"&csrfToken="+$(this).attr('csrfToken'),
 			dataType: "json",
 			error: displayAjaxError,
 			success: displayResponse,

@@ -17,6 +17,7 @@
 				<input type="text" class="form-control" id="loginVerifyResendEmail" name="email" placeholder="Enter email" required="required" />
 			</div>
 			<div class="form-group" align="center">
+				<input type="hidden" name="csrfToken" value="{{ .csrfToken }}" />
 				<button type="submit" class="btn btn-success">Submit</button>
 			</div>
 		</form>

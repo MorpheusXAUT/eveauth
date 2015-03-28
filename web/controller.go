@@ -8,6 +8,7 @@ import (
 
 	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/models"
 	"github.com/morpheusxaut/eveauth/session"
 
 	"github.com/gorilla/mux"
@@ -66,7 +67,36 @@ func (controller *Controller) ServeHTTP(inner http.Handler, name string) http.Ha
 			controller.Templates.ReloadTemplates()
 		}
 
-		inner.ServeHTTP(w, r)
+		if (r.Method == "POST" || r.Method == "PUT") && !controller.Session.VerifyCSRFToken(w, r) {
+			misc.Logger.Warnf("Failed to verify CSRF token")
+
+			var userID int64
+
+			user, err := controller.Session.GetUser(r)
+			if err != nil {
+				misc.Logger.Warnf("Failed to get user from session: [%v]", err)
+				userID = -1
+			} else {
+				userID = user.ID
+			}
+
+			csrfFailure := models.NewCSRFFailure(userID, r)
+
+			err = controller.Database.SaveCSRFFailure(csrfFailure)
+			if err != nil {
+				misc.Logger.Errorf("Failed to save CSRF failure: [%v]", err)
+			}
+
+			response := make(map[string]interface{})
+			response["pageType"] = 1
+			response["pageTitle"] = "Error"
+			response["status"] = 1
+			response["result"] = fmt.Errorf("An error occurred, please try again!")
+
+			controller.SendResponse(w, r, "index", response)
+		} else {
+			inner.ServeHTTP(w, r)
+		}
 
 		misc.Logger.Debugf("ServeHTTP: [%s] %s %q {%s} - %s ", r.Method, r.RemoteAddr, r.RequestURI, name, time.Since(start))
 	})

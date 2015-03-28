@@ -29,6 +29,7 @@
 				</tr>
 			</thead>
 			<tbody>
+				{{ $csrfToken := .csrfToken }}
 				{{ range $character := .characters }}
 					<tr>
 						<td>{{ $character.ID }}</td>
@@ -36,7 +37,7 @@
 						<td>{{ $character.Name }}</td>
 						<td>{{ $character.EVECharacterID }}</td>
 						<td>{{ if $character.DefaultCharacter }} Yes {{ else }} No {{ end }}</td>
-						<td><a class="btn btn-primary character-set-default {{ if $character.DefaultCharacter }} disabled {{ end }}" characterID="{{ $character.ID }}">Set default</a></td>
+						<td><a class="btn btn-primary character-set-default {{ if $character.DefaultCharacter }} disabled {{ end }}" characterID="{{ $character.ID }}" csrfToken="{{ $csrfToken }}">Set default</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
