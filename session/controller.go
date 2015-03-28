@@ -70,6 +70,7 @@ func (controller *Controller) DestroySession(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// SetCSRFToken saves the given CSRF token for the current session
 func (controller *Controller) SetCSRFToken(w http.ResponseWriter, r *http.Request, token string) error {
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
@@ -78,15 +79,15 @@ func (controller *Controller) SetCSRFToken(w http.ResponseWriter, r *http.Reques
 	return sessions.Save(r, w)
 }
 
+// GetCSRFToken retrieves the CSRF token for the current session or sets a new one if the session was newly created
 func (controller *Controller) GetCSRFToken(w http.ResponseWriter, r *http.Request) string {
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
 	if loginSession.IsNew {
-		loginSession.Values["csrfToken"] = misc.GenerateRandomString(32)
-
-		err := sessions.Save(r, w)
+		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to save CSRF token session: [%v]", err)
+			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			return ""
 		}
 
 		return loginSession.Values["csrfToken"].(string)
@@ -100,15 +101,15 @@ func (controller *Controller) GetCSRFToken(w http.ResponseWriter, r *http.Reques
 	return token
 }
 
+// VerifyCSRFToken checks whether the provided CSRF token of the request and the stored session token match
 func (controller *Controller) VerifyCSRFToken(w http.ResponseWriter, r *http.Request) bool {
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
 	if loginSession.IsNew {
-		loginSession.Values["csrfToken"] = misc.GenerateRandomString(32)
-
-		err := sessions.Save(r, w)
+		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to save CSRF token session: [%v]", err)
+			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			return false
 		}
 
 		return true
@@ -134,11 +135,10 @@ func (controller *Controller) IsLoggedIn(w http.ResponseWriter, r *http.Request)
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
 	if loginSession.IsNew {
-		loginSession.Values["csrfToken"] = misc.GenerateRandomString(32)
-
-		err := sessions.Save(r, w)
+		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to save CSRF token session: [%v]", err)
+			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			return false
 		}
 
 		return false
@@ -180,11 +180,10 @@ func (controller *Controller) GetLoginRedirect(w http.ResponseWriter, r *http.Re
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
 	if loginSession.IsNew {
-		loginSession.Values["csrfToken"] = misc.GenerateRandomString(32)
-
-		err := sessions.Save(r, w)
+		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to save CSRF token session: [%v]", err)
+			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			return ""
 		}
 
 		return "/"
@@ -519,6 +518,7 @@ func (controller *Controller) SetUser(w http.ResponseWriter, r *http.Request, us
 	return user, sessions.Save(r, w)
 }
 
+// UpdateUser updates the current user's settings with the new given values
 func (controller *Controller) UpdateUser(w http.ResponseWriter, r *http.Request, email string, oldPassword string, newPassword string) (*models.User, error) {
 	user, err := controller.GetUser(r)
 	if err != nil {

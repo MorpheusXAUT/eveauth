@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// CSRFFailure represents data collected about a failure to verify a CSRF token
 type CSRFFailure struct {
 	ID        int64     `json:"id"`
 	UserID    int64     `json:"userID"`
@@ -13,6 +14,7 @@ type CSRFFailure struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
+// NewCSRFFailure creates a new CSRFFailure with the given user ID and HTTP request
 func NewCSRFFailure(userID int64, r *http.Request) *CSRFFailure {
 	csrfFailure := &CSRFFailure{
 		ID:        -1,

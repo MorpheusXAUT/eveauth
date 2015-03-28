@@ -1,22 +1,34 @@
 package misc
 
-import "testing"
+import (
+	"testing"
 
-func TestEncryptDecrypt(t *testing.T) {
-	message := "hello world"
-	secret := "press_f_to_pay_respects_12345678"
+	. "github.com/smartystreets/goconvey/convey"
+)
 
-	encrypted, err := EncryptAndAuthenticate(message, secret)
-	if err != nil {
-		t.Fatalf("Error encrypting: %s", err.Error())
-	}
+func TestCryptoEncryptDecrypt(t *testing.T) {
+	Convey("Trying to encrypt and decrypt a message", t, func() {
+		message := "hello world"
+		secret := "press_f_to_pay_respects_12345678"
 
-	decrypted, err := DecryptAndAuthenticate(encrypted, secret)
-	if err != nil {
-		t.Fatalf("Error decrypting: %s", err.Error())
-	}
+		Convey("Encrypting the test message", func() {
+			encrypted, err := EncryptAndAuthenticate(message, secret)
 
-	if decrypted != message {
-		t.Fatalf("Error decrypted: \"%s\" != \"%s\"", decrypted, message)
-	}
+			Convey("The returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Decrypting the encrypted message", func() {
+				decrypted, err := DecryptAndAuthenticate(encrypted, secret)
+
+				Convey("The returned error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The returned messages should match", func() {
+					So(decrypted, ShouldEqual, message)
+				})
+			})
+		})
+	})
 }

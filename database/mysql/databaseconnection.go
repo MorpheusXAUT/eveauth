@@ -963,6 +963,7 @@ func (c *DatabaseConnection) SaveLoginAttempt(loginAttempt *models.LoginAttempt)
 	return nil
 }
 
+// SaveCSRFFailure saves a CSRF failure to the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) SaveCSRFFailure(csrfFailure *models.CSRFFailure) error {
 	_, err := c.conn.Exec("INSERT INTO csrffailures(userid, request) VALUES(?, ?)", csrfFailure.UserID, csrfFailure.Request)
 	if err != nil {
