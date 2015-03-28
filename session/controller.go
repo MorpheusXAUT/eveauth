@@ -607,6 +607,18 @@ func (controller *Controller) SetDefaultCharacter(w http.ResponseWriter, r *http
 	return nil
 }
 
+// HasUserRole checks whether the current user has a role with the given name granted
+func (controller *Controller) HasUserRole(r *http.Request, role string) bool {
+	user, err := controller.GetUser(r)
+	if err != nil {
+		return false
+	}
+
+	roleStatus := user.HasRole(role)
+
+	return roleStatus == models.RoleStatusGranted
+}
+
 // VerifyApplication verifies the application to be authorized to perform requests to the auth backend
 func (controller *Controller) VerifyApplication(appID string, callback string, auth string) (*models.Application, error) {
 	applicationID, err := strconv.ParseInt(appID, 10, 64)
