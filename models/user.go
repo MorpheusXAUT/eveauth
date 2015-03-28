@@ -55,6 +55,29 @@ func NewUser(username string, password string, email string, verified bool, acti
 	return user
 }
 
+// HasRole returns the RoleStatus for the provided role name
+func (user *User) HasRole(role string) RoleStatus {
+	roleStatus := RoleStatusNonExistent
+
+	for _, group := range user.Groups {
+		status := group.HasRole(role)
+		if status != RoleStatusNonExistent {
+			roleStatus = status
+			break
+		}
+	}
+
+	for _, userRole := range user.UserRoles {
+		status := userRole.IsRole(role)
+		if status != RoleStatusNonExistent {
+			roleStatus = status
+			break
+		}
+	}
+
+	return roleStatus
+}
+
 // ToAuthUser converts the given iser to an AuthUser, exporting only the information required by third-party apps
 func (user *User) ToAuthUser() *AuthUser {
 	authUser := &AuthUser{

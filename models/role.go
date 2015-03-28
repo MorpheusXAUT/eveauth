@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"strings"
 )
 
 // Role represents a permission/role that can be assigned to a user. Applications can require certain roles for access
@@ -79,6 +80,37 @@ func NewUserRole(userID int64, role *Role, autoAdded bool, granted bool) *UserRo
 	return userRole
 }
 
+// IsActiveRole checks whether the current role is active and the role name matches the provided value
+func (role *Role) IsActiveRole(r string) bool {
+	return role.Active && strings.EqualFold(role.Name, r)
+}
+
+// IsRole checks whether the current GroupRole has the same role name and returns the appropriate RoleStatus
+func (groupRole *GroupRole) IsRole(r string) RoleStatus {
+	if !groupRole.Role.IsActiveRole(r) {
+		return RoleStatusNonExistent
+	}
+
+	if groupRole.Granted {
+		return RoleStatusGranted
+	}
+
+	return RoleStatusDenied
+}
+
+// IsRole checks whether the current UserRole has the same role name and returns the appropriate RoleStatus
+func (userRole *UserRole) IsRole(r string) RoleStatus {
+	if !userRole.Role.IsActiveRole(r) {
+		return RoleStatusNonExistent
+	}
+
+	if userRole.Granted {
+		return RoleStatusGranted
+	}
+
+	return RoleStatusDenied
+}
+
 // String represents a JSON encoded representation of the role
 func (role *Role) String() string {
 	jsonContent, err := json.Marshal(role)
@@ -108,3 +140,15 @@ func (userRole *UserRole) String() string {
 
 	return string(jsonContent)
 }
+
+// RoleStatus indicates whether the queried role existed or was granted/denied
+type RoleStatus int
+
+const (
+	// RoleStatusNonExistent indicates that the role names didn't match
+	RoleStatusNonExistent RoleStatus = iota
+	// RoleStatusDenied indicates that the role names matched, but the role was not granted
+	RoleStatusDenied
+	// RoleStatusGranted indicates that the role names matched and the role was granted
+	RoleStatusGranted
+)

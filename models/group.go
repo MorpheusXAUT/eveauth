@@ -28,6 +28,18 @@ func NewGroup(name string, active bool) *Group {
 	return group
 }
 
+// HasRole returns the RoleStatus for the provided role name
+func (group *Group) HasRole(role string) RoleStatus {
+	for _, groupRole := range group.GroupRoles {
+		roleStatus := groupRole.IsRole(role)
+		if roleStatus != RoleStatusNonExistent {
+			return roleStatus
+		}
+	}
+
+	return RoleStatusNonExistent
+}
+
 // String represents a JSON encoded representation of the character
 func (group *Group) String() string {
 	jsonContent, err := json.Marshal(group)
