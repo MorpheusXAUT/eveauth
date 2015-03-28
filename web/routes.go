@@ -140,6 +140,24 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.SettingsCharactersPutHandler,
 		},
 		Route{
+			Name:        "AdminUsersGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/admin/users",
+			HandlerFunc: controller.AdminUsersGetHandler,
+		},
+		Route{
+			Name:        "AdminGroupsGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/admin/groups",
+			HandlerFunc: controller.AdminGroupsGetHandler,
+		},
+		Route{
+			Name:        "AdminRolesGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/admin/roles",
+			HandlerFunc: controller.AdminRolesGetHandler,
+		},
+		Route{
 			Name:        "LegalGet",
 			Methods:     []string{"GET"},
 			Pattern:     "/legal",

@@ -989,6 +989,120 @@ func (controller *Controller) SettingsCharactersPutHandler(w http.ResponseWriter
 	controller.SendJSONResponse(w, r, response)
 }
 
+// AdminUsersGetHandler allows administrators to modify users and assign new groups and roles
+func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "User Administration"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/users")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.users") {
+		misc.Logger.Warnf("Unauthorized access to user administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "index", response)
+		return
+	}
+
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendResponse(w, r, "adminusers", response)
+}
+
+// AdminGroupsGetHandler allows administrators to modify groups and assign new roles
+func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "Group Administration"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/groups")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.users") {
+		misc.Logger.Warnf("Unauthorized access to user administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "index", response)
+		return
+	}
+
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendResponse(w, r, "admingroups", response)
+}
+
+// AdminRolesGetHandler allows administrators to modify roles
+func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "Role Administration"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/roles")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.users") {
+		misc.Logger.Warnf("Unauthorized access to user administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "index", response)
+		return
+	}
+
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendResponse(w, r, "adminroles", response)
+}
+
 // LegalGetHandler displays some legal information as well as copyright disclaimers and contact info
 func (controller *Controller) LegalGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
