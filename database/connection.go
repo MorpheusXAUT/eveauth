@@ -93,8 +93,10 @@ type Connection interface {
 	SaveGroup(group *models.Group) (*models.Group, error)
 	// SaveUser saves a user to the database, returning the updated model or an error if the query failed
 	SaveUser(user *models.User) (*models.User, error)
-	// SaveAuthenticationAttempt saves a login attempt to the database, returning an error if the query failed
-	SaveAuthenticationAttempt(loginAttempt *models.LoginAttempt) error
+	// SaveLoginAttempt saves a login attempt to the database, returning an error if the query failed
+	SaveLoginAttempt(loginAttempt *models.LoginAttempt) error
+	// SaveCSRFFailure saves a CSRF failure to the database, returning an error if the query failed
+	SaveCSRFFailure(csrfFailure *models.CSRFFailure) error
 
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
 	RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error)

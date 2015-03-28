@@ -83,6 +83,18 @@ CREATE TABLE IF NOT EXISTS `corporations` (
 -- Data exporting was unselected.
 
 
+-- Dumping structure for table eveauth.csrffailures
+CREATE TABLE IF NOT EXISTS `csrffailures` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userid` int(11) NOT NULL,
+  `request` text NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table eveauth.grouproles
 CREATE TABLE IF NOT EXISTS `grouproles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

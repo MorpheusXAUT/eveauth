@@ -953,9 +953,18 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-// SaveAuthenticationAttempt saves a login attempt to the MySQL database, returning an error if the query failed
-func (c *DatabaseConnection) SaveAuthenticationAttempt(loginAttempt *models.LoginAttempt) error {
+// SaveLoginAttempt saves a login attempt to the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) SaveLoginAttempt(loginAttempt *models.LoginAttempt) error {
 	_, err := c.conn.Exec("INSERT INTO loginattempts(username, remoteaddr, useragent, successful) VALUES(?, ?, ?, ?)", loginAttempt.Username, loginAttempt.RemoteAddr, loginAttempt.UserAgent, loginAttempt.Successful)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *DatabaseConnection) SaveCSRFFailure(csrfFailure *models.CSRFFailure) error {
+	_, err := c.conn.Exec("INSERT INTO csrffailures(userid, request) VALUES(?, ?)", csrfFailure.UserID, csrfFailure.Request)
 	if err != nil {
 		return err
 	}
