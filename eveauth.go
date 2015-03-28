@@ -45,7 +45,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	templates := web.SetupTemplates()
+	templates := web.SetupTemplates(sessionController)
 
 	checksums, err := web.SetupAssetChecksums()
 	if err != nil {
