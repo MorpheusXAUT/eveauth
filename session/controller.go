@@ -663,3 +663,13 @@ func (controller *Controller) EncodeUserPermissions(r *http.Request, application
 
 	return encryptedPayload, nil
 }
+
+// LoadAllUsers retrieves all currently registered users
+func (controller *Controller) LoadAllUsers() ([]*models.User, error) {
+	users, err := controller.database.LoadAllUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

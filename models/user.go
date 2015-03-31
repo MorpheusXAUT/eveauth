@@ -78,6 +78,51 @@ func (user *User) HasRole(role string) RoleStatus {
 	return roleStatus
 }
 
+// GetCharacterCount returns the number of characters associated with the current user
+func (user *User) GetCharacterCount() int {
+	characterCount := 0
+
+	for _, account := range user.Accounts {
+		characterCount += len(account.Characters)
+	}
+
+	return characterCount
+}
+
+// GetRolesCount returns the number of roles associated with the current user
+func (user *User) GetRolesCount() int {
+	rolesCount := 0
+
+	for _, userRole := range user.UserRoles {
+		if userRole.Role.Active {
+			rolesCount++
+		}
+	}
+
+	for _, group := range user.Groups {
+		for _, groupRole := range group.GroupRoles {
+			if groupRole.Role.Active {
+				rolesCount++
+			}
+		}
+	}
+
+	return rolesCount
+}
+
+// GetDefaultCharacter returns the Character object set as a default character
+func (user *User) GetDefaultCharacter() *Character {
+	for _, accounts := range user.Accounts {
+		for _, character := range accounts.Characters {
+			if character.DefaultCharacter {
+				return character
+			}
+		}
+	}
+
+	return nil
+}
+
 // ToAuthUser converts the given iser to an AuthUser, exporting only the information required by third-party apps
 func (user *User) ToAuthUser() *AuthUser {
 	authUser := &AuthUser{

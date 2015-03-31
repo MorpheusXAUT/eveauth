@@ -1021,6 +1021,18 @@ func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
+	users, err := controller.Session.LoadAllUsers()
+	if err != nil {
+		misc.Logger.Warnf("Failed to load all users: [%v]")
+
+		response["status"] = 1
+		response["result"] = "Failed to load users, please try again!"
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	response["users"] = users
 	response["status"] = 0
 	response["result"] = nil
 

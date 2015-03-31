@@ -37,14 +37,8 @@ func (templates *Templates) ExecuteTemplates(w http.ResponseWriter, r *http.Requ
 // TemplateFunctions prepares a map of functions to be used within templates
 func (templates *Templates) TemplateFunctions(r *http.Request) template.FuncMap {
 	return template.FuncMap{
-		"IsResultNil": func(res interface{}) bool { return templates.IsResultNil(res) },
 		"HasUserRole": func(role string) bool { return templates.HasUserRole(r, role) },
 	}
-}
-
-// IsResultNil checks whether the given result/interface is nil
-func (templates *Templates) IsResultNil(r interface{}) bool {
-	return (r == nil)
 }
 
 // HasUserRole checks whether the current user has a role with the given name granted
