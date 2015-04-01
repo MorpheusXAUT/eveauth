@@ -673,3 +673,13 @@ func (controller *Controller) LoadAllUsers() ([]*models.User, error) {
 
 	return users, nil
 }
+
+// LoadUserFromUserID retrieves a user with the given user ID
+func (controller *Controller) LoadUserFromUserID(userID int64) (*models.User, error) {
+	user, err := controller.database.LoadUserFromUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

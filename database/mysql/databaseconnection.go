@@ -465,6 +465,37 @@ func (c *DatabaseConnection) LoadUserFromUsername(username string) (*models.User
 	return user, nil
 }
 
+// LoadUserFromUserID retrieves the user (and its associated groups and user roles) with the given user ID from the database, returning an error if the query failed
+func (c *DatabaseConnection) LoadUserFromUserID(userID int64) (*models.User, error) {
+	user := &models.User{}
+
+	err := c.conn.Get(user, "SELECT id, username, password, email, verifiedemail, active FROM users WHERE id=?", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts, err := c.LoadAllAccountsForUser(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	userRoles, err := c.LoadAllUserRolesForUser(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	groups, err := c.LoadAllGroupsForUser(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Accounts = accounts
+	user.UserRoles = userRoles
+	user.Groups = groups
+
+	return user, nil
+}
+
 // LoadApplication retrieves the application with the given application ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadApplication(applicationID int64) (*models.Application, error) {
 	application := &models.Application{}

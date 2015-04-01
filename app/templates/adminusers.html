@@ -39,7 +39,7 @@
 						<td>{{ if $defaultCharacter }} {{ $defaultCharacter.Name }} {{ else }} --- {{ end }}</td>
 						<td>{{ $user.GetCharacterCount }}</td>
 						<td>{{ $user.GetRolesCount }}</td>
-						<td><a class="btn btn-primary admin-user-view">View</a>&nbsp;<a class="btn btn-danger admin-user-delete" userID="{{ $user.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+						<td><a class="btn btn-primary" href="/admin/user/{{ $user.ID }}">View</a>&nbsp;<a class="btn btn-danger admin-user-delete" userID="{{ $user.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>

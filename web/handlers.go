@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/morpheusxaut/eveauth/misc"
+
+	"github.com/gorilla/mux"
 )
 
 // IndexGetHandler displays the index page of the web app
@@ -1037,6 +1040,68 @@ func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *htt
 	response["result"] = nil
 
 	controller.SendResponse(w, r, "adminusers", response)
+}
+
+// AdminUserDetailsGetHandler allows administrators to view details of a user
+func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "User Details"
+
+	vars := mux.Vars(r)
+	userID, err := strconv.ParseInt(vars["userid"], 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse userID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse user ID, please try again!"
+
+		controller.SendResponse(w, r, "adminuserdetails", response)
+		return
+	}
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err = controller.Session.SetLoginRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID))
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.users") {
+		misc.Logger.Warnf("Unauthorized access to user administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "index", response)
+		return
+	}
+
+	user, err := controller.Session.LoadUserFromUserID(userID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load user: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to load user details, please try again!"
+
+		controller.SendResponse(w, r, "adminuserdetails", response)
+		return
+	}
+
+	response["user"] = user
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendResponse(w, r, "adminuserdetails", response)
 }
 
 // AdminGroupsGetHandler allows administrators to modify groups and assign new roles
