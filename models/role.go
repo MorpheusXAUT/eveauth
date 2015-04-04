@@ -152,3 +152,23 @@ const (
 	// RoleStatusGranted indicates that the role names matched and the role was granted
 	RoleStatusGranted
 )
+
+// String returns an easily readable string representation of the role status
+func (roleStatus RoleStatus) String() string {
+	switch roleStatus {
+	case RoleStatusNonExistent:
+		return "non-existent"
+		break
+	case RoleStatusDenied:
+		return "denied"
+		break
+	case RoleStatusGranted:
+		return "granted"
+		break
+	default:
+		return "unknown"
+		break
+	}
+
+	return ""
+}
