@@ -498,7 +498,20 @@ func (controller *Controller) GetUser(r *http.Request) (*models.User, error) {
 
 	user, ok := dataSession.Values["user"].(*models.User)
 	if !ok {
-		return nil, fmt.Errorf("Failed to retrieve user from data session")
+		misc.Logger.Tracef("Failed to retrieve user from data session, checking database...")
+
+		loginSession, _ := controller.store.Get(r, "eveauthLogin")
+
+		userID, ok := loginSession.Values["userID"].(int64)
+		if !ok {
+			return nil, fmt.Errorf("Failed to retrieve user from data session and database")
+		}
+
+		var err error
+		user, err = controller.database.LoadUserFromUserID(userID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return user, nil
