@@ -1126,8 +1126,8 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	if !controller.Session.HasUserRole(r, "admin.users") {
-		misc.Logger.Warnf("Unauthorized access to user administration")
+	if !controller.Session.HasUserRole(r, "admin.groups") {
+		misc.Logger.Warnf("Unauthorized access to group administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1136,10 +1136,84 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
+	groups, err := controller.Session.LoadAllGroups()
+	if err != nil {
+		misc.Logger.Warnf("Failed to load all groups: [%v]")
+
+		response["status"] = 1
+		response["result"] = "Failed to load groups, please try again!"
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	response["groups"] = groups
 	response["status"] = 0
 	response["result"] = nil
 
 	controller.SendResponse(w, r, "admingroups", response)
+}
+
+// AdminGroupDetailsGetHandler allows administrators to view details of a group
+func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "Group Details"
+
+	vars := mux.Vars(r)
+	groupID, err := strconv.ParseInt(vars["groupid"], 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse groupID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse group ID, please try again!"
+
+		controller.SendResponse(w, r, "admingroupdetails", response)
+		return
+	}
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err = controller.Session.SetLoginRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID))
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.groups") {
+		misc.Logger.Warnf("Unauthorized access to group administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "index", response)
+		return
+	}
+
+	group, err := controller.Session.LoadGroupFromGroupID(groupID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load group: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to load group details, please try again!"
+
+		controller.SendResponse(w, r, "admingroupdetails", response)
+		return
+	}
+
+	response["group"] = group
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendResponse(w, r, "admingroupdetails", response)
 }
 
 // AdminRolesGetHandler allows administrators to modify roles

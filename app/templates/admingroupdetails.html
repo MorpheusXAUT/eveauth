@@ -1,0 +1,62 @@
+{{ define "admingroupdetails" }}
+{{ template "header" . }}
+{{ template "navigation" . }}
+{{ $csrfToken := .csrfToken }}
+{{ $groupID := .group.ID }}
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h3>Group Details - {{ .group.Name }}</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Status</th>
+					<th># of Roles</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{ .group.ID }}</td>
+					<td>{{ .group.Name }}</td>
+					<td>{{ if .group.Active }} active {{ else }} inactive {{ end }}</td>
+					<td>{{ .group.GetRoleCount }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="panel panel-primary">
+	<div class="panel-heading">
+		<h3>Roles</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Autoadded</th>
+					<th>Granted</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{ range $role := .group.GroupRoles }}
+					<tr>
+						<td>{{ $role.ID }}</td>
+						<td>{{ $role.Role.Name }}</td>
+						<td>{{ if $role.AutoAdded }} yes {{ else }} no {{ end }}</td>
+						<td>{{ if $role.Granted }} yes {{ else }} no {{ end }}</td>
+						<td><a class="btn btn-danger admin-groupdetails-roles-delete" groupID="{{ $groupID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+					</tr>
+				{{ end }}
+			</tbody>
+		</table>
+		<div align="center"><a class="btn btn-success admin-groupdetails-role-add" groupID="{{ $groupID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
+	</div>
+</div>
+{{ template "footer" . }}
+{{ end }}

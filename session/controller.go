@@ -508,7 +508,7 @@ func (controller *Controller) GetUser(r *http.Request) (*models.User, error) {
 		}
 
 		var err error
-		user, err = controller.database.LoadUserFromUserID(userID)
+		user, err = controller.database.LoadUser(userID)
 		if err != nil {
 			return nil, err
 		}
@@ -689,7 +689,7 @@ func (controller *Controller) LoadAllUsers() ([]*models.User, error) {
 
 // LoadUserFromUserID retrieves a user with the given user ID
 func (controller *Controller) LoadUserFromUserID(userID int64) (*models.User, error) {
-	user, err := controller.database.LoadUserFromUserID(userID)
+	user, err := controller.database.LoadUser(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -697,6 +697,27 @@ func (controller *Controller) LoadUserFromUserID(userID int64) (*models.User, er
 	return user, nil
 }
 
+// LoadAllGroups retrieves all currently existing groups
+func (controller *Controller) LoadAllGroups() ([]*models.Group, error) {
+	groups, err := controller.database.LoadAllGroups()
+	if err != nil {
+		return nil, err
+	}
+
+	return groups, nil
+}
+
+// LoadGroupFromGroupID retrieves a group with the given group ID
+func (controller *Controller) LoadGroupFromGroupID(groupID int64) (*models.Group, error) {
+	group, err := controller.database.LoadGroup(groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	return group, nil
+}
+
+// QueryCorporationName queries the database for the name of the corporation with the given ID
 func (controller *Controller) QueryCorporationName(corporationID int64) (string, error) {
 	corporationName, err := controller.database.LoadCorporationNameFromID(corporationID)
 	if err != nil {

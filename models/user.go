@@ -89,7 +89,7 @@ func (user *User) GetCharacterCount() int {
 	return characterCount
 }
 
-// GetRolesCount returns the number of roles associated with the current user
+// GetRoleCount returns the number of roles associated with the current user
 func (user *User) GetRoleCount() int {
 	rolesCount := 0
 
@@ -123,6 +123,7 @@ func (user *User) GetDefaultCharacter() *Character {
 	return nil
 }
 
+// GetEffectiveRoles returns a map of roles as defined via granted/denied group and user roles, index by the role ID
 func (user *User) GetEffectiveRoles() map[int64]*Role {
 	roles := make(map[int64]*Role)
 

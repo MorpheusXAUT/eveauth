@@ -158,17 +158,11 @@ func (roleStatus RoleStatus) String() string {
 	switch roleStatus {
 	case RoleStatusNonExistent:
 		return "non-existent"
-		break
 	case RoleStatusDenied:
 		return "denied"
-		break
 	case RoleStatusGranted:
 		return "granted"
-		break
-	default:
-		return "unknown"
-		break
 	}
 
-	return ""
+	return "unknown"
 }

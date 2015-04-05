@@ -37,6 +37,7 @@ func NewAccount(userID int64, apiKeyID int64, apivCode string, apiAccessMask int
 	return account
 }
 
+// GetCharacterCount returns the number of characters associated with the current account
 func (account *Account) GetCharacterCount() int {
 	return len(account.Characters)
 }

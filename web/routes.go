@@ -158,6 +158,12 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.AdminGroupsGetHandler,
 		},
 		Route{
+			Name:        "AdminGroupDetailsGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/admin/group/{groupid:[0-9]+}",
+			HandlerFunc: controller.AdminGroupDetailsGetHandler,
+		},
+		Route{
 			Name:        "AdminRolesGet",
 			Methods:     []string{"GET"},
 			Pattern:     "/admin/roles",
