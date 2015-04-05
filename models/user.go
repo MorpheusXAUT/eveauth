@@ -90,7 +90,7 @@ func (user *User) GetCharacterCount() int {
 }
 
 // GetRolesCount returns the number of roles associated with the current user
-func (user *User) GetRolesCount() int {
+func (user *User) GetRoleCount() int {
 	rolesCount := 0
 
 	for _, userRole := range user.UserRoles {
@@ -123,6 +123,31 @@ func (user *User) GetDefaultCharacter() *Character {
 	return nil
 }
 
+func (user *User) GetEffectiveRoles() map[int64]*Role {
+	roles := make(map[int64]*Role)
+
+	for _, group := range user.Groups {
+		for _, groupRole := range group.GroupRoles {
+			if groupRole.Granted {
+				roles[groupRole.Role.ID] = groupRole.Role
+			}
+		}
+	}
+
+	for _, userRole := range user.UserRoles {
+		if userRole.Granted {
+			roles[userRole.Role.ID] = userRole.Role
+		} else {
+			_, ok := roles[userRole.Role.ID]
+			if ok {
+				delete(roles, userRole.Role.ID)
+			}
+		}
+	}
+
+	return roles
+}
+
 // ToAuthUser converts the given iser to an AuthUser, exporting only the information required by third-party apps
 func (user *User) ToAuthUser() *AuthUser {
 	authUser := &AuthUser{
@@ -132,18 +157,10 @@ func (user *User) ToAuthUser() *AuthUser {
 		Characters: make([]*AuthCharacter, 0),
 	}
 
-	for _, userRole := range user.UserRoles {
-		if userRole.Granted {
-			authUser.Roles = append(authUser.Roles, userRole.Role.Name)
-		}
-	}
+	effectiveRoles := user.GetEffectiveRoles()
 
-	for _, group := range user.Groups {
-		for _, groupRole := range group.GroupRoles {
-			if groupRole.Granted {
-				authUser.Roles = append(authUser.Roles, groupRole.Role.Name)
-			}
-		}
+	for _, role := range effectiveRoles {
+		authUser.Roles = append(authUser.Roles, role.Name)
 	}
 
 	for _, account := range user.Accounts {

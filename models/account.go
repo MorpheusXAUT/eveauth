@@ -37,6 +37,10 @@ func NewAccount(userID int64, apiKeyID int64, apivCode string, apiAccessMask int
 	return account
 }
 
+func (account *Account) GetCharacterCount() int {
+	return len(account.Characters)
+}
+
 // String represents a JSON encoded representation of the account
 func (account *Account) String() string {
 	jsonContent, err := json.Marshal(account)

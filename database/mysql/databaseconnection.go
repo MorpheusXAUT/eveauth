@@ -304,6 +304,18 @@ func (c *DatabaseConnection) LoadCorporationFromEVECorporationID(eveCorporationI
 	return corporation, nil
 }
 
+// LoadCorporationNameFromID retrieves the name of the corporation with the given ID, returning an error if the query failed
+func (c *DatabaseConnection) LoadCorporationNameFromID(corporationID int64) (string, error) {
+	var corporationName string
+
+	err := c.conn.Get(&corporationName, "SELECT name FROM corporations WHERE id=?", corporationID)
+	if err != nil {
+		return "", err
+	}
+
+	return corporationName, nil
+}
+
 // LoadCharacter retrieves the character with the given ID from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character, error) {
 	character := &models.Character{}

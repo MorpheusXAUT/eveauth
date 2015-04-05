@@ -2,7 +2,8 @@
 {{ template "header" . }}
 {{ template "navigation" . }}
 {{ $csrfToken := .csrfToken }}
-<div class="panel panel-primary">
+{{ $userID := .user.ID }}
+<div class="panel panel-info">
 	<div class="panel-heading">
 		<h3>User Details - {{ .user.Username }}</h3>
 	</div>
@@ -26,26 +27,102 @@
 						<td>{{ .user.Email }}</td>
 						<td>{{ if $defaultCharacter }} {{ $defaultCharacter.Name }} {{ else }} --- {{ end }}</td>
 						<td>{{ .user.GetCharacterCount }}</td>
-						<td>{{ .user.GetRolesCount }}</td>
+						<td>{{ .user.GetRoleCount }}</td>
 					</tr>
 			</tbody>
 		</table>
 	</div>
 </div>
-{{ range $account := .user.Accounts }}
 <div class="panel panel-primary">
 	<div class="panel-heading">
-		<h3>Account #{{ $account.ID }} - Key ID #{{ $account.APIKeyID }} - Access Mask {{ $account.APIAccessMask }}</h3>
+		<h3>Groups</h3>
 	</div>
 	<div class="panel-body">
 		<table class="table table-striped table-hover">
 			<thead>
 				<tr>
 					<th>#</th>
+					<th>Name</th>
+					<th># of Roles</th>
+					<th>Status</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{ range $group := .user.Groups }}
+					<tr>
+						<td>{{ $group.ID }}</td>
+						<td>{{ $group.Name }}</td>
+						<td>{{ $group.GetRoleCount }}</td>
+						<td>{{ if $group.Active }} active {{ else }} inactive {{ end }}</td>
+						<td><a class="btn btn-primary" href="/admin/group/{{ $group.ID }}">View</a>&nbsp;<a class="btn btn-danger admin-userdetails-group-delete" userID="{{ $userID }}" groupID="{{ $group.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+					</tr>
+				{{ end }}
+			</tbody>
+		</table>
+		<div align="center"><a class="btn btn-success admin-userdetails-group-add" userID="{{ $userID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-primary">
+	<div class="panel-heading">
+		<h3>Effective Roles</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Status</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{ range $role := .user.GetEffectiveRoles }}
+					<tr>
+						<td>{{ $role.ID }}</td>
+						<td>{{ $role.Name }}</td>
+						<td>{{ if $role.Active }} active {{ else }} inactive {{ end }}</td>
+						<td><a class="btn btn-danger admin-userdetails-roles-delete" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+					</tr>
+				{{ end }}
+			</tbody>
+		</table>
+		<div align="center"><a class="btn btn-success admin-userdetails-role-add" userID="{{ $userID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3>Accounts</h3>
+	</div>
+	<div class="panel-body">
+		{{ range $account := .user.Accounts }}
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>API Key ID</th>
+					<th>Access Mask</th>
+					<th># of Characters</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{ $account.ID }}</td>
+					<td>{{ $account.APIKeyID }}</td>
+					<td>{{ $account.APIAccessMask }}</td>
+					<td>{{ $account.GetCharacterCount }}</td>
+				</tr>
+			</tbody>
+		</table><br />
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
 					<th>Portrait</th>
 					<th>Name</th>
+					<th>Corporation</th>
 					<th>EVE Character ID</th>
-					<th>Corporation ID</th>
 				</tr>
 			</thead>
 			{{ range $character := $account.Characters }}
@@ -54,14 +131,16 @@
 					<td>{{ $character.ID }}</td>
 					<td style="width: 75px !important"><img src="{{ printf "https://image.eveonline.com/Character/%d_64.jpg" $character.EVECharacterID }}" alt="{{ $character.Name }}" /></td>
 					<td>{{ $character.Name }}</td>
+					<td>{{ QueryCorporationName $character.CorporationID }}</td>
 					<td>{{ $character.EVECharacterID }}</td>
-					<td>{{ $character.CorporationID }}</td>
 				</tr>
 			</tbody>
 			{{ end }}
 		</table>
+		<div align="center"><a class="btn btn-danger admin-userdetails-account-delete" userID="{{ $userID }}" accountID="{{ $account.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></div>
+		<hr style="width: 100%; color: black; height: 1px; background-color: black;" /><br />
+		{{ end }}
 	</div>
 </div>
-{{ end }}
 {{ template "footer" . }}
 {{ end }}

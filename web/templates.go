@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -37,11 +38,21 @@ func (templates *Templates) ExecuteTemplates(w http.ResponseWriter, r *http.Requ
 // TemplateFunctions prepares a map of functions to be used within templates
 func (templates *Templates) TemplateFunctions(r *http.Request) template.FuncMap {
 	return template.FuncMap{
-		"HasUserRole": func(role string) bool { return templates.HasUserRole(r, role) },
+		"HasUserRole":          func(role string) bool { return templates.HasUserRole(r, role) },
+		"QueryCorporationName": func(i int64) string { return templates.QueryCorporationName(i) },
 	}
 }
 
 // HasUserRole checks whether the current user has a role with the given name granted
 func (templates *Templates) HasUserRole(r *http.Request, role string) bool {
 	return templates.session.HasUserRole(r, role)
+}
+
+func (templates *Templates) QueryCorporationName(corporationID int64) string {
+	corporationName, err := templates.session.QueryCorporationName(corporationID)
+	if err != nil {
+		return fmt.Sprintf("#%d", corporationID)
+	}
+
+	return corporationName
 }

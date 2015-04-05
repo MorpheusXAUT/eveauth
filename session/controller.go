@@ -696,3 +696,12 @@ func (controller *Controller) LoadUserFromUserID(userID int64) (*models.User, er
 
 	return user, nil
 }
+
+func (controller *Controller) QueryCorporationName(corporationID int64) (string, error) {
+	corporationName, err := controller.database.LoadCorporationNameFromID(corporationID)
+	if err != nil {
+		return "", err
+	}
+
+	return corporationName, nil
+}

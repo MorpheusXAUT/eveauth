@@ -40,6 +40,11 @@ func (group *Group) HasRole(role string) RoleStatus {
 	return RoleStatusNonExistent
 }
 
+// GetRoleCount returns the number of roles associated with the current group
+func (group *Group) GetRoleCount() int {
+	return len(group.GroupRoles)
+}
+
 // String represents a JSON encoded representation of the character
 func (group *Group) String() string {
 	jsonContent, err := json.Marshal(group)

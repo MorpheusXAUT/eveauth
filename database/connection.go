@@ -41,6 +41,8 @@ type Connection interface {
 	LoadCorporation(corporationID int64) (*models.Corporation, error)
 	// LoadCorporationFromEVECorporationID retrieves the corporation with the given EVE Online corporation ID from the database, returning an error if the query failed
 	LoadCorporationFromEVECorporationID(eveCorporationID int64) (*models.Corporation, error)
+	// LoadCorporationNameFromID retrieves the name of the corporation with the given ID, returning an error if the query failed
+	LoadCorporationNameFromID(corporationID int64) (string, error)
 	// LoadCharacter retrieves the character with the given ID from the database, returning an error if the query failed
 	LoadCharacter(characterID int64) (*models.Character, error)
 	// LoadRole retrieves the role with the given ID from the database, returning an error if the query failed
