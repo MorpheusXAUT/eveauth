@@ -65,6 +65,36 @@
 </div>
 <div class="panel panel-primary">
 	<div class="panel-heading">
+		<h3>User Roles</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Autoadded</th>
+					<th>Granted</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{ range $role := .user.UserRoles }}
+					<tr>
+						<td>{{ $role.ID }}</td>
+						<td>{{ $role.Role.Name }}</td>
+						<td>{{ if $role.AutoAdded }} yes {{ else }} no {{ end }}</td>
+						<td>{{ if $role.Granted }} yes {{ else }} no {{ end }}</td>
+						<td><a class="btn btn-danger admin-userdetails-roles-delete" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+					</tr>
+				{{ end }}
+			</tbody>
+		</table>
+		<div align="center"><a class="btn btn-success admin-userdetails-role-add" userID="{{ $userID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-success">
+	<div class="panel-heading">
 		<h3>Effective Roles</h3>
 	</div>
 	<div class="panel-body">
@@ -74,7 +104,6 @@
 					<th>#</th>
 					<th>Name</th>
 					<th>Status</th>
-					<th>Action</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -83,12 +112,10 @@
 						<td>{{ $role.ID }}</td>
 						<td>{{ $role.Name }}</td>
 						<td>{{ if $role.Active }} active {{ else }} inactive {{ end }}</td>
-						<td><a class="btn btn-danger admin-userdetails-roles-delete" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
 		</table>
-		<div align="center"><a class="btn btn-success admin-userdetails-role-add" userID="{{ $userID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
 	</div>
 </div>
 <div class="panel panel-default">
