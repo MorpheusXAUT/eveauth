@@ -1238,8 +1238,8 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if !controller.Session.HasUserRole(r, "admin.users") {
-		misc.Logger.Warnf("Unauthorized access to user administration")
+	if !controller.Session.HasUserRole(r, "admin.roles") {
+		misc.Logger.Warnf("Unauthorized access to role administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1248,6 +1248,18 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
+	roles, err := controller.Session.LoadAllRoles()
+	if err != nil {
+		misc.Logger.Warnf("Failed to load all roles: [%v]")
+
+		response["status"] = 1
+		response["result"] = "Failed to load roles, please try again!"
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	response["roles"] = roles
 	response["status"] = 0
 	response["result"] = nil
 

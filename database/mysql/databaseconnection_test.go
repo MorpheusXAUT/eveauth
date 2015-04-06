@@ -1313,21 +1313,25 @@ var (
 			ID:     1,
 			Name:   "ping.all",
 			Active: true,
+			Locked: false,
 		},
 		2: &models.Role{
 			ID:     2,
 			Name:   "destroy.world",
 			Active: false,
+			Locked: true,
 		},
 		3: &models.Role{
 			ID:     3,
 			Name:   "logistics.read",
 			Active: true,
+			Locked: false,
 		},
 		4: &models.Role{
 			ID:     4,
 			Name:   "logistics.write",
 			Active: true,
+			Locked: false,
 		},
 	}
 

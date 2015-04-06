@@ -1,6 +1,46 @@
 {{ define "adminroles" }}
 {{ template "header" . }}
 {{ template "navigation" . }}
-
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h3>Manage roles</h3>
+	</div>
+	<div class="panel-body">
+		<p>
+			You can use this page to manage all roles currently added to eveauth. You can add new roles as well as delete them.
+		</p>
+	</div>
+</div>
+<div class="panel panel-primary">
+	<div class="panel-heading">
+		<h3>Roles</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Status</th>
+					<th>Locked</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{ $csrfToken := .csrfToken }}
+				{{ range $role := .roles }}
+					<tr>
+						<td>{{ $role.ID }}</td>
+						<td>{{ $role.Name }}</td>
+						<td>{{ if $role.Active }} active {{ else }} inactive {{ end }}</td>
+						<td>{{ if $role.Locked }} yes {{ else }} no {{ end }}</td>
+						<td><a class="btn btn-danger admin-roles-delete {{ if $role.Locked }} disabled {{ end }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+					</tr>
+				{{ end }}
+			</tbody>
+		</table>
+		<div align="center"><a class="btn btn-success admin-roles-add" csrfToken="{{ $csrfToken }}">Add</a></div>
+	</div>
+</div>
 {{ template "footer" . }}
 {{ end }}

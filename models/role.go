@@ -13,6 +13,8 @@ type Role struct {
 	Name string `json:"name"`
 	// Active indicates whether the Role is set as active
 	Active bool `json:"active"`
+	// Locked indicates whether the Role is locked in database and cannot be delete
+	Locked bool `json:"locked"`
 }
 
 // GroupRole represents a role assigned to a Group. Group permissions affect all people within the group
@@ -44,11 +46,12 @@ type UserRole struct {
 }
 
 // NewRole creates a new role with the given information
-func NewRole(name string, active bool) *Role {
+func NewRole(name string, active bool, locked bool) *Role {
 	role := &Role{
 		ID:     -1,
 		Name:   name,
 		Active: active,
+		Locked: locked,
 	}
 
 	return role

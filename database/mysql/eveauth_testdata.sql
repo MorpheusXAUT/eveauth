@@ -62,11 +62,11 @@ INSERT INTO `groups` (`id`, `name`, `active`) VALUES
 
 -- Dumping data for table eveauth.roles: ~4 rows (approximately)
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` (`id`, `name`, `active`) VALUES
-	(1, 'ping.all', 1),
-	(2, 'destroy.world', 0),
-	(3, 'logistics.read', 1),
-	(4, 'logistics.write', 1);
+INSERT INTO `roles` (`id`, `name`, `active`, `locked`) VALUES
+	(1, 'ping.all', 1, 0),
+	(2, 'destroy.world', 0, 1),
+	(3, 'logistics.read', 1, 0),
+	(4, 'logistics.write', 1, 0);
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.usergroups: ~6 rows (approximately)

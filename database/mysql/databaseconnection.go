@@ -113,7 +113,7 @@ func (c *DatabaseConnection) LoadAllCharacters() ([]*models.Character, error) {
 func (c *DatabaseConnection) LoadAllRoles() ([]*models.Role, error) {
 	var roles []*models.Role
 
-	err := c.conn.Select(&roles, "SELECT id, name, active FROM roles")
+	err := c.conn.Select(&roles, "SELECT id, name, active, locked FROM roles")
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +332,7 @@ func (c *DatabaseConnection) LoadCharacter(characterID int64) (*models.Character
 func (c *DatabaseConnection) LoadRole(roleID int64) (*models.Role, error) {
 	role := &models.Role{}
 
-	err := c.conn.Get(role, "SELECT id, name, active FROM roles WHERE id=?", roleID)
+	err := c.conn.Get(role, "SELECT id, name, active, locked FROM roles WHERE id=?", roleID)
 	if err != nil {
 		return nil, err
 	}
@@ -758,12 +758,12 @@ func (c *DatabaseConnection) SaveCharacter(character *models.Character) (*models
 // SaveRole saves a role to the MySQL database, returning the updated model or an error if the query failed
 func (c *DatabaseConnection) SaveRole(role *models.Role) (*models.Role, error) {
 	if role.ID > 0 {
-		_, err := c.conn.Exec("UPDATE roles SET name=?, active=? WHERE id=?", role.Name, role.Active, role.ID)
+		_, err := c.conn.Exec("UPDATE roles SET name=?, active=?, locked=? WHERE id=?", role.Name, role.Active, role.Locked, role.ID)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		resp, err := c.conn.Exec("INSERT INTO roles(name, active) VALUES(?, ?)", role.Name, role.Active)
+		resp, err := c.conn.Exec("INSERT INTO roles(name, active, locked) VALUES(?, ?, ?)", role.Name, role.Active, role.Locked)
 		if err != nil {
 			return nil, err
 		}

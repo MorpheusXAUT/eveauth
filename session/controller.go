@@ -717,6 +717,16 @@ func (controller *Controller) LoadGroupFromGroupID(groupID int64) (*models.Group
 	return group, nil
 }
 
+// LoadAllRoles retrieves all currently existing roles
+func (controller *Controller) LoadAllRoles() ([]*models.Role, error) {
+	roles, err := controller.database.LoadAllRoles()
+	if err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
 // QueryCorporationName queries the database for the name of the corporation with the given ID
 func (controller *Controller) QueryCorporationName(corporationID int64) (string, error) {
 	corporationName, err := controller.database.LoadCorporationNameFromID(corporationID)
