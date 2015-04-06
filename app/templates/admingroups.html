@@ -42,5 +42,7 @@
 		<div align="center"><a class="btn btn-success admin-groups-add" csrfToken="{{ $csrfToken }}">Add</a></div>
 	</div>
 </div>
+
+<script src="/js/admingroups.js?md5={{ index .assetChecksums.Checksums "admingroups.js" }}"></script>
 {{ template "footer" . }}
 {{ end }}

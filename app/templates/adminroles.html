@@ -34,13 +34,15 @@
 						<td>{{ $role.Name }}</td>
 						<td>{{ if $role.Active }} active {{ else }} inactive {{ end }}</td>
 						<td>{{ if $role.Locked }} yes {{ else }} no {{ end }}</td>
-						<td><a class="btn btn-danger admin-roles-delete {{ if $role.Locked }} disabled {{ end }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+						<td><a class="btn btn-danger admin-role-delete {{ if $role.Locked }} disabled {{ end }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
 		</table>
-		<div align="center"><a class="btn btn-success admin-roles-add" csrfToken="{{ $csrfToken }}">Add</a></div>
+		<div align="center"><a class="btn btn-success admin-role-add" csrfToken="{{ $csrfToken }}">Add</a></div>
 	</div>
 </div>
+
+<script src="/js/adminroles.js?md5={{ index .assetChecksums.Checksums "adminroles.js" }}"></script>
 {{ template "footer" . }}
 {{ end }}
