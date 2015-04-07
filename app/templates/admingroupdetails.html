@@ -50,7 +50,7 @@
 						<td>{{ $role.Role.Name }}</td>
 						<td>{{ if $role.AutoAdded }} yes {{ else }} no {{ end }}</td>
 						<td>{{ if $role.Granted }} yes {{ else }} no {{ end }}</td>
-						<td><a class="btn btn-danger admin-groupdetails-roles-delete" groupID="{{ $groupID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+						<td><a class="btn btn-danger admin-groupdetails-role-delete" groupID="{{ $groupID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
@@ -58,5 +58,7 @@
 		<div align="center"><a class="btn btn-success admin-groupdetails-role-add" groupID="{{ $groupID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
 	</div>
 </div>
+
+<script src="/js/admingroupdetails.js?md5={{ index .assetChecksums.Checksums "admingroupdetails.js" }}"></script>
 {{ template "footer" . }}
 {{ end }}

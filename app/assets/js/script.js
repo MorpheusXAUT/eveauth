@@ -87,3 +87,7 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 		});
 	});
 };
+
+$(function () {
+	  $('[data-toggle="tooltip"]').tooltip()
+});

@@ -1098,6 +1098,32 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 	}
 
 	response["user"] = user
+
+	availableGroups, err := controller.Session.LoadAvailableGroupsForUser(user.ID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load available groups: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to load available groups, please try again!"
+
+		controller.SendResponse(w, r, "adminuserdetails", response)
+		return
+	}
+
+	response["availableGroups"] = availableGroups
+
+	availableUserRoles, err := controller.Session.LoadAvailableUserRolesForUser(user.ID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load available user roles: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to load available user roles, please try again!"
+
+		controller.SendResponse(w, r, "adminuserdetails", response)
+		return
+	}
+
+	response["availableUserRoles"] = availableUserRoles
 	response["status"] = 0
 	response["result"] = nil
 

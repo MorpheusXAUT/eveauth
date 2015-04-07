@@ -70,6 +70,9 @@ type Connection interface {
 	LoadAllUserRolesForUser(userID int64) ([]*models.UserRole, error)
 	// LoadAllGroupsForUser retrieves all groups (and their associated group roles) associated with the given user from the database, returning an error if the query failed
 	LoadAllGroupsForUser(userID int64) ([]*models.Group, error)
+	// LoadAvailableGroupsForUser retrieves all available groups (and their associated group roles) associated with the given user from the MySQL database, returning an error if the query failed
+	LoadAvailableGroupsForUser(userID int64) ([]*models.Group, error)
+	LoadAvailableUserRolesForUser(userID int64) ([]*models.Role, error)
 
 	// LoadPasswordForUser retrieves the password associated with the given username from the database, returning an error if the query failed
 	LoadPasswordForUser(username string) (string, error)

@@ -717,6 +717,15 @@ func (controller *Controller) LoadGroupFromGroupID(groupID int64) (*models.Group
 	return group, nil
 }
 
+func (controller *Controller) LoadAvailableGroupsForUser(userID int64) ([]*models.Group, error) {
+	availableGroups, err := controller.database.LoadAvailableGroupsForUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return availableGroups, nil
+}
+
 // LoadAllRoles retrieves all currently existing roles
 func (controller *Controller) LoadAllRoles() ([]*models.Role, error) {
 	roles, err := controller.database.LoadAllRoles()
@@ -725,6 +734,15 @@ func (controller *Controller) LoadAllRoles() ([]*models.Role, error) {
 	}
 
 	return roles, nil
+}
+
+func (controller *Controller) LoadAvailableUserRolesForUser(userID int64) ([]*models.Role, error) {
+	availableUserRoles, err := controller.database.LoadAvailableUserRolesForUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return availableUserRoles, nil
 }
 
 // QueryCorporationName queries the database for the name of the corporation with the given ID

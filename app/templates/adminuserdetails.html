@@ -60,7 +60,30 @@
 				{{ end }}
 			</tbody>
 		</table>
-		<div align="center"><a class="btn btn-success admin-userdetails-group-add" userID="{{ $userID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
+		<div align="center"><a class="btn btn-success" data-toggle="collapse" data-target="#adminUserDetailsAddGroup">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-success collapse" id="adminUserDetailsAddGroup">
+	<div class="panel-heading">
+		<h3>Add to group</h3>
+	</div>
+	<div class="panel-body">
+		<form action="/admin/users" method="post">
+			<div class="form-group">
+				<label for="adminUserDetailsAddGroupGroup">Group</label>
+				<select class="form-control" id="adminUserDetailsAddGroupGroup" name="adminUserDetailsAddGroupGroup" required="required">
+					{{ range $group := .availableGroups }}
+						<option value="{{ $group.ID }}">{{ $group.Name }}</option>
+					{{ end }}
+				</select>
+			</div>
+			<div class="form-group" align="center">
+				<input type="hidden" name="command" value="adminUserDetailsAddGroup" />
+				<input type="hidden" name="userID" value="{{ $userID }}" />
+				<input type="hidden" name="csrfToken" value="{{ $csrfToken }}" />
+				<button type="submit" class="btn btn-success">Submit</button>
+			</div>
+		</form>
 	</div>
 </div>
 <div class="panel panel-primary">
@@ -85,12 +108,40 @@
 						<td>{{ $role.Role.Name }}</td>
 						<td>{{ if $role.AutoAdded }} yes {{ else }} no {{ end }}</td>
 						<td>{{ if $role.Granted }} yes {{ else }} no {{ end }}</td>
-						<td><a class="btn btn-danger admin-userdetails-roles-delete" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+						<td><a class="btn btn-danger admin-userdetails-role-delete" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
 		</table>
-		<div align="center"><a class="btn btn-success admin-userdetails-role-add" userID="{{ $userID }}" csrfToken="{{ $csrfToken }}">Add</a></div>
+		<div align="center"><a class="btn btn-success" data-toggle="collapse" data-target="#adminUserDetailsAddUserRole">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-success collapse" id="adminUserDetailsAddUserRole">
+	<div class="panel-heading">
+		<h3>Add user role</h3>
+	</div>
+	<div class="panel-body">
+		<form action="/admin/users" method="post">
+			<div class="form-group">
+				<label for="adminUserDetailsAddGroupUserRole">User Role</label>
+				<select class="form-control" id="adminUserDetailsAddGroupUserRole" name="adminUserDetailsAddGroupUserRole" required="required">
+					{{ range $role := .availableUserRoles }}
+						<option value="{{ $role.ID }}">{{ $role.Name }}</option>
+					{{ end }}
+				</select>
+			</div>
+			<div class="checkbox">
+				<label>
+					<input name="adminUserDetailsAddGroupUserRoleGranted" type="checkbox" checked /> <div data-toggle="tooltip" data-placement="right" title="Indicates whether the role should be granted or denied">Granted</div>
+				</label>
+			</div>
+			<div class="form-group" align="center">
+				<input type="hidden" name="command" value="adminUserDetailsAddGroupUserRole" />
+				<input type="hidden" name="userID" value="{{ $userID }}" />
+				<input type="hidden" name="csrfToken" value="{{ $csrfToken }}" />
+				<button type="submit" class="btn btn-success">Submit</button>
+			</div>
+		</form>
 	</div>
 </div>
 <div class="panel panel-success">

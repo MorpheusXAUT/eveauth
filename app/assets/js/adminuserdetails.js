@@ -17,11 +17,11 @@ $(document).ready(function(e) {
 		
 	});
 
-	$('a.admin-userdetails-roles-delete').click(function() {
+	$('a.admin-userdetails-role-delete').click(function() {
 		$.ajax({
 			accepts: "application/json",
 			cache: false,
-			data: "command=adminUserDetailsRolesDelete&userID="+$(this).attr('userID')+"&roleID="+$(this).attr('roleID')+"&csrfToken="+$(this).attr('csrfToken'),
+			data: "command=adminUserDetailsRoleDelete&userID="+$(this).attr('userID')+"&roleID="+$(this).attr('roleID')+"&csrfToken="+$(this).attr('csrfToken'),
 			dataType: "json",
 			error: displayAjaxError,
 			success: displayResponse,

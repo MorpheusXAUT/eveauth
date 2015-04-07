@@ -39,7 +39,25 @@
 				{{ end }}
 			</tbody>
 		</table>
-		<div align="center"><a class="btn btn-success admin-groups-add" csrfToken="{{ $csrfToken }}">Add</a></div>
+		<div align="center"><a class="btn btn-success" data-toggle="collapse" data-target="#adminGroupsAdd">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-success collapse" id="adminGroupsAdd">
+	<div class="panel-heading">
+		<h3>Add new group</h3>
+	</div>
+	<div class="panel-body">
+		<form action="/admin/groups" method="post">
+			<div class="form-group">
+				<label for="adminGroupsAddGroupName">Group Name</label>
+				<input type="text" class="form-control" id="adminGroupsAddGroupName" name="adminGroupsAddGroupName" required="required" />
+			</div>
+			<div class="form-group" align="center">
+				<input type="hidden" name="command" value="adminGroupsAdd" />
+				<input type="hidden" name="csrfToken" value="{{ $csrfToken }}" />
+				<button type="submit" class="btn btn-success">Submit</button>
+			</div>
+		</form>
 	</div>
 </div>
 

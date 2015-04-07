@@ -39,7 +39,30 @@
 				{{ end }}
 			</tbody>
 		</table>
-		<div align="center"><a class="btn btn-success admin-role-add" csrfToken="{{ $csrfToken }}">Add</a></div>
+		<div align="center"><a class="btn btn-success" data-toggle="collapse" data-target="#adminRolesAdd" csrfToken="{{ $csrfToken }}">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-success collapse" id="adminRolesAdd">
+	<div class="panel-heading">
+		<h3>Add new role</h3>
+	</div>
+	<div class="panel-body">
+		<form action="/admin/roles" method="post">
+			<div class="form-group">
+				<label for="adminRolesAddRoleName">Role Name</label>
+				<input type="text" class="form-control" id="adminRolesAddRoleName" name="adminRolesAddRoleName" required="required" />
+			</div>
+			<div class="checkbox">
+				<label>
+					<input name="adminRolesAddLocked" type="checkbox" /> <div data-toggle="tooltip" data-placement="right" title="Prevents removal from role list">Locked</div>
+				</label>
+			</div>
+			<div class="form-group" align="center">
+				<input type="hidden" name="command" value="adminRolesAdd" />
+				<input type="hidden" name="csrfToken" value="{{ $csrfToken }}" />
+				<button type="submit" class="btn btn-success">Submit</button>
+			</div>
+		</form>
 	</div>
 </div>
 

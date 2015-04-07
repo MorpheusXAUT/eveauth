@@ -12,8 +12,4 @@ $(document).ready(function(e) {
 			url: "/admin/roles"
 		});
 	});
-
-	$('a.admin-role-add').click(function() {
-		
-	});
 });

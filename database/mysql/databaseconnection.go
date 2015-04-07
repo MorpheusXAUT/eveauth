@@ -621,6 +621,43 @@ func (c *DatabaseConnection) LoadAllGroupsForUser(userID int64) ([]*models.Group
 	return groups, nil
 }
 
+// LoadAvailableGroupsForUser retrieves all available groups (and their associated group roles) associated with the given user from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAvailableGroupsForUser(userID int64) ([]*models.Group, error) {
+	// For whatever weird reason, only using "var groups []*models.Group" does not work in this case and throws an error...
+	var groups []*models.Group
+	groups = make([]*models.Group, 0)
+
+	err := c.conn.Select(&groups, "SELECT g.id, g.name, g.active FROM groups AS g WHERE g.id NOT IN (SELECT gi.id FROM groups AS gi INNER JOIN usergroups AS ug ON (gi.id = ug.groupid) WHERE ug.active=1 AND ug.userid=?) GROUP BY g.id", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, group := range groups {
+		groupRoles, err := c.LoadAllGroupRolesForGroup(group.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		group.GroupRoles = groupRoles
+	}
+
+	return groups, nil
+}
+
+// LoadAvailableUserRolesForUser retrieves all available user roles associated with the given user from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAvailableUserRolesForUser(userID int64) ([]*models.Role, error) {
+	// For whatever weird reason, only using "var roles []*models.Role" does not work in this case and throws an error...
+	var roles []*models.Role
+	roles = make([]*models.Role, 0)
+
+	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active FROM roles AS r WHERE r.id NOT IN (SELECT ur.roleid FROM userroles AS ur WHERE ur.userid=?) GROUP BY r.id", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
 // LoadPasswordForUser retrieves the password associated with the given username from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadPasswordForUser(username string) (string, error) {
 	row := c.conn.QueryRowx("SELECT password FROM users WHERE username LIKE ?", username)
