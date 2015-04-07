@@ -13,10 +13,6 @@ $(document).ready(function(e) {
 		});
 	});
 
-	$('a.admin-userdetails-group-add').click(function() {
-		
-	});
-
 	$('a.admin-userdetails-role-delete').click(function() {
 		$.ajax({
 			accepts: "application/json",
@@ -29,10 +25,6 @@ $(document).ready(function(e) {
 			type: "PUT",
 			url: "/admin/users"
 		});
-	});
-
-	$('a.admin-userdetails-role-add').click(function() {
-		
 	});
 
 	$('a.admin-userdetails-account-delete').click(function() {

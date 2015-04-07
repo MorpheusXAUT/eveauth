@@ -745,6 +745,15 @@ func (controller *Controller) LoadAvailableUserRolesForUser(userID int64) ([]*mo
 	return availableUserRoles, nil
 }
 
+func (controller *Controller) LoadAvailableGroupRolesForGroup(groupID int64) ([]*models.Role, error) {
+	availableGroupRoles, err := controller.database.LoadAvailableGroupRolesForGroup(groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	return availableGroupRoles, nil
+}
+
 // QueryCorporationName queries the database for the name of the corporation with the given ID
 func (controller *Controller) QueryCorporationName(corporationID int64) (string, error) {
 	corporationName, err := controller.database.LoadCorporationNameFromID(corporationID)

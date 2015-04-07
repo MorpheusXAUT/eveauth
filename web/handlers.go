@@ -1236,6 +1236,19 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 	}
 
 	response["group"] = group
+
+	availableGroupRoles, err := controller.Session.LoadAvailableGroupRolesForGroup(group.ID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load available group roles: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to load available group roles, please try again!"
+
+		controller.SendResponse(w, r, "admingroupdetails", response)
+		return
+	}
+
+	response["availableGroupRoles"] = availableGroupRoles
 	response["status"] = 0
 	response["result"] = nil
 

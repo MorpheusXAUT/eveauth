@@ -12,8 +12,4 @@ $(document).ready(function(e) {
 			url: "/admin/groups"
 		});
 	});
-
-	$('a.admin-groupdetails-role-add').click(function() {
-		
-	});
 });

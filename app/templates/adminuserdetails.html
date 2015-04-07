@@ -123,8 +123,8 @@
 	<div class="panel-body">
 		<form action="/admin/users" method="post">
 			<div class="form-group">
-				<label for="adminUserDetailsAddGroupUserRole">User Role</label>
-				<select class="form-control" id="adminUserDetailsAddGroupUserRole" name="adminUserDetailsAddGroupUserRole" required="required">
+				<label for="adminUserDetailsAddUserRoleRole">User Role</label>
+				<select class="form-control" id="adminUserDetailsAddUserRoleRole" name="adminUserDetailsAddUserRoleRole" required="required">
 					{{ range $role := .availableUserRoles }}
 						<option value="{{ $role.ID }}">{{ $role.Name }}</option>
 					{{ end }}

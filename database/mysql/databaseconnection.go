@@ -627,7 +627,7 @@ func (c *DatabaseConnection) LoadAvailableGroupsForUser(userID int64) ([]*models
 	var groups []*models.Group
 	groups = make([]*models.Group, 0)
 
-	err := c.conn.Select(&groups, "SELECT g.id, g.name, g.active FROM groups AS g WHERE g.id NOT IN (SELECT gi.id FROM groups AS gi INNER JOIN usergroups AS ug ON (gi.id = ug.groupid) WHERE ug.active=1 AND ug.userid=?) GROUP BY g.id", userID)
+	err := c.conn.Select(&groups, "SELECT g.id, g.name, g.active FROM groups AS g WHERE g.id NOT IN (SELECT gi.id FROM groups AS gi INNER JOIN usergroups AS ug ON (gi.id = ug.groupid) WHERE ug.active=1 AND ug.userid=?) GROUP BY g.id ORDER BY g.name", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -644,13 +644,27 @@ func (c *DatabaseConnection) LoadAvailableGroupsForUser(userID int64) ([]*models
 	return groups, nil
 }
 
-// LoadAvailableUserRolesForUser retrieves all available user roles associated with the given user from the MySQL database, returning an error if the query failed
+// LoadAvailableUserRolesForUser retrieves all available user roles for the given user from the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) LoadAvailableUserRolesForUser(userID int64) ([]*models.Role, error) {
 	// For whatever weird reason, only using "var roles []*models.Role" does not work in this case and throws an error...
 	var roles []*models.Role
 	roles = make([]*models.Role, 0)
 
-	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active FROM roles AS r WHERE r.id NOT IN (SELECT ur.roleid FROM userroles AS ur WHERE ur.userid=?) GROUP BY r.id", userID)
+	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active FROM roles AS r WHERE r.id NOT IN (SELECT ur.roleid FROM userroles AS ur WHERE ur.userid=?) GROUP BY r.id ORDER BY r.name", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
+// LoadAvailableGroupRolesForGroup retrieves all available group roles for the given group from the MySQL database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAvailableGroupRolesForGroup(groupID int64) ([]*models.Role, error) {
+	// For whatever weird reason, only using "var roles []*models.Role" does not work in this case and throws an error...
+	var roles []*models.Role
+	roles = make([]*models.Role, 0)
+
+	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active FROM roles AS r WHERE r.id NOT IN (SELECT gr.roleid FROM grouproles AS gr WHERE gr.groupid=?) GROUP BY r.id ORDER BY r.name", groupID)
 	if err != nil {
 		return nil, err
 	}
