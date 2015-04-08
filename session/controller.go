@@ -562,6 +562,29 @@ func (controller *Controller) UpdateUser(w http.ResponseWriter, r *http.Request,
 	return user, nil
 }
 
+func (controller *Controller) AddUserRoleToUser(userID int64, roleID int64, roleGranted bool) error {
+	user, err := controller.database.LoadUser(userID)
+	if err != nil {
+		return err
+	}
+
+	role, err := controller.database.LoadRole(roleID)
+	if err != nil {
+		return err
+	}
+
+	userRole := models.NewUserRole(user.ID, role, false, roleGranted)
+
+	user.UserRoles = append(user.UserRoles, userRole)
+
+	_, err = controller.database.SaveUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetUserAccounts returns the accounts associated with the current user
 func (controller *Controller) GetUserAccounts(r *http.Request) ([]*models.Account, error) {
 	user, err := controller.GetUser(r)
@@ -717,6 +740,7 @@ func (controller *Controller) LoadGroupFromGroupID(groupID int64) (*models.Group
 	return group, nil
 }
 
+// LoadAvailableGroupsForUser retrieves all groups the user can be added to
 func (controller *Controller) LoadAvailableGroupsForUser(userID int64) ([]*models.Group, error) {
 	availableGroups, err := controller.database.LoadAvailableGroupsForUser(userID)
 	if err != nil {
@@ -736,6 +760,7 @@ func (controller *Controller) LoadAllRoles() ([]*models.Role, error) {
 	return roles, nil
 }
 
+// LoadAvailableUserRolesForUser retrieves all roles the user can be assigned
 func (controller *Controller) LoadAvailableUserRolesForUser(userID int64) ([]*models.Role, error) {
 	availableUserRoles, err := controller.database.LoadAvailableUserRolesForUser(userID)
 	if err != nil {
@@ -745,6 +770,7 @@ func (controller *Controller) LoadAvailableUserRolesForUser(userID int64) ([]*mo
 	return availableUserRoles, nil
 }
 
+// LoadAvailableGroupRolesForGroup retrieves all roles the group can be assigned
 func (controller *Controller) LoadAvailableGroupRolesForGroup(groupID int64) ([]*models.Role, error) {
 	availableGroupRoles, err := controller.database.LoadAvailableGroupRolesForGroup(groupID)
 	if err != nil {

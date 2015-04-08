@@ -3,7 +3,7 @@ $(document).ready(function(e) {
 		$.ajax({
 			accepts: "application/json",
 			cache: false,
-			data: "command=adminGroupDelete&groupID="+$(this).attr('groupID')+"&csrfToken="+$(this).attr('csrfToken'),
+			data: "command=adminGroupsDelete&groupID="+$(this).attr('groupID')+"&csrfToken="+$(this).attr('csrfToken'),
 			dataType: "json",
 			error: displayAjaxError,
 			success: displayResponse,

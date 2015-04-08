@@ -1042,6 +1042,122 @@ func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *htt
 	controller.SendResponse(w, r, "adminusers", response)
 }
 
+// AdminUsersPostHandler updates the user and adds new roles and groups
+func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "User Administration"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/users")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.users") {
+		misc.Logger.Warnf("Unauthorized access to user administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	command := r.FormValue("command")
+	userID, err := strconv.ParseInt(r.FormValue("userID"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse user ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse user ID, please try again!"
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "adminuserdetailsadduserrole":
+		role := r.FormValue("adminUserDetailsAddUserRoleRole")
+		granted := r.FormValue("adminUserDetailsAddUserRoleGranted")
+
+		if len(role) == 0 {
+			misc.Logger.Warnf("Received empty role")
+
+			response["status"] = 1
+			response["result"] = "Empty role, please try again!"
+
+			controller.SendResponse(w, r, "adminusers", response)
+			return
+		}
+
+		roleID, err := strconv.ParseInt(role, 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse role ID, please try again!"
+
+			controller.SendResponse(w, r, "adminusers", response)
+			return
+		}
+
+		roleGranted := false
+		if len(granted) > 0 && strings.EqualFold(granted, "on") {
+			roleGranted = true
+		}
+
+		err = controller.Session.AddUserRoleToUser(userID, roleID, roleGranted)
+		if err != nil {
+			misc.Logger.Warnf("Failed to add user role to user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to add user role to user, please try again!"
+
+			controller.SendResponse(w, r, "adminusers", response)
+			return
+		}
+	}
+
+	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
+}
+
+// AdminUsersPutHandler updates the user and removes roles and groups
+func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
 // AdminUserDetailsGetHandler allows administrators to view details of a user
 func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
@@ -1180,6 +1296,16 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 	controller.SendResponse(w, r, "admingroups", response)
 }
 
+// AdminGroupsPostHandler allows creation of new groups and adds roles to existing ones
+func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// AdminGroupsPutHandler updates a groups and removes existing roles
+func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
 // AdminGroupDetailsGetHandler allows administrators to view details of a group
 func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
@@ -1303,6 +1429,16 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 	response["result"] = nil
 
 	controller.SendResponse(w, r, "adminroles", response)
+}
+
+// AdminRolesPostHandler allows creation of new roles
+func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// AdminRolesPutHandler allows removal of existing roles
+func (controller *Controller) AdminRolesPutHandler(w http.ResponseWriter, r *http.Request) {
+
 }
 
 // LegalGetHandler displays some legal information as well as copyright disclaimers and contact info

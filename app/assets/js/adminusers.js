@@ -3,7 +3,7 @@ $(document).ready(function(e) {
 		$.ajax({
 			accepts: "application/json",
 			cache: false,
-			data: "command=adminUserDelete&userID="+$(this).attr('userID')+"&csrfToken="+$(this).attr('csrfToken'),
+			data: "command=adminUsersDelete&userID="+$(this).attr('userID')+"&csrfToken="+$(this).attr('csrfToken'),
 			dataType: "json",
 			error: displayAjaxError,
 			success: displayResponse,

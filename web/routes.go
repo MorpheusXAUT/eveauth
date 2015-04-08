@@ -146,6 +146,18 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.AdminUsersGetHandler,
 		},
 		Route{
+			Name:        "AdminUsersPost",
+			Methods:     []string{"POST"},
+			Pattern:     "/admin/users",
+			HandlerFunc: controller.AdminUsersPostHandler,
+		},
+		Route{
+			Name:        "AdminUsersPut",
+			Methods:     []string{"PUT"},
+			Pattern:     "/admin/users",
+			HandlerFunc: controller.AdminUsersPutHandler,
+		},
+		Route{
 			Name:        "AdminUserDetailsGet",
 			Methods:     []string{"GET"},
 			Pattern:     "/admin/user/{userid:[0-9]+}",
@@ -158,6 +170,18 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.AdminGroupsGetHandler,
 		},
 		Route{
+			Name:        "AdminGroupsPost",
+			Methods:     []string{"POST"},
+			Pattern:     "/admin/groups",
+			HandlerFunc: controller.AdminGroupsPostHandler,
+		},
+		Route{
+			Name:        "AdminGroupsPut",
+			Methods:     []string{"PUT"},
+			Pattern:     "/admin/groups",
+			HandlerFunc: controller.AdminGroupsPutHandler,
+		},
+		Route{
 			Name:        "AdminGroupDetailsGet",
 			Methods:     []string{"GET"},
 			Pattern:     "/admin/group/{groupid:[0-9]+}",
@@ -168,6 +192,18 @@ func SetupRoutes(controller *Controller) []Route {
 			Methods:     []string{"GET"},
 			Pattern:     "/admin/roles",
 			HandlerFunc: controller.AdminRolesGetHandler,
+		},
+		Route{
+			Name:        "AdminRolesPost",
+			Methods:     []string{"POST"},
+			Pattern:     "/admin/roles",
+			HandlerFunc: controller.AdminRolesPostHandler,
+		},
+		Route{
+			Name:        "AdminRolesPut",
+			Methods:     []string{"PUT"},
+			Pattern:     "/admin/roles",
+			HandlerFunc: controller.AdminRolesPutHandler,
 		},
 		Route{
 			Name:        "LegalGet",
