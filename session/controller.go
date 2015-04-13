@@ -562,6 +562,27 @@ func (controller *Controller) UpdateUser(w http.ResponseWriter, r *http.Request,
 	return user, nil
 }
 
+func (controller *Controller) AddGroupToUser(userID int64, groupID int64) error {
+	user, err := controller.database.LoadUser(userID)
+	if err != nil {
+		return err
+	}
+
+	group, err := controller.database.LoadGroup(groupID)
+	if err != nil {
+		return err
+	}
+
+	user.Groups = append(user.Groups, group)
+
+	_, err = controller.database.SaveUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (controller *Controller) AddUserRoleToUser(userID int64, roleID int64, roleGranted bool) error {
 	user, err := controller.database.LoadUser(userID)
 	if err != nil {

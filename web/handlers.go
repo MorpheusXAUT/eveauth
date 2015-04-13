@@ -1108,6 +1108,40 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 	}
 
 	switch strings.ToLower(command) {
+	case "adminuserdetailsaddgroup":
+		group := r.FormValue("adminUserDetailsAddGroupGroup")
+
+		if len(group) == 0 {
+			misc.Logger.Warnf("Received empty group ID")
+
+			response["status"] = 1
+			response["result"] = "Empty group, please try again!"
+
+			controller.SendResponse(w, r, "adminusers", response)
+			return
+		}
+
+		groupID, err := strconv.ParseInt(group, 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse group ID, please try again!"
+
+			controller.SendResponse(w, r, "adminusers", response)
+			return
+		}
+
+		err = controller.Session.AddGroupToUser(userID, groupID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to add group to user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to add group to user, please try again!"
+
+			controller.SendResponse(w, r, "adminusers", response)
+			return
+		}
 	case "adminuserdetailsadduserrole":
 		role := r.FormValue("adminUserDetailsAddUserRoleRole")
 		granted := r.FormValue("adminUserDetailsAddUserRoleGranted")
