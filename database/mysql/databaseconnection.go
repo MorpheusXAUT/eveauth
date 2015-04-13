@@ -957,16 +957,14 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 			userRole = role
 		}
 
-		for _, group := range user.Groups {
-			gr, err := c.SaveGroup(group)
-			if err != nil {
-				return nil, err
-			}
-
-			group = gr
+		groups, err := c.SaveAllGroupsForUser(user.ID, user.Groups)
+		if err != nil {
+			return nil, err
 		}
 
-		_, err := c.conn.Exec("UPDATE users SET username=?, password=?, email=?, verifiedemail=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.VerifiedEmail, user.Active, user.ID)
+		user.Groups = groups
+
+		_, err = c.conn.Exec("UPDATE users SET username=?, password=?, email=?, verifiedemail=?, active=? WHERE id=?", user.Username, user.Password, user.Email, user.VerifiedEmail, user.Active, user.ID)
 		if err != nil {
 			return nil, err
 		}
