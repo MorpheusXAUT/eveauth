@@ -108,7 +108,7 @@
 						<td>{{ $role.Role.Name }}</td>
 						<td>{{ if $role.AutoAdded }} yes {{ else }} no {{ end }}</td>
 						<td>{{ if $role.Granted }} yes {{ else }} no {{ end }}</td>
-						<td><a class="btn btn-danger admin-userdetails-role-delete" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+						<td><a class="btn btn-{{ if $role.Granted }}warning{{ else }}info{{ end }} admin-userdetails-role-toggle-granted" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">{{ if $role.Granted }} Deny {{ else }} Grant {{ end }}</a>&nbsp;<a class="btn btn-danger admin-userdetails-role-delete" userID="{{ $userID }}" roleID="{{ $role.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
