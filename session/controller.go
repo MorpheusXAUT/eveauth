@@ -562,6 +562,7 @@ func (controller *Controller) UpdateUser(w http.ResponseWriter, r *http.Request,
 	return user, nil
 }
 
+// AddGroupToUser adds the group with the given ID to the user
 func (controller *Controller) AddGroupToUser(userID int64, groupID int64) error {
 	user, err := controller.database.LoadUser(userID)
 	if err != nil {
@@ -583,6 +584,7 @@ func (controller *Controller) AddGroupToUser(userID int64, groupID int64) error 
 	return nil
 }
 
+// AddUserRoleToUser adds the role with the given ID to the user
 func (controller *Controller) AddUserRoleToUser(userID int64, roleID int64, roleGranted bool) error {
 	user, err := controller.database.LoadUser(userID)
 	if err != nil {
@@ -599,6 +601,30 @@ func (controller *Controller) AddUserRoleToUser(userID int64, roleID int64, role
 	user.UserRoles = append(user.UserRoles, userRole)
 
 	_, err = controller.database.SaveUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AddGroupRoleToGroup adds the role with the given ID to the group
+func (controller *Controller) AddGroupRoleToGroup(groupID int64, roleID int64, roleGranted bool) error {
+	group, err := controller.database.LoadGroup(groupID)
+	if err != nil {
+		return err
+	}
+
+	role, err := controller.database.LoadRole(roleID)
+	if err != nil {
+		return err
+	}
+
+	groupRole := models.NewGroupRole(group.ID, role, false, roleGranted)
+
+	group.GroupRoles = append(group.GroupRoles, groupRole)
+
+	_, err = controller.database.SaveGroup(group)
 	if err != nil {
 		return err
 	}

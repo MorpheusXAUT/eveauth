@@ -1332,7 +1332,113 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 
 // AdminGroupsPostHandler allows creation of new groups and adds roles to existing ones
 func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "Group Administration"
 
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/groups")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.groups") {
+		misc.Logger.Warnf("Unauthorized access to group administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	command := r.FormValue("command")
+	groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse group ID, please try again!"
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "admingroupdetailsaddgrouprole":
+		role := r.FormValue("adminGroupDetailsAddGroupRoleRole")
+		granted := r.FormValue("adminUserDetailsAddGroupRoleGranted")
+
+		if len(role) == 0 {
+			misc.Logger.Warnf("Received empty role")
+
+			response["status"] = 1
+			response["result"] = "Empty role, please try again!"
+
+			controller.SendResponse(w, r, "admingroups", response)
+			return
+		}
+
+		roleID, err := strconv.ParseInt(role, 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse role ID, please try again!"
+
+			controller.SendResponse(w, r, "admingroups", response)
+			return
+		}
+
+		roleGranted := false
+		if len(granted) > 0 && strings.EqualFold(granted, "on") {
+			roleGranted = true
+		}
+
+		err = controller.Session.AddGroupRoleToGroup(groupID, roleID, roleGranted)
+		if err != nil {
+			misc.Logger.Warnf("Failed to add group role to group: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to add group role to group, please try again!"
+
+			controller.SendResponse(w, r, "admingroup", response)
+			return
+		}
+	}
+
+	controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID), http.StatusSeeOther)
 }
 
 // AdminGroupsPutHandler updates a groups and removes existing roles
