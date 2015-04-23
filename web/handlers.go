@@ -1374,17 +1374,6 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 	}
 
 	command := r.FormValue("command")
-	groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
-	if err != nil {
-		misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
-
-		response["status"] = 1
-		response["result"] = "Failed to parse group ID, please try again!"
-
-		controller.SendResponse(w, r, "admingroups", response)
-		return
-	}
-
 	if len(command) == 0 {
 		misc.Logger.Warnf("Received empty command")
 
@@ -1396,9 +1385,45 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 	}
 
 	switch strings.ToLower(command) {
+	case "admingroupsadd":
+		groupName := r.FormValue("adminGroupsAddGroupName")
+
+		if len(groupName) == 0 {
+			misc.Logger.Warnf("Received empty group name")
+
+			response["status"] = 1
+			response["result"] = "Empty group name, please try again!"
+
+			controller.SendResponse(w, r, "admingroups", response)
+			return
+		}
+
+		group, err := controller.Session.CreateNewGroup(groupName)
+		if err != nil {
+			misc.Logger.Warnf("Failed to create new group: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to create new group, please try again!"
+
+			controller.SendResponse(w, r, "admingroups", response)
+			return
+		}
+
+		controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", group.ID), http.StatusSeeOther)
+		return
 	case "admingroupdetailsaddgrouprole":
 		role := r.FormValue("adminGroupDetailsAddGroupRoleRole")
-		granted := r.FormValue("adminUserDetailsAddGroupRoleGranted")
+		granted := r.FormValue("adminGroupDetailsAddGroupRoleGranted")
+		groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse group ID, please try again!"
+
+			controller.SendResponse(w, r, "admingroups", response)
+			return
+		}
 
 		if len(role) == 0 {
 			misc.Logger.Warnf("Received empty role")
@@ -1436,9 +1461,12 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 			controller.SendResponse(w, r, "admingroup", response)
 			return
 		}
+
+		controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID), http.StatusSeeOther)
+		return
 	}
 
-	controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID), http.StatusSeeOther)
+	controller.SendRedirect(w, r, "/admin/groups", http.StatusSeeOther)
 }
 
 // AdminGroupsPutHandler updates a groups and removes existing roles
