@@ -645,6 +645,19 @@ func (controller *Controller) CreateNewGroup(groupName string) (*models.Group, e
 	return group, nil
 }
 
+// CreateNewRole creates a new role, saves it to the database and returns the updated model
+func (controller *Controller) CreateNewRole(roleName string, roleLocked bool) (*models.Role, error) {
+	role := models.NewRole(roleName, true, roleLocked)
+
+	var err error
+	role, err = controller.database.SaveRole(role)
+	if err != nil {
+		return nil, err
+	}
+
+	return role, nil
+}
+
 // GetUserAccounts returns the accounts associated with the current user
 func (controller *Controller) GetUserAccounts(r *http.Request) ([]*models.Account, error) {
 	user, err := controller.GetUser(r)

@@ -1601,7 +1601,94 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 
 // AdminRolesPostHandler allows creation of new roles
 func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "Role Administration"
 
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/roles")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.roles") {
+		misc.Logger.Warnf("Unauthorized access to role administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	command := r.FormValue("command")
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "adminrolesadd":
+		roleName := r.FormValue("adminRolesAddRoleName")
+		locked := r.FormValue("adminRolesAddLocked")
+
+		if len(roleName) == 0 {
+			misc.Logger.Warnf("Received empty role name")
+
+			response["status"] = 1
+			response["result"] = "Empty role name, please try again!"
+
+			controller.SendResponse(w, r, "adminroles", response)
+			return
+		}
+
+		roleLocked := false
+		if len(locked) > 0 && strings.EqualFold(locked, "on") {
+			roleLocked = true
+		}
+
+		_, err := controller.Session.CreateNewRole(roleName, roleLocked)
+		if err != nil {
+			misc.Logger.Warnf("Failed to create new role: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to create new role, please try again!"
+
+			controller.SendResponse(w, r, "adminroles", response)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/admin/roles", http.StatusSeeOther)
+		return
+	}
+
+	controller.SendRedirect(w, r, "/admin/roles", http.StatusSeeOther)
 }
 
 // AdminRolesPutHandler allows removal of existing roles
