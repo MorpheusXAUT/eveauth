@@ -112,6 +112,9 @@ type Connection interface {
 	RemoveUserRoleFromUser(userID int64, roleID int64) (*models.User, error)
 	// RemoveAPIKeyFromUser removes an API key from the given user, updates the database and returns the updated model
 	RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error)
+	
+	// ToggleUserRoleGranted toggles the granted state of the given user role
+	ToggleUserRoleGranted(roleID int64) (*models.UserRole, error)
 }
 
 // SetupDatabase parses the database type set in the configuration and returns an appropriate database implementation or an error if the type is unknown

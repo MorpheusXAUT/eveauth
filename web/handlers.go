@@ -1309,6 +1309,34 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 		
 		controller.SendJSONResponse(w, r, response)
 		return
+	case "adminuserdetailsroletogglegranted":
+		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse role ID, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+		
+		_, err = controller.Database.ToggleUserRoleGranted(roleID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to toggle user role granted: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to toggle user role, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+		
+		controller.SendJSONResponse(w, r, response)
+		return
 	}
 		
 	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)

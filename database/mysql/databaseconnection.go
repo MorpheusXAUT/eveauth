@@ -1120,3 +1120,20 @@ func (c *DatabaseConnection) RemoveAPIKeyFromUser(user *models.User, apiKeyID in
 
 	return user, nil
 }
+
+// ToggleUserRoleGranted toggles the granted state of the given user role
+func (c *DatabaseConnection) ToggleUserRoleGranted(roleID int64) (*models.UserRole, error) {
+	userRole, err := c.LoadUserRole(roleID)
+	if err != nil {
+		return nil, err
+	}
+	
+	userRole.Granted = !userRole.Granted
+	
+	userRole, err = c.SaveUserRole(userRole)
+	if err != nil {
+		return nil, err
+	}
+	
+	return userRole, nil
+}
