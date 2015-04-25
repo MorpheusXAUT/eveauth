@@ -1189,7 +1189,111 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 
 // AdminUsersPutHandler updates the user and removes roles and groups
 func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "User Administration"
 
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/users")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.users") {
+		misc.Logger.Warnf("Unauthorized access to user administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	command := r.FormValue("command")
+	userID, err := strconv.ParseInt(r.FormValue("userID"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse user ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse user ID, please try again!"
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendResponse(w, r, "adminusers", response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "adminuserdetailsgroupdelete":
+		groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse group ID, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		user, err := controller.Database.LoadUser(userID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to load user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to load user, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		_, err = controller.Database.RemoveUserFromGroup(user, groupID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to remove user from group: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to remove user from group, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+		
+		response["status"] = 0
+		response["result"] = nil
+		
+		controller.SendJSONResponse(w, r, response)
+	}
+		
+	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
 }
 
 // AdminUserDetailsGetHandler allows administrators to view details of a user
