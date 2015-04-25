@@ -1265,18 +1265,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 			return
 		}
 
-		user, err := controller.Database.LoadUser(userID)
-		if err != nil {
-			misc.Logger.Warnf("Failed to load user: [%v]", err)
-
-			response["status"] = 1
-			response["result"] = "Failed to load user, please try again!"
-
-			controller.SendJSONResponse(w, r, response)
-			return
-		}
-
-		_, err = controller.Database.RemoveUserFromGroup(user, groupID)
+		_, err = controller.Database.RemoveUserFromGroup(userID, groupID)
 		if err != nil {
 			misc.Logger.Warnf("Failed to remove user from group: [%v]", err)
 
@@ -1291,6 +1280,35 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 		response["result"] = nil
 		
 		controller.SendJSONResponse(w, r, response)
+		return
+	case "adminuserdetailsroledelete":
+		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse role ID, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		_, err = controller.Database.RemoveUserRoleFromUser(userID, roleID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to remove role from user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to remove role from user, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+		
+		response["status"] = 0
+		response["result"] = nil
+		
+		controller.SendJSONResponse(w, r, response)
+		return
 	}
 		
 	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)

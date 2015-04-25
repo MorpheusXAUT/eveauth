@@ -107,7 +107,9 @@ type Connection interface {
 	SaveCSRFFailure(csrfFailure *models.CSRFFailure) error
 
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
-	RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error)
+	RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error)
+	// RemoveUserRoleFromUser removes a user role from the given user, updates the database and returns the updated model
+	RemoveUserRoleFromUser(userID int64, roleID int64) (*models.User, error)
 	// RemoveAPIKeyFromUser removes an API key from the given user, updates the database and returns the updated model
 	RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error)
 }

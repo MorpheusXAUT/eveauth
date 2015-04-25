@@ -1047,8 +1047,13 @@ func (c *DatabaseConnection) SaveAllGroupsForUser(userID int64, groups []*models
 }
 
 // RemoveUserFromGroup removes a user from the given group, updates the MySQL database and returns the updated model
-func (c *DatabaseConnection) RemoveUserFromGroup(user *models.User, groupID int64) (*models.User, error) {
-	_, err := c.conn.Exec("DELETE FROM usergroups WHERE userid=? AND groupid=?", user.ID, groupID)
+func (c *DatabaseConnection) RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error) {
+	user, err := c.LoadUser(userID)
+	if err != nil {
+		return nil, err
+	}
+	
+	_, err = c.conn.Exec("DELETE FROM usergroups WHERE userid=? AND groupid=?", user.ID, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -1062,6 +1067,31 @@ func (c *DatabaseConnection) RemoveUserFromGroup(user *models.User, groupID int6
 	}
 
 	user.Groups = groups
+
+	return user, nil
+}
+
+// RemoveUserRoleFromUser removes a user role from the given user, updates the database and returns the updated model
+func (c *DatabaseConnection) RemoveUserRoleFromUser(userID int64, roleID int64) (*models.User, error) {
+	user, err := c.LoadUser(userID)
+	if err != nil {
+		return nil, err
+	}
+	
+	_, err = c.conn.Exec("DELETE FROM userroles WHERE userid=? AND id=?", user.ID, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	var userRoles []*models.UserRole
+
+	for _, userRole := range user.UserRoles {
+		if userRole.ID != roleID {
+			userRoles = append(userRoles, userRole)
+		}
+	}
+
+	user.UserRoles = userRoles
 
 	return user, nil
 }
