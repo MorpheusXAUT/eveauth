@@ -110,11 +110,15 @@ type Connection interface {
 	RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error)
 	// RemoveUserRoleFromUser removes a user role from the given user, updates the database and returns the updated model
 	RemoveUserRoleFromUser(userID int64, roleID int64) (*models.User, error)
+	// RemoveGroupRoleFromGroup removes a group role from the given group, updates the database and returns the updated model
+	RemoveGroupRoleFromGroup(groupID int64, roleID int64) (*models.Group, error)
 	// RemoveAPIKeyFromUser removes an API key from the given user, updates the database and returns the updated model
 	RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error)
 	
 	// ToggleUserRoleGranted toggles the granted state of the given user role
 	ToggleUserRoleGranted(roleID int64) (*models.UserRole, error)
+	// ToggleGroupRoleGranted toggles the granted state of the given group role
+	ToggleGroupRoleGranted(roleID int64) (*models.GroupRole, error)
 }
 
 // SetupDatabase parses the database type set in the configuration and returns an appropriate database implementation or an error if the type is unknown

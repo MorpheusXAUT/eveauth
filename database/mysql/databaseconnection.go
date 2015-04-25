@@ -1096,6 +1096,31 @@ func (c *DatabaseConnection) RemoveUserRoleFromUser(userID int64, roleID int64) 
 	return user, nil
 }
 
+// RemoveGroupRoleFromGroup removes a group role from the given group, updates the database and returns the updated model
+func (c *DatabaseConnection) RemoveGroupRoleFromGroup(groupID int64, roleID int64) (*models.Group, error) {
+	group, err := c.LoadGroup(groupID)
+	if err != nil {
+		return nil, err
+	}
+	
+	_, err = c.conn.Exec("DELETE FROM grouproles WHERE groupid=? AND id=?", group.ID, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	var groupRoles []*models.GroupRole
+
+	for _, groupRole := range group.GroupRoles {
+		if groupRole.ID != roleID {
+			groupRoles = append(groupRoles, groupRole)
+		}
+	}
+
+	group.GroupRoles = groupRoles
+
+	return group, nil
+}
+
 // RemoveAPIKeyFromUser removes an API key from the given user, updates the MySQL database and returns the updated model
 func (c *DatabaseConnection) RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error) {
 	for index, account := range user.Accounts {
@@ -1136,4 +1161,21 @@ func (c *DatabaseConnection) ToggleUserRoleGranted(roleID int64) (*models.UserRo
 	}
 	
 	return userRole, nil
+}
+
+// ToggleGroupRoleGranted toggles the granted state of the given group role
+func (c *DatabaseConnection) ToggleGroupRoleGranted(roleID int64) (*models.GroupRole, error) {
+	groupRole, err := c.LoadGroupRole(roleID)
+	if err != nil {
+		return nil, err
+	}
+	
+	groupRole.Granted = !groupRole.Granted
+	
+	groupRole, err = c.SaveGroupRole(groupRole)
+	if err != nil {
+		return nil, err
+	}
+	
+	return groupRole, nil
 }

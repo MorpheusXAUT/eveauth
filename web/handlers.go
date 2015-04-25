@@ -1621,7 +1621,129 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 
 // AdminGroupsPutHandler updates a groups and removes existing roles
 func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "Group Administration"
 
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/groups")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.groups") {
+		misc.Logger.Warnf("Unauthorized access to group administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	command := r.FormValue("command")
+	groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse group ID, please try again!"
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendResponse(w, r, "admingroups", response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "admingroupdetailsroledelete":
+		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse role ID, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		_, err = controller.Database.RemoveGroupRoleFromGroup(groupID, roleID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to remove role from group: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to remove role from group, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+		
+		response["status"] = 0
+		response["result"] = nil
+		
+		controller.SendJSONResponse(w, r, response)
+		return
+	case "admingroupdetailsroletogglegranted":
+		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse role ID, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+		
+		_, err = controller.Database.ToggleGroupRoleGranted(roleID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to toggle group role granted: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to toggle group role, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+		
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+		
+	controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID), http.StatusSeeOther)
 }
 
 // AdminGroupDetailsGetHandler allows administrators to view details of a group
