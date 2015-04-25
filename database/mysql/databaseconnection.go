@@ -387,7 +387,7 @@ func (c *DatabaseConnection) LoadUserRole(userRoleID int64) (*models.UserRole, e
 
 	userRole := &models.UserRole{
 		ID:        id,
-		UserID:    userRoleID,
+		UserID:    userID,
 		Role:      role,
 		AutoAdded: (autoadded != 0),
 		Granted:   (granted != 0),
