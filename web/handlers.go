@@ -1337,6 +1337,51 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 
 		controller.SendJSONResponse(w, r, response)
 		return
+	case "adminuserdetailsaccountdelete":
+		accountID, err := strconv.ParseInt(r.FormValue("accountID"), 10, 64)
+		if err != nil {
+			misc.Logger.Warnf("Failed to parse account ID: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to parse account ID, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		err = controller.Database.DeleteAccount(accountID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to delete account: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to delete account, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	case "adminusersdelete":
+		err = controller.Database.DeleteUser(userID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to delete user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to delete user, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+
+		controller.SendJSONResponse(w, r, response)
+		return
 	}
 
 	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)

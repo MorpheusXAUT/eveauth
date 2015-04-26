@@ -118,6 +118,8 @@ type Connection interface {
 	DeleteUserRole(userRoleID int64) error
 	// DeleteGroup removes a group and all associated group memberships and roles from database
 	DeleteGroup(groupID int64) error
+	// DeleteUser removes a user and all assoicated group memberships, roles and accounts from database
+	DeleteUser(userID int64) error
 
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
 	RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error)

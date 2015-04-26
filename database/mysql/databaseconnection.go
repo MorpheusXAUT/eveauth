@@ -1131,6 +1131,36 @@ func (c *DatabaseConnection) DeleteGroup(groupID int64) error {
 	return nil
 }
 
+// DeleteUser removes a user and all assoicated group memberships, roles and accounts from the MySQL database
+func (c *DatabaseConnection) DeleteUser(userID int64) error {
+	_, err := c.conn.Exec("DELETE FROM usergroups WHERE userid=?", userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM userroles WHERE userid=?", userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM characters WHERE accountid IN (SELECT id FROM accounts WHERE userid=?)", userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM accounts WHERE userid=?", userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM users WHERE id=?", userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RemoveUserFromGroup removes a user from the given group, updates the MySQL database and returns the updated model
 func (c *DatabaseConnection) RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error) {
 	user, err := c.LoadUser(userID)
