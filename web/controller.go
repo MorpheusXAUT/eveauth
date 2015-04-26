@@ -1,6 +1,8 @@
 package web
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,6 +13,7 @@ import (
 	"github.com/morpheusxaut/eveauth/models"
 	"github.com/morpheusxaut/eveauth/session"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 )
 
@@ -21,6 +24,7 @@ type Controller struct {
 	Session   *session.Controller
 	Templates *Templates
 	Checksums *AssetChecksums
+	RedisPool *redis.Pool
 
 	router *mux.Router
 }
@@ -34,6 +38,39 @@ func SetupController(config *misc.Configuration, db database.Connection, session
 		Templates: templates,
 		Checksums: checksums,
 		router:    mux.NewRouter().StrictSlash(true),
+	}
+
+	controller.RedisPool = &redis.Pool{
+		MaxIdle:     3,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", config.RedisHost)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(config.RedisPassword) > 0 {
+				_, err := c.Do("AUTH", config.RedisPassword)
+				if err != nil {
+					c.Close()
+					return nil, err
+				}
+			}
+
+			if len(config.RedisDB) > 0 {
+				_, err = c.Do("SELECT", config.RedisDB)
+				if err != nil {
+					c.Close()
+					return nil, err
+				}
+			}
+
+			return c, err
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
 	}
 
 	routes := SetupRoutes(controller)
@@ -110,4 +147,62 @@ func (controller *Controller) HandleRequests() {
 	err := http.ListenAndServe(controller.Config.HTTPHost, nil)
 
 	misc.Logger.Criticalf("Received error while listening for HTTP requests: [%v]", err)
+}
+
+// SetAuthorizationToken stores a temporary authorization token for the given user and app
+func (controller *Controller) SetAuthorizationToken(userID int64, appID int64, token string) error {
+	c := controller.RedisPool.Get()
+	defer c.Close()
+
+	err := c.Send("SET", fmt.Sprintf("authorization_token_%d_%d", appID, userID), token)
+	if err != nil {
+		return err
+	}
+
+	err = c.Send("EXPIRE", fmt.Sprintf("authorization_token_%d_%d", appID, userID), 300)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetAuthorizationToken tries to retrieve a temporary authorization for the given user and app
+func (controller *Controller) GetAuthorizationToken(userID int64, appID int64) (string, error) {
+	c := controller.RedisPool.Get()
+	defer c.Close()
+
+	token, err := redis.String(c.Do("GET", fmt.Sprintf("authorization_token_%d_%d", appID, userID)))
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+// EncryptUserPermissions retrieves the data for the given user and app and encrypted the user's permissions using the app secret
+func (controller *Controller) EncryptUserPermissions(userID int64, appID int64) (string, error) {
+	user, err := controller.Database.LoadUser(userID)
+	if err != nil {
+		return "", err
+	}
+
+	authUser := user.ToAuthUser()
+
+	application, err := controller.Database.LoadApplication(appID)
+	if err != nil {
+		return "", err
+	}
+
+	payload, err := json.Marshal(authUser)
+	if err != nil {
+		return "", err
+	}
+
+	encryptedPayload, err := misc.EncryptAndAuthenticate(string(payload), application.Secret)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.URLEncoding.EncodeToString([]byte(encryptedPayload)), nil
 }

@@ -530,7 +530,7 @@ func (controller *Controller) LogoutGetHandler(w http.ResponseWriter, r *http.Re
 	controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 }
 
-// AuthorizeGetHandler provides an endpoint for applications to request authorization and query user permissions
+// AuthorizeGetHandler provides an endpoint for applications to request an authorization token
 func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
 	response["pageType"] = 3
@@ -591,12 +591,26 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	encryptedPayload, err := controller.Session.EncodeUserPermissions(r, application)
+	user, err := controller.Session.GetUser(r)
 	if err != nil {
-		misc.Logger.Warnf("Failed to encode user permissions: [%v]", err)
+		misc.Logger.Warnf("Failed to get user: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to encode user permissions, please try again!")
+		response["result"] = fmt.Errorf("Failed to get user, please try again!")
+
+		controller.SendResponse(w, r, "index", response)
+
+		return
+	}
+
+	authorizationToken := misc.GenerateRandomString(32)
+
+	err = controller.SetAuthorizationToken(user.ID, application.ID, authorizationToken)
+	if err != nil {
+		misc.Logger.Warnf("Failed to set authorization token: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to set authorization token, please try again!")
 
 		controller.SendResponse(w, r, "index", response)
 
@@ -616,11 +630,100 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	}
 
 	callbackPayload := url.Values{}
-	callbackPayload.Add("permissions", encryptedPayload)
+	callbackPayload.Add("token", authorizationToken)
+	callbackPayload.Add("user", fmt.Sprintf("%d", user.ID))
 
 	callbackURL.RawQuery = callbackPayload.Encode()
 
 	controller.SendRedirect(w, r, callbackURL.String(), http.StatusSeeOther)
+}
+
+// PermissionsGetHandler provides an endpoint for applications to receive a user's permissions
+func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 3
+	response["pageTitle"] = "Permissions"
+	response["loggedIn"] = false
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse form, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	token := r.FormValue("token")
+	userID, err := strconv.ParseInt(r.FormValue("user"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse user ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse user ID, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+	appID, err := strconv.ParseInt(r.FormValue("app"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse app ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse app ID, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	if len(token) == 0 {
+		misc.Logger.Warnf("Received empty authorization token")
+
+		response["status"] = 1
+		response["result"] = "Empty authorization token, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	authorizationToken, err := controller.GetAuthorizationToken(userID, appID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to retrieve authorization token: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to retrieve authorization token, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	if !strings.EqualFold(authorizationToken, token) {
+		misc.Logger.Warnf("Failed to verify authorization token: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to verify authorization token, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	encryptedPayload, err := controller.EncryptUserPermissions(userID, appID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to encode user permissions: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to encode user permissions, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	response["status"] = 0
+	response["result"] = encryptedPayload
+
+	controller.SendJSONResponse(w, r, response)
 }
 
 // SettingsGetHandler provides the user with some basic settings for his account

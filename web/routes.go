@@ -104,6 +104,12 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.AuthorizeGetHandler,
 		},
 		Route{
+			Name:        "PermissionsGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/permissions",
+			HandlerFunc: controller.PermissionsGetHandler,
+		},
+		Route{
 			Name:        "SettingsGet",
 			Methods:     []string{"GET"},
 			Pattern:     "/settings",
