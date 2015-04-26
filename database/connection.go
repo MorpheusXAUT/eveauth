@@ -106,6 +106,19 @@ type Connection interface {
 	// SaveCSRFFailure saves a CSRF failure to the database, returning an error if the query failed
 	SaveCSRFFailure(csrfFailure *models.CSRFFailure) error
 
+	// DeleteAccount removes an account and all associated characters from database
+	DeleteAccount(accountID int64) error
+	// DeleteCharacter removes a character from database
+	DeleteCharacter(characterID int64) error
+	// DeleteRole removes a role and all user and group roles associated from database
+	DeleteRole(roleID int64) error
+	// DeleteGroupRole removes a group role from database
+	DeleteGroupRole(groupRoleID int64) error
+	// DeleteUserRole removes a user role from database
+	DeleteUserRole(userRoleID int64) error
+	// DeleteGroup removes a group and all associated group memberships and roles from database
+	DeleteGroup(groupID int64) error
+
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
 	RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error)
 	// RemoveUserRoleFromUser removes a user role from the given user, updates the database and returns the updated model
@@ -114,7 +127,7 @@ type Connection interface {
 	RemoveGroupRoleFromGroup(groupID int64, roleID int64) (*models.Group, error)
 	// RemoveAPIKeyFromUser removes an API key from the given user, updates the database and returns the updated model
 	RemoveAPIKeyFromUser(user *models.User, apiKeyID int64) (*models.User, error)
-	
+
 	// ToggleUserRoleGranted toggles the granted state of the given user role
 	ToggleUserRoleGranted(roleID int64) (*models.UserRole, error)
 	// ToggleGroupRoleGranted toggles the granted state of the given group role

@@ -1046,13 +1046,98 @@ func (c *DatabaseConnection) SaveAllGroupsForUser(userID int64, groups []*models
 	return groups, nil
 }
 
+// DeleteAccount removes an account and all associated characters from the MySQL database
+func (c *DatabaseConnection) DeleteAccount(accountID int64) error {
+	_, err := c.conn.Exec("DELETE FROM characters WHERE accountid=?", accountID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM accounts WHERE id=?", accountID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteCharacter removes a character from the MySQL database
+func (c *DatabaseConnection) DeleteCharacter(characterID int64) error {
+	_, err := c.conn.Exec("DELETE FROM characters WHERE id=?", characterID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteRole removes a role and all user and group roles associated from the MySQL database
+func (c *DatabaseConnection) DeleteRole(roleID int64) error {
+	_, err := c.conn.Exec("DELETE FROM userroles WHERE roleid=?", roleID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM grouproles WHERE roleid=?", roleID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM roles WHERE id=?", roleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteGroupRole removes a group role from the MySQL database
+func (c *DatabaseConnection) DeleteGroupRole(groupRoleID int64) error {
+	_, err := c.conn.Exec("DELETE FROM grouproles WHERE id=?", groupRoleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteUserRole removes a user role from the MySQL database
+func (c *DatabaseConnection) DeleteUserRole(userRoleID int64) error {
+	_, err := c.conn.Exec("DELETE FROM userroles WHERE id=?", userRoleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteGroup removes a group and all associated group memberships and roles from the MySQL database
+func (c *DatabaseConnection) DeleteGroup(groupID int64) error {
+	_, err := c.conn.Exec("DELETE FROM grouproles WHERE groupid=?", groupID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM usergroups WHERE groupid=?", groupID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Exec("DELETE FROM groups WHERE id=?", groupID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RemoveUserFromGroup removes a user from the given group, updates the MySQL database and returns the updated model
 func (c *DatabaseConnection) RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error) {
 	user, err := c.LoadUser(userID)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	_, err = c.conn.Exec("DELETE FROM usergroups WHERE userid=? AND groupid=?", user.ID, groupID)
 	if err != nil {
 		return nil, err
@@ -1077,7 +1162,7 @@ func (c *DatabaseConnection) RemoveUserRoleFromUser(userID int64, roleID int64) 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	_, err = c.conn.Exec("DELETE FROM userroles WHERE userid=? AND id=?", user.ID, roleID)
 	if err != nil {
 		return nil, err
@@ -1102,7 +1187,7 @@ func (c *DatabaseConnection) RemoveGroupRoleFromGroup(groupID int64, roleID int6
 	if err != nil {
 		return nil, err
 	}
-	
+
 	_, err = c.conn.Exec("DELETE FROM grouproles WHERE groupid=? AND id=?", group.ID, roleID)
 	if err != nil {
 		return nil, err
@@ -1152,14 +1237,14 @@ func (c *DatabaseConnection) ToggleUserRoleGranted(roleID int64) (*models.UserRo
 	if err != nil {
 		return nil, err
 	}
-	
+
 	userRole.Granted = !userRole.Granted
-	
+
 	userRole, err = c.SaveUserRole(userRole)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return userRole, nil
 }
 
@@ -1169,13 +1254,13 @@ func (c *DatabaseConnection) ToggleGroupRoleGranted(roleID int64) (*models.Group
 	if err != nil {
 		return nil, err
 	}
-	
+
 	groupRole.Granted = !groupRole.Granted
-	
+
 	groupRole, err = c.SaveGroupRole(groupRole)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return groupRole, nil
 }
