@@ -1,11 +1,11 @@
 package misc
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 
 	"github.com/morpheusxaut/eveauth/models"
 
-	//"github.com/nixwaro/eveapi"
 	"github.com/morpheusxaut/eveapi"
 )
 
@@ -15,8 +15,14 @@ func GenerateRandomString(length int) string {
 
 	b := make([]rune, length)
 
-	for i := range b {
-		b[i] = chars[rand.Intn(len(chars))]
+	for i := 0; i < len(b); i++ {
+		r, err := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
+		if err != nil {
+			i--
+			continue
+		}
+
+		b[i] = chars[r.Int64()]
 	}
 
 	return string(b)
