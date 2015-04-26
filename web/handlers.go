@@ -1741,6 +1741,23 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 
 		controller.SendJSONResponse(w, r, response)
 		return
+	case "admingroupsdelete":
+		err = controller.Database.DeleteGroup(groupID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to delete group: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to delete group, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+
+		controller.SendJSONResponse(w, r, response)
+		return
 	}
 
 	controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID), http.StatusSeeOther)
@@ -2032,7 +2049,7 @@ func (controller *Controller) AdminRolesPutHandler(w http.ResponseWriter, r *htt
 	case "adminrolesdelete":
 		err = controller.Database.DeleteRole(roleID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to toggle group role granted: [%v]", err)
+			misc.Logger.Warnf("Failed to delete role: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete role, please try again!"
