@@ -1275,10 +1275,10 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 			controller.SendJSONResponse(w, r, response)
 			return
 		}
-		
+
 		response["status"] = 0
 		response["result"] = nil
-		
+
 		controller.SendJSONResponse(w, r, response)
 		return
 	case "adminuserdetailsroledelete":
@@ -1303,10 +1303,10 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 			controller.SendJSONResponse(w, r, response)
 			return
 		}
-		
+
 		response["status"] = 0
 		response["result"] = nil
-		
+
 		controller.SendJSONResponse(w, r, response)
 		return
 	case "adminuserdetailsroletogglegranted":
@@ -1320,7 +1320,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 			controller.SendJSONResponse(w, r, response)
 			return
 		}
-		
+
 		_, err = controller.Database.ToggleUserRoleGranted(roleID)
 		if err != nil {
 			misc.Logger.Warnf("Failed to toggle user role granted: [%v]", err)
@@ -1334,11 +1334,11 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 
 		response["status"] = 0
 		response["result"] = nil
-		
+
 		controller.SendJSONResponse(w, r, response)
 		return
 	}
-		
+
 	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
 }
 
@@ -1707,10 +1707,10 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 			controller.SendJSONResponse(w, r, response)
 			return
 		}
-		
+
 		response["status"] = 0
 		response["result"] = nil
-		
+
 		controller.SendJSONResponse(w, r, response)
 		return
 	case "admingroupdetailsroletogglegranted":
@@ -1724,7 +1724,7 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 			controller.SendJSONResponse(w, r, response)
 			return
 		}
-		
+
 		_, err = controller.Database.ToggleGroupRoleGranted(roleID)
 		if err != nil {
 			misc.Logger.Warnf("Failed to toggle group role granted: [%v]", err)
@@ -1738,11 +1738,11 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 
 		response["status"] = 0
 		response["result"] = nil
-		
+
 		controller.SendJSONResponse(w, r, response)
 		return
 	}
-		
+
 	controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID), http.StatusSeeOther)
 }
 
@@ -1965,7 +1965,90 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 
 // AdminRolesPutHandler allows removal of existing roles
 func (controller *Controller) AdminRolesPutHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 6
+	response["pageTitle"] = "Role Administration"
 
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/admin/roles")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "admin.roles") {
+		misc.Logger.Warnf("Unauthorized access to role administration")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	command := r.FormValue("command")
+	roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse role ID, please try again!"
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendResponse(w, r, "adminroles", response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "adminrolesdelete":
+		err = controller.Database.DeleteRole(roleID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to toggle group role granted: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to delete role, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	controller.SendRedirect(w, r, "/admin/roles", http.StatusSeeOther)
 }
 
 // LegalGetHandler displays some legal information as well as copyright disclaimers and contact info
