@@ -103,6 +103,8 @@ type Connection interface {
 	SaveGroup(group *models.Group) (*models.Group, error)
 	// SaveUser saves a user to the database, returning the updated model or an error if the query failed
 	SaveUser(user *models.User) (*models.User, error)
+	// SaveApplication saves an application to the database, returning the updated model or an error if the query failed
+	SaveApplication(application *models.Application) (*models.Application, error)
 	// SaveLoginAttempt saves a login attempt to the database, returning an error if the query failed
 	SaveLoginAttempt(loginAttempt *models.LoginAttempt) error
 	// SaveCSRFFailure saves a CSRF failure to the database, returning an error if the query failed

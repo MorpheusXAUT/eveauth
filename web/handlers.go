@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/morpheusxaut/eveauth/misc"
+	"github.com/morpheusxaut/eveauth/models"
 
 	"github.com/gorilla/mux"
 )
@@ -1146,6 +1147,174 @@ func (controller *Controller) SettingsApplicationsGetHandler(w http.ResponseWrit
 	response["result"] = nil
 
 	controller.SendResponse(w, r, "settingsapplications", response)
+}
+
+// SettingsApplicationsPostHandler allows the creation of new applications
+func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 4
+	response["pageTitle"] = "Applications"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/settings/applications")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+
+		controller.SendResponse(w, r, "settingsapplications", response)
+		return
+	}
+
+	command := r.FormValue("command")
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendResponse(w, r, "settingsapplications", response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "settingsapplicationsaddapplication":
+		name := r.FormValue("settingsApplicationsAddApplicationName")
+		callback := r.FormValue("settingsApplicationsAddApplicationCallback")
+
+		if len(name) == 0 || len(callback) == 0 {
+			misc.Logger.Warnf("Received empty application name or callback")
+
+			response["status"] = 1
+			response["result"] = "Empty application name or callback, please try again!"
+
+			controller.SendResponse(w, r, "settingsapplications", response)
+			return
+		}
+
+		user, err := controller.Session.GetUser(r)
+		if err != nil {
+			misc.Logger.Warnf("Failed to load user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to load user, please try again!"
+
+			controller.SendResponse(w, r, "settingsapplications", response)
+			return
+		}
+
+		application := models.NewApplication(name, user.ID, misc.GenerateRandomString(32), callback, true)
+
+		_, err = controller.Database.SaveApplication(application)
+		if err != nil {
+			misc.Logger.Warnf("Failed to save application: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to save application, please try again!"
+
+			controller.SendResponse(w, r, "settingsapplications", response)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/settings/applications", http.StatusSeeOther)
+		return
+	}
+
+	controller.SendRedirect(w, r, "/settings/applications", http.StatusSeeOther)
+}
+
+// SettingsApplicationsPutHandler allows updating applications as well as removing them
+func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 4
+	response["pageTitle"] = "Applications"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/settings/applications")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse form, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	command := r.FormValue("command")
+	applicationID, err := strconv.ParseInt(r.FormValue("applicationID"), 10, 64)
+	if err != nil {
+		misc.Logger.Warnf("Failed to parse application ID: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = "Failed to parse application ID, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	if len(command) == 0 {
+		misc.Logger.Warnf("Received empty command")
+
+		response["status"] = 1
+		response["result"] = "Empty command, please try again!"
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	switch strings.ToLower(command) {
+	case "settingsapplicationsdelete":
+		err := controller.Database.DeleteApplication(applicationID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to delete application: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to delete application, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	}
+
+	controller.SendRedirect(w, r, "/settings/applications", http.StatusSeeOther)
 }
 
 // AdminUsersGetHandler allows administrators to modify users and assign new groups and roles

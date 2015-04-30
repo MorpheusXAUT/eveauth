@@ -23,12 +23,12 @@ type Application struct {
 // NewApplication creates a new application with the given information
 func NewApplication(name string, maintainer int64, secret string, callback string, active bool) *Application {
 	application := &Application{
-		ID:         -1,
-		Name:       name,
+		ID:           -1,
+		Name:         name,
 		MaintainerID: maintainer,
-		Secret:     secret,
-		Callback:   callback,
-		Active:     active,
+		Secret:       secret,
+		Callback:     callback,
+		Active:       active,
 	}
 
 	return application

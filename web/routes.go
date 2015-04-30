@@ -146,10 +146,22 @@ func SetupRoutes(controller *Controller) []Route {
 			HandlerFunc: controller.SettingsCharactersPutHandler,
 		},
 		Route{
-			Name: "SettingsApplicationsGet",
-			Methods: []string{"GET"},
-			Pattern: "/settings/applications",
+			Name:        "SettingsApplicationsGet",
+			Methods:     []string{"GET"},
+			Pattern:     "/settings/applications",
 			HandlerFunc: controller.SettingsApplicationsGetHandler,
+		},
+		Route{
+			Name:        "SettingsApplicationsPost",
+			Methods:     []string{"POST"},
+			Pattern:     "/settings/applications",
+			HandlerFunc: controller.SettingsApplicationsPostHandler,
+		},
+		Route{
+			Name:        "SettingsApplicationsPut",
+			Methods:     []string{"PUT"},
+			Pattern:     "/settings/applications",
+			HandlerFunc: controller.SettingsApplicationsPutHandler,
 		},
 		Route{
 			Name:        "AdminUsersGet",

@@ -1211,20 +1211,20 @@ var (
 
 	testApplications = map[int]*models.Application{
 		1: &models.Application{
-			ID:         1,
-			Name:       "Testapp",
+			ID:           1,
+			Name:         "Testapp",
 			MaintainerID: 1,
-			Secret:     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-			Callback:   "http://localhost/callback",
-			Active:     true,
+			Secret:       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			Callback:     "http://localhost/callback",
+			Active:       true,
 		},
 		2: &models.Application{
-			ID:         2,
-			Name:       "Apptest",
+			ID:           2,
+			Name:         "Apptest",
 			MaintainerID: 2,
-			Secret:     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-			Callback:   "http://example.com/callback",
-			Active:     false,
+			Secret:       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+			Callback:     "http://example.com/callback",
+			Active:       false,
 		},
 	}
 

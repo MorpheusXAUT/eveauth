@@ -35,7 +35,7 @@
 						<td>{{ $application.Name }}</td>
 						<td>{{ $application.Secret }}</td>
 						<td>{{ $application.Callback }}</td>
-						<td>{{ $application.Active }}</td>
+						<td>{{ if $application.Active }} active {{ else }} inactive {{ end }}</td>
 						<td><a class="btn btn-danger settings-application-delete" applicationID="{{ $application.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}

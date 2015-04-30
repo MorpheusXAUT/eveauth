@@ -1026,6 +1026,30 @@ func (c *DatabaseConnection) SaveUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
+// SaveApplication saves an application to the MySQL database, returning the updated model or an error if the query failed
+func (c *DatabaseConnection) SaveApplication(application *models.Application) (*models.Application, error) {
+	if application.ID > 0 {
+		_, err := c.conn.Exec("UPDATE applications SET name=?, maintainerid=?, secret=?, callback=?, active=? WHERE id=?", application.Name, application.MaintainerID, application.Secret, application.Callback, application.Active, application.ID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		resp, err := c.conn.Exec("INSERT INTO applications(name, maintainerid, secret, callback, active) VALUES(?, ?, ?, ?, ?)", application.Name, application.MaintainerID, application.Secret, application.Callback, application.Active)
+		if err != nil {
+			return nil, err
+		}
+
+		lastInsertedID, err := resp.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+
+		application.ID = lastInsertedID
+	}
+
+	return application, nil
+}
+
 // SaveLoginAttempt saves a login attempt to the MySQL database, returning an error if the query failed
 func (c *DatabaseConnection) SaveLoginAttempt(loginAttempt *models.LoginAttempt) error {
 	_, err := c.conn.Exec("INSERT INTO loginattempts(username, remoteaddr, useragent, successful) VALUES(?, ?, ?, ?)", loginAttempt.Username, loginAttempt.RemoteAddr, loginAttempt.UserAgent, loginAttempt.Successful)
@@ -1179,7 +1203,7 @@ func (c *DatabaseConnection) DeleteApplication(appID int64) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 

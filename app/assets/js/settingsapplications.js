@@ -1,5 +1,6 @@
 $(document).ready(function(e) {
 	$('a.settings-application-delete').click(function() {
+		console.log("command=settingsApplicationsDelete&applicationID="+$(this).attr('applicationID')+"&csrfToken="+$(this).attr('csrfToken'));
 		$.ajax({
 			accepts: "application/json",
 			cache: false,
