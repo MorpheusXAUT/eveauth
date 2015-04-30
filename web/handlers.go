@@ -1095,6 +1095,59 @@ func (controller *Controller) SettingsCharactersPutHandler(w http.ResponseWriter
 	controller.SendJSONResponse(w, r, response)
 }
 
+// SettingsApplicationsGetHandler provides the user with an overview of their registered applications
+func (controller *Controller) SettingsApplicationsGetHandler(w http.ResponseWriter, r *http.Request) {
+	response := make(map[string]interface{})
+	response["pageType"] = 4
+	response["pageTitle"] = "Applications"
+
+	loggedIn := controller.Session.IsLoggedIn(w, r)
+
+	response["loggedIn"] = loggedIn
+
+	if !loggedIn {
+		err := controller.Session.SetLoginRedirect(w, r, "/settings/applications")
+		if err != nil {
+			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			controller.SendRawError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	user, err := controller.Session.GetUser(r)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load user: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to load user, please try again!")
+
+		controller.SendResponse(w, r, "settingsapplications", response)
+
+		return
+	}
+
+	applications, err := controller.Database.LoadAllApplicationsForUser(user.ID)
+	if err != nil {
+		misc.Logger.Warnf("Failed to load applications: [%v]", err)
+
+		response["status"] = 1
+		response["result"] = fmt.Errorf("Failed to load applications, please try again!")
+
+		controller.SendResponse(w, r, "settingsapplications", response)
+
+		return
+	}
+
+	response["applications"] = applications
+	response["status"] = 0
+	response["result"] = nil
+
+	controller.SendResponse(w, r, "settingsapplications", response)
+}
+
 // AdminUsersGetHandler allows administrators to modify users and assign new groups and roles
 func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})

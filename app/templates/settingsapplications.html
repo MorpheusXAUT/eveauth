@@ -1,0 +1,72 @@
+{{ define "settingsapplications" }}
+{{ template "header" . }}
+{{ template "navigation" . }}
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h3>Manage applications</h3>
+	</div>
+	<div class="panel-body">
+		<p>
+			You can use this page to manage all applications registered to your account, check their details as well as register new ones.
+		</p>
+	</div>
+</div>
+<div class="panel panel-primary">
+	<div class="panel-heading">
+		<h3>Registered Applications</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Name</th>
+					<th>Secret</th>
+					<th>Callback</th>
+					<th>Active</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{ $csrfToken := .csrfToken }}
+				{{ range $application := .applications }}
+					<tr>
+						<td>{{ $application.ID }}</td>
+						<td>{{ $application.Name }}</td>
+						<td>{{ $application.Secret }}</td>
+						<td>{{ $application.Callback }}</td>
+						<td>{{ $application.Active }}</td>
+						<td><a class="btn btn-danger settings-application-delete" applicationID="{{ $application.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+					</tr>
+				{{ end }}
+			</tbody>
+		</table>
+		<div align="center"><a class="btn btn-success" data-toggle="collapse" data-target="#settingsApplicationsAddApplication">Add</a></div>
+	</div>
+</div>
+<div class="panel panel-success collapse" id="settingsApplicationsAddApplication">
+	<div class="panel-heading">
+		<h3>Create new application</h3>
+	</div>
+	<div class="panel-body">
+		<form action="/settings/applications" method="post">
+			<div class="form-group">
+				<label for="settingsApplicationsAddApplicationName">Name</label>
+				<input type="text" class="form-control" id="settingsApplicationsAddApplicationName" name="settingsApplicationsAddApplicationName" required="required" />
+			</div>
+			<div class="form-group">
+				<label for="settingsApplicationsAddApplicationCallback">Callback</label>
+				<input type="text" class="form-control" id="settingsApplicationsAddApplicationCallback" name="settingsApplicationsAddApplicationCallback" required="required" />
+			</div>
+			<div class="form-group" align="center">
+				<input type="hidden" name="command" value="settingsApplicationsAddApplication" />
+				<input type="hidden" name="csrfToken" value="{{ $csrfToken }}" />
+				<button type="submit" class="btn btn-success">Submit</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script src="/js/settingsapplications.js?md5={{ index .assetChecksums.Checksums "settingsapplications.js" }}"></script>
+{{ template "footer" . }}
+{{ end }}
