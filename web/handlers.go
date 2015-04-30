@@ -1118,6 +1118,16 @@ func (controller *Controller) SettingsApplicationsGetHandler(w http.ResponseWrit
 		return
 	}
 
+	if !controller.Session.HasUserRole(r, "app.developer") {
+		misc.Logger.Warnf("Unauthorized access to application developer page")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "settingsapplications", response)
+		return
+	}
+
 	user, err := controller.Session.GetUser(r)
 	if err != nil {
 		misc.Logger.Warnf("Failed to load user: [%v]", err)
@@ -1168,6 +1178,16 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 		}
 
 		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if !controller.Session.HasUserRole(r, "app.developer") {
+		misc.Logger.Warnf("Unauthorized access to application developer page")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "settingsapplications", response)
 		return
 	}
 
@@ -1261,6 +1281,16 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 		return
 	}
 
+	if !controller.Session.HasUserRole(r, "app.developer") {
+		misc.Logger.Warnf("Unauthorized access to application developer page")
+
+		response["status"] = 1
+		response["result"] = "You don't have access to this page!"
+
+		controller.SendResponse(w, r, "settingsapplications", response)
+		return
+	}
+
 	err := r.ParseForm()
 	if err != nil {
 		misc.Logger.Warnf("Failed to parse form: [%v]", err)
@@ -1296,12 +1326,128 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 
 	switch strings.ToLower(command) {
 	case "settingsapplicationsdelete":
-		err := controller.Database.DeleteApplication(applicationID)
+		err = controller.Database.DeleteApplication(applicationID)
 		if err != nil {
 			misc.Logger.Warnf("Failed to delete application: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete application, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	case "settingsapplicationseditapplication":
+		name := r.FormValue("settingsApplicationsEditApplicationName")
+		callback := r.FormValue("settingsApplicationsEditApplicationCallback")
+
+		if len(name) == 0 || len(callback) == 0 {
+			misc.Logger.Warnf("Received empty application name or callback")
+
+			response["status"] = 1
+			response["result"] = "Empty application name or callback, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		application, err := controller.Database.LoadApplication(applicationID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to load application: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to load application, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		user, err := controller.Session.GetUser(r)
+		if err != nil {
+			misc.Logger.Warnf("Failed to load user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to load user, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		if application.MaintainerID != user.ID {
+			misc.Logger.Warnf("Unauthenticated request to edit application")
+
+			response["status"] = 1
+			response["result"] = "Unauthenticated request to edit application, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		application.Name = name
+		application.Callback = callback
+
+		_, err = controller.Database.SaveApplication(application)
+		if err != nil {
+			misc.Logger.Warnf("Failed to save application: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to save application, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		response["status"] = 0
+		response["result"] = nil
+
+		controller.SendJSONResponse(w, r, response)
+		return
+	case "settingsapplicationseditapplicationresetsecret":
+		application, err := controller.Database.LoadApplication(applicationID)
+		if err != nil {
+			misc.Logger.Warnf("Failed to load application: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to load application, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		user, err := controller.Session.GetUser(r)
+		if err != nil {
+			misc.Logger.Warnf("Failed to load user: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to load user, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		if application.MaintainerID != user.ID {
+			misc.Logger.Warnf("Unauthenticated request to edit application")
+
+			response["status"] = 1
+			response["result"] = "Unauthenticated request to edit application, please try again!"
+
+			controller.SendJSONResponse(w, r, response)
+			return
+		}
+
+		application.Secret = misc.GenerateRandomString(32)
+
+		_, err = controller.Database.SaveApplication(application)
+		if err != nil {
+			misc.Logger.Warnf("Failed to save application: [%v]", err)
+
+			response["status"] = 1
+			response["result"] = "Failed to save application, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
 			return

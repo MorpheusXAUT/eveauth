@@ -22,9 +22,11 @@
 						<li class="dropdown-header">Account</li>
 						<li><a href="/settings/accounts">Linked Accounts / API keys</a></li>
 						<li><a href="/settings/characters">Characters</a></li>
-						<li class="divider"></li>
-						<li class="dropdown-header">Applications</li>
-						<li><a href="/settings/applications">Manage Applications</a></li>
+						{{ if HasUserRole "app.developer" }}
+							<li class="divider"></li>
+							<li class="dropdown-header">Applications</li>
+							<li><a href="/settings/applications">Manage Applications</a></li>
+						{{ end }}
 					</ul>
 				</li>
 				{{ if HasUserRole "admin.users" }}

@@ -36,7 +36,7 @@
 						<td>{{ $application.Secret }}</td>
 						<td>{{ $application.Callback }}</td>
 						<td>{{ if $application.Active }} active {{ else }} inactive {{ end }}</td>
-						<td><a class="btn btn-danger settings-application-delete" applicationID="{{ $application.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
+						<td><a class="btn btn-primary settings-application-edit-toggle" applicationID="{{ $application.ID }}" applicationName="{{ $application.Name }}" applicationCallback="{{ $application.Callback}}">Edit</a>&nbsp;<a class="btn btn-danger settings-application-delete" applicationID="{{ $application.ID }}" csrfToken="{{ $csrfToken }}">Delete</a></td>
 					</tr>
 				{{ end }}
 			</tbody>
@@ -62,6 +62,29 @@
 				<input type="hidden" name="command" value="settingsApplicationsAddApplication" />
 				<input type="hidden" name="csrfToken" value="{{ $csrfToken }}" />
 				<button type="submit" class="btn btn-success">Submit</button>
+			</div>
+		</form>
+	</div>
+</div>
+<div class="panel panel-primary collapse" id="settingsApplicationsEditApplication">
+	<div class="panel-heading">
+		<h3>Edit application</h3>
+	</div>
+	<div class="panel-body">
+		<form id="settingsApplicationsEditApplicationForm">
+			<div class="form-group">
+				<label for="settingsApplicationsEditApplicationName">Name</label>
+				<input type="text" class="form-control" id="settingsApplicationsEditApplicationName" name="settingsApplicationsEditApplicationName" required="required" />
+			</div>
+			<div class="form-group">
+				<label for="settingsApplicationsEditApplicationCallback">Callback</label>
+				<input type="text" class="form-control" id="settingsApplicationsEditApplicationCallback" name="settingsApplicationsEditApplicationCallback" required="required" />
+			</div>
+			<div class="form-group" align="center">
+				<input type="hidden" name="command" value="settingsApplicationsEditApplication" />
+				<input type="hidden" id="settingsApplicationsEditApplicationID" name="applicationID"/>
+				<input type="hidden" name="csrfToken" value="{{ $csrfToken }}" />
+				<a class="btn btn-success settings-application-edit-submit">Submit</a>&nbsp;<a class="btn btn-warning settings-application-edit-secret" csrfToken="{{ $csrfToken }}">Reset secret</a>&nbsp;<a class="btn btn-danger settings-application-edit-cancel">Cancel</a>
 			</div>
 		</form>
 	</div>
