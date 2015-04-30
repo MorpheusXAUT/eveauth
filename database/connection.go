@@ -76,6 +76,8 @@ type Connection interface {
 	LoadAvailableUserRolesForUser(userID int64) ([]*models.Role, error)
 	// LoadAvailableGroupRolesForGroup retrieves all available group roles for the given group from the MySQL database, returning an error if the query failed
 	LoadAvailableGroupRolesForGroup(groupID int64) ([]*models.Role, error)
+	// LoadAllApplicationsForUser retrieves all applications associated with the given user from the database, returning an error if the query failed
+	LoadAllApplicationsForUser(userID int64) ([]*models.Application, error)
 
 	// LoadPasswordForUser retrieves the password associated with the given username from the database, returning an error if the query failed
 	LoadPasswordForUser(username string) (string, error)
@@ -120,6 +122,8 @@ type Connection interface {
 	DeleteGroup(groupID int64) error
 	// DeleteUser removes a user and all assoicated group memberships, roles and accounts from database
 	DeleteUser(userID int64) error
+	// DeleteApplication remove an application from the database
+	DeleteApplication(appID int64) error
 
 	// RemoveUserFromGroup removes a user from the given group, updates the database and returns the updated model
 	RemoveUserFromGroup(userID int64, groupID int64) (*models.User, error)

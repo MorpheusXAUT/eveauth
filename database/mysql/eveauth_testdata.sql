@@ -17,9 +17,9 @@ INSERT INTO `accounts` (`id`, `userid`, `apikeyid`, `apivcode`, `apiaccessmask`,
 
 -- Dumping data for table eveauth.applications: ~2 rows (approximately)
 /*!40000 ALTER TABLE `applications` DISABLE KEYS */;
-INSERT INTO `applications` (`id`, `name`, `maintainer`, `secret`, `callback`, `active`) VALUES
-	(1, 'Testapp', 'Testmaintainer', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'http://localhost/callback', 1),
-	(2, 'Apptest', 'Testmaintainer', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'http://example.com/callback', 0);
+INSERT INTO `applications` (`id`, `name`, `maintainerid`, `secret`, `callback`, `active`) VALUES
+	(1, 'Testapp', 1, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'http://localhost/callback', 1),
+	(2, 'Apptest', 2, 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'http://example.com/callback', 0);
 /*!40000 ALTER TABLE `applications` ENABLE KEYS */;
 
 -- Dumping data for table eveauth.characters: ~6 rows (approximately)

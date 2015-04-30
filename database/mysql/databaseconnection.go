@@ -253,7 +253,7 @@ func (c *DatabaseConnection) LoadAllUsers() ([]*models.User, error) {
 func (c *DatabaseConnection) LoadAllApplications() ([]*models.Application, error) {
 	var applications []*models.Application
 
-	err := c.conn.Select(&applications, "SELECT id, name, maintainer, secret, callback, active FROM applications")
+	err := c.conn.Select(&applications, "SELECT id, name, maintainerid, secret, callback, active FROM applications")
 	if err != nil {
 		return nil, err
 	}
@@ -481,7 +481,7 @@ func (c *DatabaseConnection) LoadUserFromUsername(username string) (*models.User
 func (c *DatabaseConnection) LoadApplication(applicationID int64) (*models.Application, error) {
 	application := &models.Application{}
 
-	err := c.conn.Get(application, "SELECT id, name, maintainer, secret, callback, active FROM applications WHERE id=?", applicationID)
+	err := c.conn.Get(application, "SELECT id, name, maintainerid, secret, callback, active FROM applications WHERE id=?", applicationID)
 	if err != nil {
 		return nil, err
 	}
@@ -670,6 +670,18 @@ func (c *DatabaseConnection) LoadAvailableGroupRolesForGroup(groupID int64) ([]*
 	}
 
 	return roles, nil
+}
+
+// LoadAllApplicationsForUser retrieves all applications associated with the given user from the database, returning an error if the query failed
+func (c *DatabaseConnection) LoadAllApplicationsForUser(userID int64) ([]*models.Application, error) {
+	var applications []*models.Application
+
+	err := c.conn.Select(&applications, "SELECT id, name, maintainerid, secret, callback, active FROM applications WHERE maintainerid=?", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return applications, nil
 }
 
 // LoadPasswordForUser retrieves the password associated with the given username from the MySQL database, returning an error if the query failed
@@ -1158,6 +1170,16 @@ func (c *DatabaseConnection) DeleteUser(userID int64) error {
 		return err
 	}
 
+	return nil
+}
+
+// DeleteApplication remove an application from the MySQL database
+func (c *DatabaseConnection) DeleteApplication(appID int64) error {
+	_, err := c.conn.Exec("DELETE FROM applications WHERE id=?", appID)
+	if err != nil {
+		return err
+	}
+	
 	return nil
 }
 

@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `apikeyid` int(11) NOT NULL,
   `apivcode` varchar(64) NOT NULL,
   `apiaccessmask` int(9) NOT NULL DEFAULT '0',
-  `defaultaccount` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `keyid` (`apikeyid`),
@@ -30,13 +29,15 @@ CREATE TABLE IF NOT EXISTS `accounts` (
 CREATE TABLE IF NOT EXISTS `applications` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
-  `maintainer` varchar(64) NOT NULL,
+  `maintainerid` int(11) NOT NULL,
   `secret` varchar(32) NOT NULL,
   `callback` varchar(128) NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
-  UNIQUE KEY `secret` (`secret`)
+  UNIQUE KEY `secret` (`secret`),
+  KEY `fk_applications_maintainer` (`maintainerid`),
+  CONSTRAINT `fk_applications_maintainer` FOREIGN KEY (`maintainerid`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.

@@ -10,8 +10,8 @@ type Application struct {
 	ID int64 `json:"id"`
 	// Name represents the name of the app
 	Name string `json:"name"`
-	// Maintainer represents the maintainer of the app
-	Maintainer string `json:"maintainer"`
+	// MaintainerID represents the user ID of the maintainer of the app
+	MaintainerID int64 `json:"maintainerID"`
 	// Secret represents the application's secret used to "authenticate" with the auth backend
 	Secret string `json:"-"`
 	// Callback represents the defined callback URL for the app
@@ -21,11 +21,11 @@ type Application struct {
 }
 
 // NewApplication creates a new application with the given information
-func NewApplication(name string, maintainer string, secret string, callback string, active bool) *Application {
+func NewApplication(name string, maintainer int64, secret string, callback string, active bool) *Application {
 	application := &Application{
 		ID:         -1,
 		Name:       name,
-		Maintainer: maintainer,
+		MaintainerID: maintainer,
 		Secret:     secret,
 		Callback:   callback,
 		Active:     active,

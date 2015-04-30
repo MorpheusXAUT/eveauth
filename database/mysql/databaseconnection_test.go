@@ -1213,7 +1213,7 @@ var (
 		1: &models.Application{
 			ID:         1,
 			Name:       "Testapp",
-			Maintainer: "Testmaintainer",
+			MaintainerID: 1,
 			Secret:     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			Callback:   "http://localhost/callback",
 			Active:     true,
@@ -1221,7 +1221,7 @@ var (
 		2: &models.Application{
 			ID:         2,
 			Name:       "Apptest",
-			Maintainer: "Testmaintainer",
+			MaintainerID: 2,
 			Secret:     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
 			Callback:   "http://example.com/callback",
 			Active:     false,
