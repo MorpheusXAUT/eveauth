@@ -864,6 +864,133 @@ func TestDatabaseConnectionLoadApplication(t *testing.T) {
 	})
 }
 
+func TestDatabaseConnectionLoadAvailableGroupsForUser(t *testing.T) {
+	Convey("Loading available groups for user #1 from a MySQL database", t, func() {
+		db, err := createMySQLConnection()
+
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		groups, err := db.LoadAvailableGroupsForUser(1)
+
+		Convey("Loading available groups for user #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(groups, ShouldNotBeNil)
+			})
+
+			Convey("The returned groups should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(groups[0], ShouldResemble, testGroups[2])
+				})
+			})
+		})
+	})
+}
+
+func TestDatabaseConnectionLoadAvailableUserRolesForUser(t *testing.T) {
+	Convey("Loading available user roles for user #1 from a MySQL database", t, func() {
+		db, err := createMySQLConnection()
+
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		roles, err := db.LoadAvailableUserRolesForUser(1)
+
+		Convey("Loading available user roles for user #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(roles, ShouldNotBeNil)
+			})
+
+			Convey("The returned roles should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(len(roles), ShouldEqual, 3)
+					// ShouldContain doesn't work, skipping for now
+					SkipSo(roles, ShouldContain, testRoles[2])
+					SkipSo(roles, ShouldContain, testRoles[3])
+					SkipSo(roles, ShouldContain, testRoles[4])
+				})
+			})
+		})
+	})
+}
+
+func TestDatabaseConnectionLoadAvailableGroupRolesForGroup(t *testing.T) {
+	Convey("Loading available group roles for group #1 from a MySQL database", t, func() {
+		db, err := createMySQLConnection()
+
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		roles, err := db.LoadAvailableGroupRolesForGroup(1)
+
+		Convey("Loading available group roles for group #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(roles, ShouldNotBeNil)
+			})
+
+			Convey("The returned roles should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(len(roles), ShouldEqual, 2)
+					// ShouldContain doesn't work, skipping for now
+					SkipSo(roles, ShouldContain, testRoles[2])
+					SkipSo(roles, ShouldContain, testRoles[4])
+				})
+			})
+		})
+	})
+}
+
+func TestDatabaseConnectionLoadAllApplicationsForUser(t *testing.T) {
+	Convey("Loading all applications for user #1 from a MySQL database", t, func() {
+		db, err := createMySQLConnection()
+
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		applications, err := db.LoadAllApplicationsForUser(1)
+
+		Convey("Loading all applications for user #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be nil", func() {
+				So(applications, ShouldNotBeNil)
+			})
+
+			Convey("The returned applications should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(applications[0], ShouldResemble, testApplications[1])
+				})
+			})
+		})
+	})
+}
+
 func TestDatabaseConnectionLoadPasswordForUser(t *testing.T) {
 	Convey("Loading password for user test1 from a MySQL database", t, func() {
 		db, err := createMySQLConnection()
