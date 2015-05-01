@@ -592,6 +592,38 @@ func TestDatabaseConnectionLoadCorporationFromEVECorporationID(t *testing.T) {
 	})
 }
 
+func TestDatabaseConnectionLoadCorporationNameFromID(t *testing.T) {
+	Convey("Loading corporation name for corporation ID #1 from a MySQL database", t, func() {
+		db, err := createMySQLConnection()
+
+		Convey("The returned error should be nil", func() {
+			So(err, ShouldBeNil)
+		})
+
+		Convey("The DatabaseConnection should not be nil", func() {
+			So(db, ShouldNotBeNil)
+		})
+
+		name, err := db.LoadCorporationNameFromID(1)
+
+		Convey("Loading corporation name for corporation ID #1 should return no error", func() {
+			So(err, ShouldBeNil)
+
+			Convey("The result should not be empty", func() {
+				So(len(name), ShouldNotEqual, 0)
+				So(len(name), ShouldBeGreaterThan, 0)
+				So(name, ShouldNotEqual, "")
+			})
+
+			Convey("The returned name should match the test data set", func() {
+				Convey("Verifying entry", func() {
+					So(name, ShouldEqual, testCorporations[1].Name)
+				})
+			})
+		})
+	})
+}
+
 func TestDatabaseConnectionLoadCharacter(t *testing.T) {
 	Convey("Loading character #1 from a MySQL database", t, func() {
 		db, err := createMySQLConnection()
