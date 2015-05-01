@@ -650,7 +650,7 @@ func (c *DatabaseConnection) LoadAvailableUserRolesForUser(userID int64) ([]*mod
 	var roles []*models.Role
 	roles = make([]*models.Role, 0)
 
-	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active FROM roles AS r WHERE r.id NOT IN (SELECT ur.roleid FROM userroles AS ur WHERE ur.userid=?) GROUP BY r.id ORDER BY r.name", userID)
+	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active, r.locked FROM roles AS r WHERE r.id NOT IN (SELECT ur.roleid FROM userroles AS ur WHERE ur.userid=?) GROUP BY r.id ORDER BY r.name", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -664,7 +664,7 @@ func (c *DatabaseConnection) LoadAvailableGroupRolesForGroup(groupID int64) ([]*
 	var roles []*models.Role
 	roles = make([]*models.Role, 0)
 
-	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active FROM roles AS r WHERE r.id NOT IN (SELECT gr.roleid FROM grouproles AS gr WHERE gr.groupid=?) GROUP BY r.id ORDER BY r.name", groupID)
+	err := c.conn.Select(&roles, "SELECT r.id, r.name, r.active, r.locked FROM roles AS r WHERE r.id NOT IN (SELECT gr.roleid FROM grouproles AS gr WHERE gr.groupid=?) GROUP BY r.id ORDER BY r.name", groupID)
 	if err != nil {
 		return nil, err
 	}
