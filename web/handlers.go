@@ -1559,6 +1559,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 		}
 
 		controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
+		return
 	case "adminuserdetailsadduserrole":
 		role := r.FormValue("adminUserDetailsAddUserRoleRole")
 		granted := r.FormValue("adminUserDetailsAddUserRoleGranted")
@@ -1601,6 +1602,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 		}
 
 		controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
+		return
 	}
 
 	response["status"] = 1
@@ -1620,57 +1622,50 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/admin/users")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Not logged in"))
 		return
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.users") {
-		misc.Logger.Warnf("Unauthorized access to user administration")
+		misc.Logger.Traceln("Unauthorized access to user administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
 
-		controller.SendResponse(w, r, "adminusers", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
-		controller.SendResponse(w, r, "adminusers", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	command := r.FormValue("command")
 	userID, err := strconv.ParseInt(r.FormValue("userID"), 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse user ID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse user ID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse user ID, please try again!"
 
-		controller.SendResponse(w, r, "adminusers", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Traceln("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
 
-		controller.SendResponse(w, r, "adminusers", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
@@ -1678,7 +1673,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 	case "adminuserdetailsgroupdelete":
 		groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse group ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse group ID, please try again!"
@@ -1689,7 +1684,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 
 		_, err = controller.Database.RemoveUserFromGroup(userID, groupID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to remove user from group: [%v]", err)
+			misc.Logger.Tracef("Failed to remove user from group: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to remove user from group, please try again!"
@@ -1706,7 +1701,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 	case "adminuserdetailsroledelete":
 		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse role ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse role ID, please try again!"
@@ -1717,7 +1712,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 
 		_, err = controller.Database.RemoveUserRoleFromUser(userID, roleID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to remove role from user: [%v]", err)
+			misc.Logger.Tracef("Failed to remove role from user: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to remove role from user, please try again!"
@@ -1734,7 +1729,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 	case "adminuserdetailsroletogglegranted":
 		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse role ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse role ID, please try again!"
@@ -1745,7 +1740,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 
 		_, err = controller.Database.ToggleUserRoleGranted(roleID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to toggle user role granted: [%v]", err)
+			misc.Logger.Tracef("Failed to toggle user role granted: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to toggle user role, please try again!"
@@ -1762,7 +1757,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 	case "adminuserdetailsaccountdelete":
 		accountID, err := strconv.ParseInt(r.FormValue("accountID"), 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse account ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse account ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse account ID, please try again!"
@@ -1773,7 +1768,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 
 		err = controller.Database.DeleteAccount(accountID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to delete account: [%v]", err)
+			misc.Logger.Tracef("Failed to delete account: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete account, please try again!"
@@ -1790,7 +1785,7 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 	case "adminusersdelete":
 		err = controller.Database.DeleteUser(userID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to delete user: [%v]", err)
+			misc.Logger.Tracef("Failed to delete user: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete user, please try again!"
@@ -1806,7 +1801,10 @@ func (controller *Controller) AdminUsersPutHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendJSONResponse(w, r, response)
 }
 
 // AdminUserDetailsGetHandler allows administrators to view details of a user
@@ -1818,7 +1816,7 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 	vars := mux.Vars(r)
 	userID, err := strconv.ParseInt(vars["userid"], 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse userID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse userID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse user ID, please try again!"
@@ -1832,10 +1830,11 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err = controller.Session.SetLoginRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID))
+		err := controller.Session.SetLoginRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID))
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -1844,7 +1843,7 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.users") {
-		misc.Logger.Warnf("Unauthorized access to user administration")
+		misc.Logger.Traceln("Unauthorized access to user administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1855,10 +1854,10 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 
 	user, err := controller.Session.LoadUserFromUserID(userID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load user: [%v]", err)
+		misc.Logger.Tracef("Failed to load user: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = "Failed to load user details, please try again!"
+		response["result"] = "Failed to retrieve user details, please try again!"
 
 		controller.SendResponse(w, r, "adminuserdetails", response)
 		return
@@ -1868,10 +1867,10 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 
 	availableGroups, err := controller.Session.LoadAvailableGroupsForUser(user.ID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load available groups: [%v]", err)
+		misc.Logger.Tracef("Failed to load available groups: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = "Failed to load available groups, please try again!"
+		response["result"] = "Failed to retrieve available user groups, please try again!"
 
 		controller.SendResponse(w, r, "adminuserdetails", response)
 		return
@@ -1881,10 +1880,10 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 
 	availableUserRoles, err := controller.Session.LoadAvailableUserRolesForUser(user.ID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load available user roles: [%v]", err)
+		misc.Logger.Tracef("Failed to load available user roles: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = "Failed to load available user roles, please try again!"
+		response["result"] = "Failed to retrieve available user roles, please try again!"
 
 		controller.SendResponse(w, r, "adminuserdetails", response)
 		return
@@ -1910,8 +1909,9 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/admin/groups")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -1920,7 +1920,7 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.groups") {
-		misc.Logger.Warnf("Unauthorized access to group administration")
+		misc.Logger.Traceln("Unauthorized access to group administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1931,10 +1931,10 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 
 	groups, err := controller.Session.LoadAllGroups()
 	if err != nil {
-		misc.Logger.Warnf("Failed to load all groups: [%v]")
+		misc.Logger.Tracef("Failed to load all groups: [%v]")
 
 		response["status"] = 1
-		response["result"] = "Failed to load groups, please try again!"
+		response["result"] = "Failed to retrieve groups, please try again!"
 
 		controller.SendResponse(w, r, "admingroups", response)
 		return
@@ -1960,7 +1960,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/admin/groups")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
 			controller.SendRawError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -1970,7 +1970,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.groups") {
-		misc.Logger.Warnf("Unauthorized access to group administration")
+		misc.Logger.Traceln("Unauthorized access to group administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1981,10 +1981,10 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "admingroups", response)
 		return
@@ -1992,7 +1992,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 
 	command := r.FormValue("command")
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Traceln("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
@@ -2006,7 +2006,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 		groupName := r.FormValue("adminGroupsAddGroupName")
 
 		if len(groupName) == 0 {
-			misc.Logger.Warnf("Received empty group name")
+			misc.Logger.Traceln("Received empty group name")
 
 			response["status"] = 1
 			response["result"] = "Empty group name, please try again!"
@@ -2017,7 +2017,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 
 		group, err := controller.Session.CreateNewGroup(groupName)
 		if err != nil {
-			misc.Logger.Warnf("Failed to create new group: [%v]", err)
+			misc.Logger.Tracef("Failed to create new group: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to create new group, please try again!"
@@ -2033,7 +2033,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 		granted := r.FormValue("adminGroupDetailsAddGroupRoleGranted")
 		groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse group ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse group ID, please try again!"
@@ -2043,7 +2043,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 		}
 
 		if len(role) == 0 {
-			misc.Logger.Warnf("Received empty role")
+			misc.Logger.Traceln("Received empty role")
 
 			response["status"] = 1
 			response["result"] = "Empty role, please try again!"
@@ -2054,7 +2054,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 
 		roleID, err := strconv.ParseInt(role, 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse role ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse role ID, please try again!"
@@ -2070,12 +2070,12 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 
 		err = controller.Session.AddGroupRoleToGroup(groupID, roleID, roleGranted)
 		if err != nil {
-			misc.Logger.Warnf("Failed to add group role to group: [%v]", err)
+			misc.Logger.Tracef("Failed to add group role to group: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to add group role to group, please try again!"
 
-			controller.SendResponse(w, r, "admingroup", response)
+			controller.SendResponse(w, r, "admingroups", response)
 			return
 		}
 
@@ -2083,7 +2083,10 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	controller.SendRedirect(w, r, "/admin/groups", http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendResponse(w, r, "admingroups", response)
 }
 
 // AdminGroupsPutHandler updates a groups and removes existing roles
@@ -2097,57 +2100,50 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/admin/groups")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Not logged in"))
 		return
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.groups") {
-		misc.Logger.Warnf("Unauthorized access to group administration")
+		misc.Logger.Traceln("Unauthorized access to group administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
 
-		controller.SendResponse(w, r, "admingroups", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
-		controller.SendResponse(w, r, "admingroups", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	command := r.FormValue("command")
 	groupID, err := strconv.ParseInt(r.FormValue("groupID"), 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse group ID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse group ID, please try again!"
 
-		controller.SendResponse(w, r, "admingroups", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Traceln("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
 
-		controller.SendResponse(w, r, "admingroups", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
@@ -2155,7 +2151,7 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 	case "admingroupdetailsroledelete":
 		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse role ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse role ID, please try again!"
@@ -2166,7 +2162,7 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 
 		_, err = controller.Database.RemoveGroupRoleFromGroup(groupID, roleID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to remove role from group: [%v]", err)
+			misc.Logger.Tracef("Failed to remove role from group: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to remove role from group, please try again!"
@@ -2183,7 +2179,7 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 	case "admingroupdetailsroletogglegranted":
 		roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse role ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse role ID, please try again!"
@@ -2194,7 +2190,7 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 
 		_, err = controller.Database.ToggleGroupRoleGranted(roleID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to toggle group role granted: [%v]", err)
+			misc.Logger.Tracef("Failed to toggle group role granted: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to toggle group role, please try again!"
@@ -2211,7 +2207,7 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 	case "admingroupsdelete":
 		err = controller.Database.DeleteGroup(groupID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to delete group: [%v]", err)
+			misc.Logger.Tracef("Failed to delete group: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete group, please try again!"
@@ -2227,7 +2223,10 @@ func (controller *Controller) AdminGroupsPutHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	controller.SendRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID), http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendJSONResponse(w, r, response)
 }
 
 // AdminGroupDetailsGetHandler allows administrators to view details of a group
@@ -2239,7 +2238,7 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 	vars := mux.Vars(r)
 	groupID, err := strconv.ParseInt(vars["groupid"], 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse groupID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse groupID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse group ID, please try again!"
@@ -2253,9 +2252,9 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err = controller.Session.SetLoginRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID))
+		err := controller.Session.SetLoginRedirect(w, r, fmt.Sprintf("/admin/group/%d", groupID))
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
 			controller.SendRawError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -2265,7 +2264,7 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.groups") {
-		misc.Logger.Warnf("Unauthorized access to group administration")
+		misc.Logger.Traceln("Unauthorized access to group administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -2276,10 +2275,10 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 
 	group, err := controller.Session.LoadGroupFromGroupID(groupID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load group: [%v]", err)
+		misc.Logger.Tracef("Failed to load group: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = "Failed to load group details, please try again!"
+		response["result"] = "Failed to retrieve group details, please try again!"
 
 		controller.SendResponse(w, r, "admingroupdetails", response)
 		return
@@ -2289,10 +2288,10 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 
 	availableGroupRoles, err := controller.Session.LoadAvailableGroupRolesForGroup(group.ID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load available group roles: [%v]", err)
+		misc.Logger.Tracef("Failed to load available group roles: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = "Failed to load available group roles, please try again!"
+		response["result"] = "Failed to retrieve available group roles, please try again!"
 
 		controller.SendResponse(w, r, "admingroupdetails", response)
 		return
@@ -2318,7 +2317,7 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/admin/roles")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
 			controller.SendRawError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -2328,7 +2327,7 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.roles") {
-		misc.Logger.Warnf("Unauthorized access to role administration")
+		misc.Logger.Traceln("Unauthorized access to role administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -2339,10 +2338,10 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 
 	roles, err := controller.Session.LoadAllRoles()
 	if err != nil {
-		misc.Logger.Warnf("Failed to load all roles: [%v]")
+		misc.Logger.Tracef("Failed to load all roles: [%v]")
 
 		response["status"] = 1
-		response["result"] = "Failed to load roles, please try again!"
+		response["result"] = "Failed to retrieve roles, please try again!"
 
 		controller.SendResponse(w, r, "adminroles", response)
 		return
@@ -2368,7 +2367,7 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/admin/roles")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
 			controller.SendRawError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -2378,7 +2377,7 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.roles") {
-		misc.Logger.Warnf("Unauthorized access to role administration")
+		misc.Logger.Traceln("Unauthorized access to role administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -2389,10 +2388,10 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "adminroles", response)
 		return
@@ -2400,7 +2399,7 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 
 	command := r.FormValue("command")
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Traceln("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
@@ -2415,7 +2414,7 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 		locked := r.FormValue("adminRolesAddLocked")
 
 		if len(roleName) == 0 {
-			misc.Logger.Warnf("Received empty role name")
+			misc.Logger.Traceln("Received empty role name")
 
 			response["status"] = 1
 			response["result"] = "Empty role name, please try again!"
@@ -2431,7 +2430,7 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 
 		_, err := controller.Session.CreateNewRole(roleName, roleLocked)
 		if err != nil {
-			misc.Logger.Warnf("Failed to create new role: [%v]", err)
+			misc.Logger.Tracef("Failed to create new role: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to create new role, please try again!"
@@ -2444,7 +2443,10 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	controller.SendRedirect(w, r, "/admin/roles", http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendResponse(w, r, "adminroles", response)
 }
 
 // AdminRolesPutHandler allows removal of existing roles
@@ -2458,57 +2460,50 @@ func (controller *Controller) AdminRolesPutHandler(w http.ResponseWriter, r *htt
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/admin/roles")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Not logged in"))
 		return
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.roles") {
-		misc.Logger.Warnf("Unauthorized access to role administration")
+		misc.Logger.Traceln("Unauthorized access to role administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
 
-		controller.SendResponse(w, r, "adminroles", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
-		controller.SendResponse(w, r, "adminroles", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	command := r.FormValue("command")
 	roleID, err := strconv.ParseInt(r.FormValue("roleID"), 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse role ID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse role ID, please try again!"
 
-		controller.SendResponse(w, r, "adminroles", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Traceln("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
 
-		controller.SendResponse(w, r, "adminroles", response)
+		controller.SendJSONResponse(w, r, response)
 		return
 	}
 
@@ -2516,7 +2511,7 @@ func (controller *Controller) AdminRolesPutHandler(w http.ResponseWriter, r *htt
 	case "adminrolesdelete":
 		err = controller.Database.DeleteRole(roleID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to delete role: [%v]", err)
+			misc.Logger.Tracef("Failed to delete role: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete role, please try again!"
@@ -2532,7 +2527,10 @@ func (controller *Controller) AdminRolesPutHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	controller.SendRedirect(w, r, "/admin/roles", http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendJSONResponse(w, r, response)
 }
 
 // LegalGetHandler displays some legal information as well as copyright disclaimers and contact info
