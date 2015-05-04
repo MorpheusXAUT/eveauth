@@ -1117,8 +1117,9 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/settings/applications")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -1127,7 +1128,7 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 	}
 
 	if !controller.Session.HasUserRole(r, "app.developer") {
-		misc.Logger.Warnf("Unauthorized access to application developer page")
+		misc.Logger.Traceln("Unauthorized access to application developer page")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1138,7 +1139,7 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
@@ -1149,7 +1150,7 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 
 	command := r.FormValue("command")
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Tracef("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
@@ -1164,7 +1165,7 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 		callback := r.FormValue("settingsApplicationsAddApplicationCallback")
 
 		if len(name) == 0 || len(callback) == 0 {
-			misc.Logger.Warnf("Received empty application name or callback")
+			misc.Logger.Tracef("Received empty application name or callback")
 
 			response["status"] = 1
 			response["result"] = "Empty application name or callback, please try again!"
@@ -1175,7 +1176,7 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 
 		user, err := controller.Session.GetUser(r)
 		if err != nil {
-			misc.Logger.Warnf("Failed to load user: [%v]", err)
+			misc.Logger.Tracef("Failed to load user: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to load user, please try again!"
@@ -1188,7 +1189,7 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 
 		_, err = controller.Database.SaveApplication(application)
 		if err != nil {
-			misc.Logger.Warnf("Failed to save application: [%v]", err)
+			misc.Logger.Tracef("Failed to save application: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to save application, please try again!"
@@ -1201,7 +1202,10 @@ func (controller *Controller) SettingsApplicationsPostHandler(w http.ResponseWri
 		return
 	}
 
-	controller.SendRedirect(w, r, "/settings/applications", http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendResponse(w, r, "settingsapplications", response)
 }
 
 // SettingsApplicationsPutHandler allows updating applications as well as removing them
@@ -1215,30 +1219,20 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/settings/applications")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Not logged in"))
 		return
 	}
 
 	if !controller.Session.HasUserRole(r, "app.developer") {
-		misc.Logger.Warnf("Unauthorized access to application developer page")
+		misc.Logger.Traceln("Unauthorized access to application developer page")
 
-		response["status"] = 1
-		response["result"] = "You don't have access to this page!"
-
-		controller.SendResponse(w, r, "settingsapplications", response)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Unauthorized access"))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse form, please try again!"
@@ -1250,7 +1244,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 	command := r.FormValue("command")
 	applicationID, err := strconv.ParseInt(r.FormValue("applicationID"), 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse application ID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse application ID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse application ID, please try again!"
@@ -1260,7 +1254,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 	}
 
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Traceln("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
@@ -1273,7 +1267,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 	case "settingsapplicationsdelete":
 		err = controller.Database.DeleteApplication(applicationID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to delete application: [%v]", err)
+			misc.Logger.Tracef("Failed to delete application: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete application, please try again!"
@@ -1292,7 +1286,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 		callback := r.FormValue("settingsApplicationsEditApplicationCallback")
 
 		if len(name) == 0 || len(callback) == 0 {
-			misc.Logger.Warnf("Received empty application name or callback")
+			misc.Logger.Traceln("Received empty application name or callback")
 
 			response["status"] = 1
 			response["result"] = "Empty application name or callback, please try again!"
@@ -1303,10 +1297,10 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 
 		application, err := controller.Database.LoadApplication(applicationID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to load application: [%v]", err)
+			misc.Logger.Tracef("Failed to load application: [%v]", err)
 
 			response["status"] = 1
-			response["result"] = "Failed to load application, please try again!"
+			response["result"] = "Failed to retrieve user application, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
 			return
@@ -1314,17 +1308,17 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 
 		user, err := controller.Session.GetUser(r)
 		if err != nil {
-			misc.Logger.Warnf("Failed to load user: [%v]", err)
+			misc.Logger.Tracef("Failed to load user: [%v]", err)
 
 			response["status"] = 1
-			response["result"] = "Failed to load user, please try again!"
+			response["result"] = "Failed to retrieve user details, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
 			return
 		}
 
 		if application.MaintainerID != user.ID {
-			misc.Logger.Warnf("Unauthenticated request to edit application")
+			misc.Logger.Traceln("Unauthenticated request to edit application")
 
 			response["status"] = 1
 			response["result"] = "Unauthenticated request to edit application, please try again!"
@@ -1338,7 +1332,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 
 		_, err = controller.Database.SaveApplication(application)
 		if err != nil {
-			misc.Logger.Warnf("Failed to save application: [%v]", err)
+			misc.Logger.Tracef("Failed to save application: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to save application, please try again!"
@@ -1355,7 +1349,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 	case "settingsapplicationseditapplicationresetsecret":
 		application, err := controller.Database.LoadApplication(applicationID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to load application: [%v]", err)
+			misc.Logger.Tracef("Failed to load application: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to load application, please try again!"
@@ -1366,7 +1360,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 
 		user, err := controller.Session.GetUser(r)
 		if err != nil {
-			misc.Logger.Warnf("Failed to load user: [%v]", err)
+			misc.Logger.Tracef("Failed to load user: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to load user, please try again!"
@@ -1376,7 +1370,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 		}
 
 		if application.MaintainerID != user.ID {
-			misc.Logger.Warnf("Unauthenticated request to edit application")
+			misc.Logger.Traceln("Unauthenticated request to edit application")
 
 			response["status"] = 1
 			response["result"] = "Unauthenticated request to edit application, please try again!"
@@ -1389,7 +1383,7 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 
 		_, err = controller.Database.SaveApplication(application)
 		if err != nil {
-			misc.Logger.Warnf("Failed to save application: [%v]", err)
+			misc.Logger.Tracef("Failed to save application: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to save application, please try again!"
@@ -1405,7 +1399,10 @@ func (controller *Controller) SettingsApplicationsPutHandler(w http.ResponseWrit
 		return
 	}
 
-	controller.SendRedirect(w, r, "/settings/applications", http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendJSONResponse(w, r, response)
 }
 
 // AdminUsersGetHandler allows administrators to modify users and assign new groups and roles
@@ -1421,8 +1418,9 @@ func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *htt
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/admin/users")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -1431,7 +1429,7 @@ func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *htt
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.users") {
-		misc.Logger.Warnf("Unauthorized access to user administration")
+		misc.Logger.Traceln("Unauthorized access to user administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1442,10 +1440,10 @@ func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *htt
 
 	users, err := controller.Session.LoadAllUsers()
 	if err != nil {
-		misc.Logger.Warnf("Failed to load all users: [%v]")
+		misc.Logger.Tracef("Failed to load all users: [%v]")
 
 		response["status"] = 1
-		response["result"] = "Failed to load users, please try again!"
+		response["result"] = "Failed to retrieve all user details, please try again!"
 
 		controller.SendResponse(w, r, "adminusers", response)
 		return
@@ -1471,8 +1469,9 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/admin/users")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -1481,7 +1480,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 	}
 
 	if !controller.Session.HasUserRole(r, "admin.users") {
-		misc.Logger.Warnf("Unauthorized access to user administration")
+		misc.Logger.Traceln("Unauthorized access to user administration")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1492,10 +1491,10 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "adminusers", response)
 		return
@@ -1504,7 +1503,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 	command := r.FormValue("command")
 	userID, err := strconv.ParseInt(r.FormValue("userID"), 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse user ID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse user ID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse user ID, please try again!"
@@ -1514,7 +1513,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 	}
 
 	if len(command) == 0 {
-		misc.Logger.Warnf("Received empty command")
+		misc.Logger.Traceln("Received empty command")
 
 		response["status"] = 1
 		response["result"] = "Empty command, please try again!"
@@ -1528,7 +1527,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 		group := r.FormValue("adminUserDetailsAddGroupGroup")
 
 		if len(group) == 0 {
-			misc.Logger.Warnf("Received empty group ID")
+			misc.Logger.Traceln("Received empty group ID")
 
 			response["status"] = 1
 			response["result"] = "Empty group, please try again!"
@@ -1539,7 +1538,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 
 		groupID, err := strconv.ParseInt(group, 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse group ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse group ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse group ID, please try again!"
@@ -1550,7 +1549,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 
 		err = controller.Session.AddGroupToUser(userID, groupID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to add group to user: [%v]", err)
+			misc.Logger.Tracef("Failed to add group to user: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to add group to user, please try again!"
@@ -1558,12 +1557,14 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 			controller.SendResponse(w, r, "adminusers", response)
 			return
 		}
+
+		controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
 	case "adminuserdetailsadduserrole":
 		role := r.FormValue("adminUserDetailsAddUserRoleRole")
 		granted := r.FormValue("adminUserDetailsAddUserRoleGranted")
 
 		if len(role) == 0 {
-			misc.Logger.Warnf("Received empty role")
+			misc.Logger.Traceln("Received empty role")
 
 			response["status"] = 1
 			response["result"] = "Empty role, please try again!"
@@ -1574,7 +1575,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 
 		roleID, err := strconv.ParseInt(role, 10, 64)
 		if err != nil {
-			misc.Logger.Warnf("Failed to parse role ID: [%v]", err)
+			misc.Logger.Tracef("Failed to parse role ID: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to parse role ID, please try again!"
@@ -1590,17 +1591,22 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 
 		err = controller.Session.AddUserRoleToUser(userID, roleID, roleGranted)
 		if err != nil {
-			misc.Logger.Warnf("Failed to add user role to user: [%v]", err)
+			misc.Logger.Tracef("Failed to add user role to user: [%v]", err)
 
 			response["status"] = 1
-			response["result"] = "Failed to add user role to user, please try again!"
+			response["result"] = "Failed to add role to user, please try again!"
 
 			controller.SendResponse(w, r, "adminusers", response)
 			return
 		}
+
+		controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
 	}
 
-	controller.SendRedirect(w, r, fmt.Sprintf("/admin/user/%d", userID), http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
+
+	controller.SendResponse(w, r, "adminusers", response)
 }
 
 // AdminUsersPutHandler updates the user and removes roles and groups
