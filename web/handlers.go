@@ -66,13 +66,12 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "login", response)
-
 		return
 	}
 
@@ -80,25 +79,23 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 	password := r.FormValue("password")
 
 	if len(username) == 0 || len(password) == 0 {
-		misc.Logger.Warnf("Received empty username or password")
+		misc.Logger.Traceln("Received empty username or password")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty username or password, please try again!")
+		response["result"] = "Empty username or password, please try again!"
 
 		controller.SendResponse(w, r, "login", response)
-
 		return
 	}
 
 	err = controller.Session.Authenticate(w, r, username, password)
 	if err != nil {
-		misc.Logger.Warnf("Failed to authenticate user: [%v]", err)
+		misc.Logger.Tracef("Failed to authenticate user: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Invalid username or password, please try again!")
+		response["result"] = "Invalid username or password, please try again!"
 
 		controller.SendResponse(w, r, "login", response)
-
 		return
 	}
 
@@ -143,13 +140,12 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
@@ -158,37 +154,34 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	password := r.FormValue("password")
 
 	if len(username) == 0 || len(email) == 0 || len(password) == 0 {
-		misc.Logger.Warnf("Received empty username, email or password")
+		misc.Logger.Traceln("Received empty username, email or password")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty username, email or password, please try again!")
+		response["result"] = "Empty username, email or password, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
 	err = controller.Session.CreateNewUser(w, r, username, email, password)
 	if err != nil {
-		misc.Logger.Warnf("Failed to create new user: [%v]", err)
+		misc.Logger.Tracef("Failed to create new user: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to create new user, please try again!")
+		response["result"] = "Failed to create new user, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
 	err = controller.Session.SendEmailVerification(w, r, username, email)
 	if err != nil {
-		misc.Logger.Warnf("Failed to send email verification: [%v]", err)
+		misc.Logger.Tracef("Failed to send email verification: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to send email verification, please try again!")
+		response["result"] = "Failed to send email verification, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
@@ -215,13 +208,12 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
@@ -229,25 +221,23 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 	verification := r.FormValue("verification")
 
 	if len(email) == 0 || len(verification) == 0 {
-		misc.Logger.Warnf("Received empty email or verification code")
+		misc.Logger.Traceln("Received empty email or verification code")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty email or verification code, please try again!")
+		response["result"] = "Empty email or verification code, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
 	err = controller.Session.VerifyEmail(w, r, email, verification)
 	if err != nil {
-		misc.Logger.Warnf("Failed to verify email: [%v]", err)
+		misc.Logger.Tracef("Failed to verify email: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to verify email, please try again!")
+		response["result"] = "Failed to verify email, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
@@ -291,13 +281,12 @@ func (controller *Controller) LoginVerifyResendPostHandler(w http.ResponseWriter
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "loginregister", response)
-
 		return
 	}
 
@@ -305,25 +294,23 @@ func (controller *Controller) LoginVerifyResendPostHandler(w http.ResponseWriter
 	email := r.FormValue("email")
 
 	if len(username) == 0 && len(email) == 0 {
-		misc.Logger.Warnf("Received empty username or email")
+		misc.Logger.Traceln("Received empty username or email")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty username or email, please try again!")
+		response["result"] = "Empty username or email, please try again!"
 
 		controller.SendResponse(w, r, "loginverifyresend", response)
-
 		return
 	}
 
 	err = controller.Session.ResendEmailVerification(w, r, username, email)
 	if err != nil {
-		misc.Logger.Warnf("Failed to resend email verification: [%v]", err)
+		misc.Logger.Tracef("Failed to resend email verification: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to resend email verification, please try again!")
+		response["result"] = "Failed to resend email verification, please try again!"
 
 		controller.SendResponse(w, r, "loginverifyresend", response)
-
 		return
 	}
 
@@ -370,13 +357,12 @@ func (controller *Controller) LoginResetPostHandler(w http.ResponseWriter, r *ht
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "loginreset", response)
-
 		return
 	}
 
@@ -384,25 +370,23 @@ func (controller *Controller) LoginResetPostHandler(w http.ResponseWriter, r *ht
 	email := r.FormValue("email")
 
 	if len(username) == 0 && len(email) == 0 {
-		misc.Logger.Warnf("Received empty username or email")
+		misc.Logger.Traceln("Received empty username or email")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty username or email, please try again!")
+		response["result"] = "Empty username or email, please try again!"
 
 		controller.SendResponse(w, r, "loginreset", response)
-
 		return
 	}
 
 	err = controller.Session.SendPasswordReset(w, r, username, email)
 	if err != nil {
-		misc.Logger.Warnf("Failed to send password reset: [%v]", err)
+		misc.Logger.Tracef("Failed to send password reset: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to send password reset, please try again!")
+		response["result"] = "Failed to send password reset, please try again!"
 
 		controller.SendResponse(w, r, "loginreset", response)
-
 		return
 	}
 
@@ -429,13 +413,12 @@ func (controller *Controller) LoginResetVerifyGetHandler(w http.ResponseWriter, 
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "loginreset", response)
-
 		return
 	}
 
@@ -444,21 +427,20 @@ func (controller *Controller) LoginResetVerifyGetHandler(w http.ResponseWriter, 
 	verification := r.FormValue("verification")
 
 	if len(email) == 0 || len(username) == 0 || len(verification) == 0 {
-		misc.Logger.Warnf("Received empty email, username or verification code")
+		misc.Logger.Traceln("Received empty email, username or verification code")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty email, username or verification code, please try again!")
+		response["result"] = "Empty email, username or verification code, please try again!"
 
 		controller.SendResponse(w, r, "loginreset", response)
-
 		return
 	}
 
-	response["status"] = 0
-	response["result"] = nil
 	response["email"] = email
 	response["username"] = username
 	response["verification"] = verification
+	response["status"] = 0
+	response["result"] = nil
 
 	controller.SendResponse(w, r, "loginresetverify", response)
 }
@@ -480,7 +462,7 @@ func (controller *Controller) LoginResetVerifyPostHandler(w http.ResponseWriter,
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
@@ -496,25 +478,23 @@ func (controller *Controller) LoginResetVerifyPostHandler(w http.ResponseWriter,
 	password := r.FormValue("password")
 
 	if len(email) == 0 || len(username) == 0 || len(verification) == 0 || len(password) == 0 {
-		misc.Logger.Warnf("Received empty email, username, verification, old or password")
+		misc.Logger.Traceln("Received empty email, username, verification, old or password")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty email, username, verification, old or password, please try again!")
+		response["result"] = "Empty email, username, verification, old or password, please try again!"
 
 		controller.SendResponse(w, r, "loginreset", response)
-
 		return
 	}
 
 	err = controller.Session.VerifyPasswordReset(w, r, email, username, verification, password)
 	if err != nil {
-		misc.Logger.Warnf("Failed to verify password reset: [%v]", err)
+		misc.Logger.Tracef("Failed to verify password reset: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to reset password, please try again!")
+		response["result"] = "Failed to reset password, please try again!"
 
 		controller.SendResponse(w, r, "loginreset", response)
-
 		return
 	}
 
@@ -544,8 +524,9 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, r.URL.String())
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -555,13 +536,12 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse form, please try again!")
+		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendResponse(w, r, "index", response)
-
 		return
 	}
 
@@ -570,37 +550,34 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 	auth := r.FormValue("auth")
 
 	if len(app) == 0 || len(callback) == 0 || len(auth) == 0 {
-		misc.Logger.Warnf("Received empty app, callback or auth")
+		misc.Logger.Traceln("Received empty app, callback or auth")
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Empty app, callback or auth, please try again!")
+		response["result"] = "Empty app, callback or auth, please try again!"
 
 		controller.SendResponse(w, r, "index", response)
-
 		return
 	}
 
 	application, err := controller.Session.VerifyApplication(app, callback, auth)
 	if err != nil {
-		misc.Logger.Warnf("Failed to verify app authentication: [%v]", err)
+		misc.Logger.Tracef("Failed to verify app authentication: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to authenticate app, please try again!")
+		response["result"] = "Failed to authenticate app, please try again!"
 
 		controller.SendResponse(w, r, "index", response)
-
 		return
 	}
 
 	user, err := controller.Session.GetUser(r)
 	if err != nil {
-		misc.Logger.Warnf("Failed to get user: [%v]", err)
+		misc.Logger.Tracef("Failed to get user: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to get user, please try again!")
+		response["result"] = "Failed to retrieve user details, please try again!"
 
 		controller.SendResponse(w, r, "index", response)
-
 		return
 	}
 
@@ -608,25 +585,23 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 
 	err = controller.SetAuthorizationToken(user.ID, application.ID, authorizationToken)
 	if err != nil {
-		misc.Logger.Warnf("Failed to set authorization token: [%v]", err)
+		misc.Logger.Tracef("Failed to set authorization token: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to set authorization token, please try again!")
+		response["result"] = "Failed to set authorization token, please try again!"
 
 		controller.SendResponse(w, r, "index", response)
-
 		return
 	}
 
 	callbackURL, err := url.Parse(callback)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse callback URL: [%v]", err)
+		misc.Logger.Tracef("Failed to parse callback URL: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to parse callback URL, please try again!")
+		response["result"] = "Failed to parse callback URL, please try again!"
 
 		controller.SendResponse(w, r, "index", response)
-
 		return
 	}
 
@@ -648,7 +623,7 @@ func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *ht
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse form, please try again!"
@@ -660,7 +635,7 @@ func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *ht
 	token := r.FormValue("token")
 	userID, err := strconv.ParseInt(r.FormValue("user"), 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse user ID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse user ID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse user ID, please try again!"
@@ -670,7 +645,7 @@ func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *ht
 	}
 	appID, err := strconv.ParseInt(r.FormValue("app"), 10, 64)
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse app ID: [%v]", err)
+		misc.Logger.Tracef("Failed to parse app ID: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse app ID, please try again!"
@@ -680,7 +655,7 @@ func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *ht
 	}
 
 	if len(token) == 0 {
-		misc.Logger.Warnf("Received empty authorization token")
+		misc.Logger.Tracef("Received empty authorization token")
 
 		response["status"] = 1
 		response["result"] = "Empty authorization token, please try again!"
@@ -691,7 +666,7 @@ func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *ht
 
 	authorizationToken, err := controller.GetAuthorizationToken(userID, appID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to retrieve authorization token: [%v]", err)
+		misc.Logger.Tracef("Failed to retrieve authorization token: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to retrieve authorization token, please try again!"
@@ -701,7 +676,7 @@ func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *ht
 	}
 
 	if !strings.EqualFold(authorizationToken, token) {
-		misc.Logger.Warnf("Failed to verify authorization token: [%v]", err)
+		misc.Logger.Tracef("Failed to verify authorization token: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to verify authorization token, please try again!"
@@ -712,7 +687,7 @@ func (controller *Controller) PermissionsGetHandler(w http.ResponseWriter, r *ht
 
 	encryptedPayload, err := controller.EncryptUserPermissions(userID, appID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to encode user permissions: [%v]", err)
+		misc.Logger.Tracef("Failed to encode user permissions: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to encode user permissions, please try again!"
@@ -740,8 +715,9 @@ func (controller *Controller) SettingsGetHandler(w http.ResponseWriter, r *http.
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/settings")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -751,13 +727,12 @@ func (controller *Controller) SettingsGetHandler(w http.ResponseWriter, r *http.
 
 	user, err := controller.Session.GetUser(r)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load user: [%v]", err)
+		misc.Logger.Tracef("Failed to load user: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to load user, please try again!")
+		response["result"] = fmt.Errorf("Failed to retrieve user details, please try again!")
 
 		controller.SendResponse(w, r, "settings", response)
-
 		return
 	}
 
@@ -779,26 +754,18 @@ func (controller *Controller) SettingsPutHandler(w http.ResponseWriter, r *http.
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/settings")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Not logged in"))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
-
 		return
 	}
 
@@ -809,24 +776,22 @@ func (controller *Controller) SettingsPutHandler(w http.ResponseWriter, r *http.
 	settingsEditNewPasswordConfirmation := r.FormValue("settingsEditNewPasswordConfirmation")
 
 	if len(command) == 0 || len(settingsEditOldPassword) == 0 || len(settingsEditEmail) == 0 {
-		misc.Logger.Warnf("Received empty command, old password or email address")
+		misc.Logger.Traceln("Received empty command, old password or email address")
 
 		response["status"] = 1
 		response["result"] = "Empty old password or email address, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
-
 		return
 	}
 
 	if len(settingsEditNewPassword) > 0 && !strings.EqualFold(settingsEditNewPassword, settingsEditNewPasswordConfirmation) {
-		misc.Logger.Warnf("New passwords didn't match, update cancelled")
+		misc.Logger.Tracef("New passwords didn't match, update cancelled")
 
 		response["status"] = 1
 		response["result"] = "New passwords didn't match, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
-
 		return
 	}
 
@@ -834,19 +799,18 @@ func (controller *Controller) SettingsPutHandler(w http.ResponseWriter, r *http.
 	case "settingsedit":
 		_, err = controller.Session.UpdateUser(w, r, settingsEditEmail, settingsEditOldPassword, settingsEditNewPassword)
 		if err != nil {
-			misc.Logger.Warnf("Failed to edit settings: [%v]", err)
+			misc.Logger.Tracef("Failed to edit settings: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to edit settings, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
-
 			return
 		}
 	}
 
-	response["status"] = 0
-	response["result"] = nil
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
 
 	controller.SendJSONResponse(w, r, response)
 }
@@ -864,8 +828,9 @@ func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, 
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/settings/accounts")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -875,12 +840,13 @@ func (controller *Controller) SettingsAccountsGetHandler(w http.ResponseWriter, 
 
 	accounts, err := controller.Session.GetUserAccounts(r)
 	if err != nil {
-		misc.Logger.Warnf("Failed to get user accounts: [%v]", err)
+		misc.Logger.Tracef("Failed to get user accounts: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to load user data, please try again!")
+		response["result"] = "Failed to retrieve user accounts, please try again!"
 
 		controller.SendResponse(w, r, "settingsaccounts", response)
+		return
 	}
 
 	response["accounts"] = accounts
@@ -901,26 +867,18 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/settings/accounts")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Not logged in"))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
-
 		return
 	}
 
@@ -928,13 +886,12 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 	apiKeyID := r.FormValue("apiKeyID")
 
 	if len(command) == 0 || len(apiKeyID) == 0 {
-		misc.Logger.Warnf("Received empty command or apiKeyID")
+		misc.Logger.Traceln("Received empty command or apiKeyID")
 
 		response["status"] = 1
 		response["result"] = "Empty API Key ID, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
-
 		return
 	}
 
@@ -942,19 +899,18 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 	case "apikeyadd":
 		apivCode := r.FormValue("apivCode")
 		if len(apivCode) == 0 {
-			misc.Logger.Warnf("Received empty apivCode")
+			misc.Logger.Traceln("Received empty apivCode")
 
 			response["status"] = 1
 			response["result"] = "Empty API vCode, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
-
 			return
 		}
 
 		err = controller.Session.SaveAPIKey(w, r, apiKeyID, apivCode)
 		if err != nil {
-			misc.Logger.Warnf("Failed to save API key: [%v]", err)
+			misc.Logger.Tracef("Failed to save API key: [%v]", err)
 
 			response["status"] = 1
 
@@ -965,25 +921,23 @@ func (controller *Controller) SettingsAccountsPutHandler(w http.ResponseWriter, 
 			}
 
 			controller.SendJSONResponse(w, r, response)
-
 			return
 		}
 	case "apikeydelete":
 		err = controller.Session.DeleteAPIKey(w, r, apiKeyID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to delete API key: [%v]", err)
+			misc.Logger.Tracef("Failed to delete API key: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to delete API key, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
-
 			return
 		}
 	}
 
-	response["status"] = 0
-	response["result"] = nil
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
 
 	controller.SendJSONResponse(w, r, response)
 }
@@ -1001,8 +955,9 @@ func (controller *Controller) SettingsCharactersGetHandler(w http.ResponseWriter
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/settings/characters")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -1012,12 +967,13 @@ func (controller *Controller) SettingsCharactersGetHandler(w http.ResponseWriter
 
 	characters, err := controller.Session.GetUserCharacters(r)
 	if err != nil {
-		misc.Logger.Warnf("Failed to get user characters: [%v]", err)
+		misc.Logger.Tracef("Failed to get user characters: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to load user data, please try again!")
+		response["result"] = "Failed to retrieve user characters, please try again!"
 
 		controller.SendResponse(w, r, "settingscharacters", response)
+		return
 	}
 
 	response["characters"] = characters
@@ -1038,26 +994,18 @@ func (controller *Controller) SettingsCharactersPutHandler(w http.ResponseWriter
 	response["loggedIn"] = loggedIn
 
 	if !loggedIn {
-		err := controller.Session.SetLoginRedirect(w, r, "/settings/characters")
-		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		controller.SendRedirect(w, r, "/login", http.StatusSeeOther)
+		controller.SendRawError(w, http.StatusUnauthorized, fmt.Errorf("Not logged in"))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		misc.Logger.Warnf("Failed to parse form: [%v]", err)
+		misc.Logger.Tracef("Failed to parse form: [%v]", err)
 
 		response["status"] = 1
 		response["result"] = "Failed to parse form, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
-
 		return
 	}
 
@@ -1065,13 +1013,12 @@ func (controller *Controller) SettingsCharactersPutHandler(w http.ResponseWriter
 	characterID := r.FormValue("characterID")
 
 	if len(command) == 0 || len(characterID) == 0 {
-		misc.Logger.Warnf("Received empty command or characterID")
+		misc.Logger.Tracef("Received empty command or characterID")
 
 		response["status"] = 1
 		response["result"] = "Empty character ID, please try again!"
 
 		controller.SendJSONResponse(w, r, response)
-
 		return
 	}
 
@@ -1079,19 +1026,18 @@ func (controller *Controller) SettingsCharactersPutHandler(w http.ResponseWriter
 	case "charactersetdefault":
 		err = controller.Session.SetDefaultCharacter(w, r, characterID)
 		if err != nil {
-			misc.Logger.Warnf("Failed to set default character: [%v]", err)
+			misc.Logger.Tracef("Failed to set default character: [%v]", err)
 
 			response["status"] = 1
 			response["result"] = "Failed to set default character, please try again!"
 
 			controller.SendJSONResponse(w, r, response)
-
 			return
 		}
 	}
 
-	response["status"] = 0
-	response["result"] = nil
+	response["status"] = 1
+	response["result"] = fmt.Sprintf("Unknown command %q", command)
 
 	controller.SendJSONResponse(w, r, response)
 }
@@ -1109,8 +1055,9 @@ func (controller *Controller) SettingsApplicationsGetHandler(w http.ResponseWrit
 	if !loggedIn {
 		err := controller.Session.SetLoginRedirect(w, r, "/settings/applications")
 		if err != nil {
-			misc.Logger.Warnf("Failed to set login redirect: [%v]", err)
-			controller.SendRawError(w, http.StatusInternalServerError, err)
+			misc.Logger.Tracef("Failed to set login redirect: [%v]", err)
+
+			controller.SendRawError(w, http.StatusInternalServerError, fmt.Errorf("Failed to set login redirect"))
 			return
 		}
 
@@ -1119,7 +1066,7 @@ func (controller *Controller) SettingsApplicationsGetHandler(w http.ResponseWrit
 	}
 
 	if !controller.Session.HasUserRole(r, "app.developer") {
-		misc.Logger.Warnf("Unauthorized access to application developer page")
+		misc.Logger.Traceln("Unauthorized access to application developer page")
 
 		response["status"] = 1
 		response["result"] = "You don't have access to this page!"
@@ -1130,25 +1077,23 @@ func (controller *Controller) SettingsApplicationsGetHandler(w http.ResponseWrit
 
 	user, err := controller.Session.GetUser(r)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load user: [%v]", err)
+		misc.Logger.Tracef("Failed to load user: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to load user, please try again!")
+		response["result"] = "Failed to retrieve user details, please try again!"
 
 		controller.SendResponse(w, r, "settingsapplications", response)
-
 		return
 	}
 
 	applications, err := controller.Database.LoadAllApplicationsForUser(user.ID)
 	if err != nil {
-		misc.Logger.Warnf("Failed to load applications: [%v]", err)
+		misc.Logger.Tracef("Failed to load applications: [%v]", err)
 
 		response["status"] = 1
-		response["result"] = fmt.Errorf("Failed to load applications, please try again!")
+		response["result"] = fmt.Errorf("Failed to retrieve user applications, please try again!")
 
 		controller.SendResponse(w, r, "settingsapplications", response)
-
 		return
 	}
 
