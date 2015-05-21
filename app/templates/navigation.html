@@ -29,13 +29,19 @@
 						{{ end }}
 					</ul>
 				</li>
-				{{ if HasUserRole "admin.users" }}
+				{{ if or (or (HasUserRole "admin.users") (HasUserRole "admin.groups")) (HasUserRole "admin.roles") }}
 					<li class="dropdown {{ if eq .pageType 6 }} active {{ end }}" >
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Admin<span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
+						{{ if HasUserRole "admin.users" }}
 						<li><a href="/admin/users">Users</a></li>
+						{{ end }}
+						{{ if HasUserRole "admin.groups" }}
 						<li><a href="/admin/groups">Groups</a></li>
+						{{ end }}
+						{{ if HasUserRole "admin.roles" }}
 						<li><a href="/admin/roles">Roles</a></li>
+						{{ end }}
 					</ul>
 				</li>
 				{{ end }}
