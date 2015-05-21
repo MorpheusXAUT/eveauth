@@ -66,7 +66,7 @@ func (controller *Controller) DestroySession(w http.ResponseWriter, r *http.Requ
 
 	err := sessions.Save(r, w)
 	if err != nil {
-		misc.Logger.Errorf("Failed to destroy session: [%v]", err)
+		misc.Logger.Warnf("Failed to destroy session: [%v]", err)
 	}
 }
 
@@ -86,7 +86,7 @@ func (controller *Controller) GetCSRFToken(w http.ResponseWriter, r *http.Reques
 	if loginSession.IsNew {
 		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			misc.Logger.Tracef("Failed to set CSRF token: [%v]", err)
 			return ""
 		}
 
@@ -108,7 +108,7 @@ func (controller *Controller) VerifyCSRFToken(w http.ResponseWriter, r *http.Req
 	if loginSession.IsNew {
 		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			misc.Logger.Tracef("Failed to set CSRF token: [%v]", err)
 			return false
 		}
 
@@ -130,36 +130,24 @@ func (controller *Controller) VerifyCSRFToken(w http.ResponseWriter, r *http.Req
 	return strings.EqualFold(token, csrfToken)
 }
 
-// IsLoggedIn checks whether the user is currently logged in and has an appropriate timestamp set
+// IsLoggedIn checks whether the user is currently logged in
 func (controller *Controller) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
 	if loginSession.IsNew {
 		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			misc.Logger.Tracef("Failed to set CSRF token: [%v]", err)
 			return false
 		}
 
 		return false
 	}
 
-	timeStamp, ok := loginSession.Values["timestamp"].(int64)
-	if !ok {
-		return false
-	}
+	userID, ok := loginSession.Values["userID"].(int64)
+	if !ok || userID <= 0 {
 
-	if time.Now().Sub(time.Unix(timeStamp, 0)).Minutes() >= 168 {
-		controller.DestroySession(w, r)
-		return false
-	}
-
-	verifiedEmail, ok := loginSession.Values["verifiedEmail"].(bool)
-	if !ok {
-		return false
-	}
-
-	if !verifiedEmail {
+		misc.Logger.Traceln("Failed to retrieve user ID from session, not logged in properly")
 		return false
 	}
 
@@ -182,7 +170,7 @@ func (controller *Controller) GetLoginRedirect(w http.ResponseWriter, r *http.Re
 	if loginSession.IsNew {
 		err := controller.SetCSRFToken(w, r, misc.GenerateRandomString(32))
 		if err != nil {
-			misc.Logger.Warnf("Failed to set CSRF token: [%v]", err)
+			misc.Logger.Tracef("Failed to set CSRF token: [%v]", err)
 			return ""
 		}
 
@@ -198,7 +186,7 @@ func (controller *Controller) GetLoginRedirect(w http.ResponseWriter, r *http.Re
 }
 
 // Authenticate validates the given username and password against the database and creates a new session with timestamp if successful
-func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Request, username string, password string) error {
+func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Request, username string, password string) misc.AuthStatus {
 	storedPassword, err := controller.database.LoadPasswordForUser(username)
 
 	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password))
@@ -207,40 +195,55 @@ func (controller *Controller) Authenticate(w http.ResponseWriter, r *http.Reques
 
 	logErr := controller.database.SaveLoginAttempt(loginAttempt)
 	if logErr != nil {
-		misc.Logger.Errorf("Failed to log authentication attempt: [%v]", logErr)
+		misc.Logger.Warnf("Failed to log authentication attempt: [%v]", logErr)
 	}
 
-	if err != nil {
-		return err
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		misc.Logger.Tracef("Failed to verify given user password: [%v]", err)
+		return misc.AuthStatusCredentialMismatch
+	} else if err != nil {
+		misc.Logger.Tracef("Failed to compare user passwords: [%v]", err)
+		return misc.AuthStatusError
 	}
 
 	user, err := controller.database.LoadUserFromUsername(username)
 	if err != nil {
-		return err
+		misc.Logger.Tracef("Failed to load user from database: [%v]", err)
+		return misc.AuthStatusError
+	}
+
+	if !user.VerifiedEmail {
+		return misc.AuthStatusUnverifiedEmail
 	}
 
 	user, err = controller.SetUser(w, r, user)
 	if err != nil {
-		return err
+		misc.Logger.Tracef("Failed to update user in session controller: [%v]", err)
+		return misc.AuthStatusError
 	}
 
 	csrfToken := misc.GenerateRandomString(32)
 
 	err = controller.SetCSRFToken(w, r, csrfToken)
 	if err != nil {
-		return err
+		misc.Logger.Tracef("Failed to set CSRF token: [%v]", err)
+		return misc.AuthStatusError
 	}
 
 	loginSession, _ := controller.store.Get(r, "eveauthLogin")
 
 	loginSession.Values["username"] = user.Username
 	loginSession.Values["userID"] = user.ID
-	loginSession.Values["timestamp"] = time.Now().Unix()
-	loginSession.Values["verifiedEmail"] = user.VerifiedEmail
 
 	loginSession.Options.MaxAge = 604800
 
-	return sessions.Save(r, w)
+	err = sessions.Save(r, w)
+	if err != nil {
+		misc.Logger.Tracef("Failed to save login session: [%v]", err)
+		return misc.AuthStatusError
+	}
+
+	return misc.AuthStatusSuccess
 }
 
 // CreateNewUser creates a new user in the database and saves the user's data in the current session

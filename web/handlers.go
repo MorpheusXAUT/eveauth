@@ -88,18 +88,37 @@ func (controller *Controller) LoginPostHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = controller.Session.Authenticate(w, r, username, password)
-	if err != nil {
-		misc.Logger.Tracef("Failed to authenticate user: [%v]", err)
+	authStatus := controller.Session.Authenticate(w, r, username, password)
+	switch authStatus {
+	case misc.AuthStatusSuccess:
+		controller.SendRedirect(w, r, controller.Session.GetLoginRedirect(w, r), http.StatusSeeOther)
+		return
+	case misc.AuthStatusUnverifiedEmail:
+		response["status"] = 1
+		response["result"] = "Please verify your email address before trying to log in again!"
 
+		controller.SendResponse(w, r, "login", response)
+		return
+	case misc.AuthStatusCredentialMismatch:
 		response["status"] = 1
 		response["result"] = "Invalid username or password, please try again!"
 
 		controller.SendResponse(w, r, "login", response)
 		return
+	case misc.AuthStatusError:
+	case misc.AuthStatusUnknown:
+		response["status"] = 1
+		response["result"] = "Failed to authenticate, please try again!"
+
+		controller.SendResponse(w, r, "login", response)
+		return
 	}
 
-	controller.SendRedirect(w, r, controller.Session.GetLoginRedirect(w, r), http.StatusSeeOther)
+	response["status"] = 1
+	response["result"] = "Unknown error, please try again!"
+
+	controller.SendResponse(w, r, "login", response)
+	return
 }
 
 // LoginRegisterGetHandler displays the registration page of the web app
@@ -113,7 +132,7 @@ func (controller *Controller) LoginRegisterGetHandler(w http.ResponseWriter, r *
 	response["loggedIn"] = loggedIn
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -134,7 +153,7 @@ func (controller *Controller) LoginRegisterPostHandler(w http.ResponseWriter, r 
 	response["loggedIn"] = loggedIn
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -200,7 +219,7 @@ func (controller *Controller) LoginVerifyGetHandler(w http.ResponseWriter, r *ht
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -253,7 +272,7 @@ func (controller *Controller) LoginVerifyResendGetHandler(w http.ResponseWriter,
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -273,7 +292,7 @@ func (controller *Controller) LoginVerifyResendPostHandler(w http.ResponseWriter
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -329,7 +348,7 @@ func (controller *Controller) LoginResetGetHandler(w http.ResponseWriter, r *htt
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -349,7 +368,7 @@ func (controller *Controller) LoginResetPostHandler(w http.ResponseWriter, r *ht
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -405,7 +424,7 @@ func (controller *Controller) LoginResetVerifyGetHandler(w http.ResponseWriter, 
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -454,7 +473,7 @@ func (controller *Controller) LoginResetVerifyPostHandler(w http.ResponseWriter,
 	loggedIn := controller.Session.IsLoggedIn(w, r)
 
 	if loggedIn {
-		controller.SendRedirect(w, r, "/settings", http.StatusSeeOther)
+		controller.SendRedirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 

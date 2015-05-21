@@ -37,3 +37,37 @@ func CreateAPIClient(account *models.Account) *eveapi.API {
 
 	return api
 }
+
+// AuthStatus represents the result of an authentication attempt by the user
+type AuthStatus int
+
+const (
+	// AuthStatusUnknown indicates an unknown status during the authentication
+	AuthStatusUnknown AuthStatus = iota
+	// AuthStatusError indicates an (internal) error during the authentication
+	AuthStatusError
+	// AuthStatusCredentialMismatch indicates a mismatch of the given passwords and stored bcrypt hash
+	AuthStatusCredentialMismatch
+	// AuthStatusUnverifiedEmail indicates the user's email address has not been verified yet
+	AuthStatusUnverifiedEmail
+	// AuthStatusSuccess indicates a successful authentication attempt
+	AuthStatusSuccess
+)
+
+// String returns an easily readable (string) representation of the AuthStatus
+func (authStatus AuthStatus) String() string {
+	switch authStatus {
+	case AuthStatusUnknown:
+		return "unknown"
+	case AuthStatusError:
+		return "error"
+	case AuthStatusCredentialMismatch:
+		return "mismatch"
+	case AuthStatusUnverifiedEmail:
+		return "unverified"
+	case AuthStatusSuccess:
+		return "success"
+	}
+
+	return "unknown"
+}
