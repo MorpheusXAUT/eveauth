@@ -578,7 +578,7 @@ func (controller *Controller) AuthorizeGetHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	application, err := controller.Session.VerifyApplication(app, callback, auth)
+	application, err := controller.VerifyApplication(app, callback, auth)
 	if err != nil {
 		misc.Logger.Tracef("Failed to verify app authentication: [%v]", err)
 
@@ -1457,7 +1457,7 @@ func (controller *Controller) AdminUsersGetHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	users, err := controller.Session.LoadAllUsers()
+	users, err := controller.LoadAllUsers()
 	if err != nil {
 		misc.Logger.Tracef("Failed to load all users: [%v]")
 
@@ -1566,7 +1566,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 			return
 		}
 
-		err = controller.Session.AddGroupToUser(userID, groupID)
+		err = controller.AddGroupToUser(userID, groupID)
 		if err != nil {
 			misc.Logger.Tracef("Failed to add group to user: [%v]", err)
 
@@ -1609,7 +1609,7 @@ func (controller *Controller) AdminUsersPostHandler(w http.ResponseWriter, r *ht
 			roleGranted = true
 		}
 
-		err = controller.Session.AddUserRoleToUser(userID, roleID, roleGranted)
+		err = controller.AddUserRoleToUser(userID, roleID, roleGranted)
 		if err != nil {
 			misc.Logger.Tracef("Failed to add user role to user: [%v]", err)
 
@@ -1871,7 +1871,7 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 		return
 	}
 
-	user, err := controller.Session.LoadUserFromUserID(userID)
+	user, err := controller.LoadUserFromUserID(userID)
 	if err != nil {
 		misc.Logger.Tracef("Failed to load user: [%v]", err)
 
@@ -1884,7 +1884,7 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 
 	response["user"] = user
 
-	availableGroups, err := controller.Session.LoadAvailableGroupsForUser(user.ID)
+	availableGroups, err := controller.LoadAvailableGroupsForUser(user.ID)
 	if err != nil {
 		misc.Logger.Tracef("Failed to load available groups: [%v]", err)
 
@@ -1897,7 +1897,7 @@ func (controller *Controller) AdminUserDetailsGetHandler(w http.ResponseWriter, 
 
 	response["availableGroups"] = availableGroups
 
-	availableUserRoles, err := controller.Session.LoadAvailableUserRolesForUser(user.ID)
+	availableUserRoles, err := controller.LoadAvailableUserRolesForUser(user.ID)
 	if err != nil {
 		misc.Logger.Tracef("Failed to load available user roles: [%v]", err)
 
@@ -1948,7 +1948,7 @@ func (controller *Controller) AdminGroupsGetHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	groups, err := controller.Session.LoadAllGroups()
+	groups, err := controller.LoadAllGroups()
 	if err != nil {
 		misc.Logger.Tracef("Failed to load all groups: [%v]")
 
@@ -2034,7 +2034,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 			return
 		}
 
-		group, err := controller.Session.CreateNewGroup(groupName)
+		group, err := controller.CreateNewGroup(groupName)
 		if err != nil {
 			misc.Logger.Tracef("Failed to create new group: [%v]", err)
 
@@ -2087,7 +2087,7 @@ func (controller *Controller) AdminGroupsPostHandler(w http.ResponseWriter, r *h
 			roleGranted = true
 		}
 
-		err = controller.Session.AddGroupRoleToGroup(groupID, roleID, roleGranted)
+		err = controller.AddGroupRoleToGroup(groupID, roleID, roleGranted)
 		if err != nil {
 			misc.Logger.Tracef("Failed to add group role to group: [%v]", err)
 
@@ -2292,7 +2292,7 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 		return
 	}
 
-	group, err := controller.Session.LoadGroupFromGroupID(groupID)
+	group, err := controller.LoadGroupFromGroupID(groupID)
 	if err != nil {
 		misc.Logger.Tracef("Failed to load group: [%v]", err)
 
@@ -2305,7 +2305,7 @@ func (controller *Controller) AdminGroupDetailsGetHandler(w http.ResponseWriter,
 
 	response["group"] = group
 
-	availableGroupRoles, err := controller.Session.LoadAvailableGroupRolesForGroup(group.ID)
+	availableGroupRoles, err := controller.LoadAvailableGroupRolesForGroup(group.ID)
 	if err != nil {
 		misc.Logger.Tracef("Failed to load available group roles: [%v]", err)
 
@@ -2355,7 +2355,7 @@ func (controller *Controller) AdminRolesGetHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	roles, err := controller.Session.LoadAllRoles()
+	roles, err := controller.LoadAllRoles()
 	if err != nil {
 		misc.Logger.Tracef("Failed to load all roles: [%v]")
 
@@ -2447,7 +2447,7 @@ func (controller *Controller) AdminRolesPostHandler(w http.ResponseWriter, r *ht
 			roleLocked = true
 		}
 
-		_, err := controller.Session.CreateNewRole(roleName, roleLocked)
+		_, err := controller.CreateNewRole(roleName, roleLocked)
 		if err != nil {
 			misc.Logger.Tracef("Failed to create new role: [%v]", err)
 

@@ -5,19 +5,22 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/morpheusxaut/eveauth/database"
 	"github.com/morpheusxaut/eveauth/session"
 )
 
 // Templates stores the parsed HTTP templates used by the web app
 type Templates struct {
 	template *template.Template
+	database database.Connection
 	session  *session.Controller
 }
 
 // SetupTemplates parses the HTTP templates from disk and stores them for later usage
-func SetupTemplates(sess *session.Controller) *Templates {
+func SetupTemplates(db database.Connection, sess *session.Controller) *Templates {
 	templates := &Templates{
-		session: sess,
+		database: db,
+		session:  sess,
 	}
 
 	templates.template = template.Must(template.New("").Funcs(templates.TemplateFunctions(nil)).ParseGlob("app/templates/*"))
@@ -56,10 +59,10 @@ func (templates *Templates) HasUserRole(r *http.Request, role string) bool {
 
 // QueryCorporationName queries the database for the name of the corporation with the given ID
 func (templates *Templates) QueryCorporationName(corporationID int64) string {
-	corporationName, err := templates.session.QueryCorporationName(corporationID)
+	corporation, err := templates.database.LoadCorporation(corporationID)
 	if err != nil {
 		return fmt.Sprintf("#%d", corporationID)
 	}
 
-	return corporationName
+	return corporation.Name
 }
